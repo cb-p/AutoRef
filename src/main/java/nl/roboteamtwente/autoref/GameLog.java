@@ -61,19 +61,19 @@ public class GameLog {
         }
 
         public static class Refbox2013 extends Message {
+            public SslGcRefereeMessage.Referee packet;
+
             public Refbox2013(byte[] buffer) throws InvalidProtocolBufferException {
                 this.packet = SslGcRefereeMessage.Referee.parseFrom(buffer);
             }
-
-            public SslGcRefereeMessage.Referee packet;
         }
 
         public static class Vision2014 extends Message {
+            public SslVisionWrapper.SSL_WrapperPacket packet;
+
             public Vision2014(byte[] buffer) throws InvalidProtocolBufferException {
                 this.packet = SslVisionWrapper.SSL_WrapperPacket.parseFrom(buffer);
             }
-
-            public SslVisionWrapper.SSL_WrapperPacket packet;
         }
     }
 }
