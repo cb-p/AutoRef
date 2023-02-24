@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "Vector2f.proto";
+import "RobotProcessedFeedback.proto";
+
+package proto;
+option java_package = "nl.roboteamtwente.proto";
+
+message WorldRobot {
+    uint32 id = 1;
+    Vector2f pos = 2;
+    float angle = 3;
+    Vector2f vel = 4;
+    float w = 5;
+    RobotProcessedFeedback feedbackInfo = 6;
+}

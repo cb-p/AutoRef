@@ -1,10 +1,9 @@
 syntax = "proto2";
-
-option go_package = "github.com/RoboCup-SSL/ssl-game-controller/internal/app/vision";
+package proto;
 option java_package = "org.robocup.ssl.proto";
 
-import "ssl_vision_detection.proto";
-import "ssl_vision_geometry.proto";
+import "messages_robocup_ssl_detection.proto";
+import "messages_robocup_ssl_geometry.proto";
 
 message SSL_WrapperPacket {
   optional SSL_DetectionFrame detection = 1;

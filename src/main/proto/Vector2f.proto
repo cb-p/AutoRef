@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package proto;
+option java_package = "nl.roboteamtwente.proto";
+
+message Vector2f {
+    float x = 1;
+    float y = 2;
+}

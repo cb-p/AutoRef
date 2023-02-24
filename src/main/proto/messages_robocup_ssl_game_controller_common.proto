@@ -1,6 +1,5 @@
 syntax = "proto2";
-
-option go_package = "github.com/RoboCup-SSL/ssl-game-controller/internal/app/state";
+package proto;
 option java_package = "org.robocup.ssl.proto";
 
 // Team is either blue or yellow
