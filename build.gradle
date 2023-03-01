@@ -1,11 +1,15 @@
 plugins {
     id 'java'
     id 'idea'
+    id 'application'
     id 'com.google.protobuf' version '0.8.19'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
 }
 
 group 'nl.roboteamtwente.autoref'
 version '1.0-SNAPSHOT'
+
+mainClassName = "nl.roboteamtwente.autoref.ui.AutoRefUi"
 
 repositories {
     mavenCentral()
@@ -13,9 +17,15 @@ repositories {
 
 dependencies {
     implementation 'com.google.protobuf:protobuf-java:3.21.5'
+    implementation 'org.zeromq:jeromq:0.5.3'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+javafx {
+    version = "17"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
 
 protobuf {
