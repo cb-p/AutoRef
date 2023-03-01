@@ -55,7 +55,12 @@ public class GameCanvas extends Canvas {
 
     public void redraw() {
         GraphicsContext g = getGraphicsContext2D();
-        ScaledDrawer s = new ScaledDrawer(g, new Vector2(0, 0), 0.05f);
+
+        float scale = (float) Math.min(
+                getWidth() / (sslAutoRef.game.getField().getSize().getX() + 800.0f),
+                getHeight() / (sslAutoRef.game.getField().getSize().getY() + 500.0f)
+        );
+        ScaledDrawer s = new ScaledDrawer(g, new Vector2(0, 0), scale);
 
         g.setFill(Color.GREEN);
         g.fillRect(0, 0, getWidth(), getHeight());
