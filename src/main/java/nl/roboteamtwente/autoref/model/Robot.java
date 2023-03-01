@@ -2,7 +2,7 @@ package nl.roboteamtwente.autoref.model;
 
 public class Robot extends Entity {
     private final int id;
-    private float orientation;
+    private float angle;
     private Team team;
 
     public Robot(int id) {
@@ -21,12 +21,12 @@ public class Robot extends Entity {
         this.team = team;
     }
 
-    public float getOrientation() {
-        return orientation;
+    public float getAngle() {
+        return angle;
     }
 
-    public void setOrientation(float orientation) {
-        this.orientation = orientation;
+    public void setAngle(float angle) {
+        this.angle = angle;
     }
 
     public boolean isGoalkeeper() {
@@ -37,7 +37,7 @@ public class Robot extends Entity {
     public String toString() {
         return "Robot{" +
                 "id=" + id +
-                ", orientation=" + orientation +
+                ", orientation=" + angle +
                 ", position=" + position +
                 ", velocity=" + velocity +
                 '}';

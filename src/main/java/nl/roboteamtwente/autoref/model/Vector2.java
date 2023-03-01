@@ -29,6 +29,12 @@ public class Vector2 {
         return new Vector2(this.getX() + other.getX(), this.getY() + other.getY());
     }
 
+    public Vector2 rotate(float angle) {
+        float sin = (float) Math.sin(angle);
+        float cos = (float) Math.cos(angle);
+        return new Vector2(cos * x - sin * y, sin * x - cos * y);
+    }
+
     @Override
     public String toString() {
         return "Vector2{" + x +

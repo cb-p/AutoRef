@@ -72,6 +72,7 @@ public class GameCanvas extends Canvas {
         for (Robot robot : sslAutoRef.game.getRobots()) {
             s.drawCircle(robot.getPosition().xy(), 200.0f, robot.getTeam().getColor() == TeamColor.BLUE ? Color.BLUE : Color.YELLOW);
             s.drawCircle(robot.getPosition().xy(), 100.0f, robot.isGoalkeeper() ? Color.BLACK : Color.WHITE);
+            s.drawLine(robot.getPosition().xy(), robot.getPosition().xy().add(new Vector2(150.0f, 0.0f).rotate(robot.getAngle())), 2, Color.CYAN);
         }
 
         s.drawCircle(sslAutoRef.game.getBall().getPosition().xy(), 150.0f, Color.RED);

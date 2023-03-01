@@ -62,6 +62,7 @@ public class SSLAutoRef {
         robot.getPosition().setY(worldRobot.getPos().getY() * 1000.0f);
         robot.getVelocity().setX(worldRobot.getVel().getX() * 1000.0f);
         robot.getVelocity().setY(worldRobot.getVel().getY() * 1000.0f);
+        robot.setAngle(worldRobot.getAngle());
     }
 
     public void startReceivingWorldPackets() {
