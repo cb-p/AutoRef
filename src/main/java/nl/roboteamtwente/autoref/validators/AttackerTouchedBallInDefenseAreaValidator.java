@@ -3,9 +3,9 @@ package nl.roboteamtwente.autoref.validators;
 import nl.roboteamtwente.autoref.RuleValidator;
 import nl.roboteamtwente.autoref.RuleViolation;
 import nl.roboteamtwente.autoref.model.*;
-import org.robocup.ssl.proto.MessagesRobocupSslGameControllerCommon;
-import org.robocup.ssl.proto.MessagesRobocupSslGameControllerGeometry;
-import org.robocup.ssl.proto.MessagesRobocupSslGameEvent;
+import org.robocup.ssl.proto.SslGcCommon;
+import org.robocup.ssl.proto.SslGcGameEvent;
+import org.robocup.ssl.proto.SslGcGeometry;
 
 public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator {
     @Override
@@ -45,13 +45,13 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
         }
 
         @Override
-        public MessagesRobocupSslGameEvent.GameEvent toPacket() {
-            return MessagesRobocupSslGameEvent.GameEvent.newBuilder()
-                    .setType(MessagesRobocupSslGameEvent.GameEvent.Type.ATTACKER_TOUCHED_BALL_IN_DEFENSE_AREA)
-                    .setAttackerTouchedBallInDefenseArea(MessagesRobocupSslGameEvent.GameEvent.AttackerTouchedBallInDefenseArea.newBuilder()
-                            .setByTeam(byTeam == TeamColor.BLUE ? MessagesRobocupSslGameControllerCommon.Team.BLUE : MessagesRobocupSslGameControllerCommon.Team.YELLOW)
+        public SslGcGameEvent.GameEvent toPacket() {
+            return SslGcGameEvent.GameEvent.newBuilder()
+                    .setType(SslGcGameEvent.GameEvent.Type.ATTACKER_TOUCHED_BALL_IN_DEFENSE_AREA)
+                    .setAttackerTouchedBallInDefenseArea(SslGcGameEvent.GameEvent.AttackerTouchedBallInDefenseArea.newBuilder()
+                            .setByTeam(byTeam == TeamColor.BLUE ? SslGcCommon.Team.BLUE : SslGcCommon.Team.YELLOW)
                             .setByBot(byBot)
-                            .setLocation(MessagesRobocupSslGameControllerGeometry.Vector2.newBuilder().setX(location.getX()).setY(location.getY()))
+                            .setLocation(SslGcGeometry.Vector2.newBuilder().setX(location.getX()).setY(location.getY()))
                             .setDistance(distance))
                     .build();
         }

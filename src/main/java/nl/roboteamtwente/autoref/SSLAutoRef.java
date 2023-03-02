@@ -4,15 +4,24 @@ import nl.roboteamtwente.autoref.model.*;
 import nl.roboteamtwente.proto.StateOuterClass;
 import nl.roboteamtwente.proto.WorldOuterClass;
 import nl.roboteamtwente.proto.WorldRobotOuterClass;
-import org.robocup.ssl.proto.MessagesRobocupSslGeometry;
+import org.robocup.ssl.proto.SslVisionGeometry;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+import java.io.InputStream;
+import java.net.Socket;
 import java.util.List;
 
 public class SSLAutoRef {
-    public Referee referee = new Referee();
+    private Referee referee;
+
+    private ZMQ.Socket worldSocket;
+    private Socket gcSocket;
+
+    public SSLAutoRef() {
+        this.referee = new Referee();
+    }
 
     public void processWorldState(StateOuterClass.State statePacket) {
         WorldOuterClass.World world = statePacket.getLastSeenWorld();
@@ -46,7 +55,7 @@ public class SSLAutoRef {
         referee.getGame().getField().getPosition().setX(-statePacket.getField().getField().getFieldLength() / 2.0f);
         referee.getGame().getField().getPosition().setY(-statePacket.getField().getField().getFieldWidth() / 2.0f);
 
-        for (MessagesRobocupSslGeometry.SSL_FieldLineSegment lineSegment : statePacket.getField().getField().getFieldLinesList()) {
+        for (SslVisionGeometry.SSL_FieldLineSegment lineSegment : statePacket.getField().getField().getFieldLinesList()) {
             Vector2 p1 = new Vector2(lineSegment.getP1().getX(), lineSegment.getP1().getY());
             Vector2 p2 = new Vector2(lineSegment.getP2().getX(), lineSegment.getP2().getY());
             FieldLine fieldLine = new FieldLine(lineSegment.getName(), p1, p2, lineSegment.getThickness());
@@ -70,17 +79,17 @@ public class SSLAutoRef {
         robot.setAngle(worldRobot.getAngle());
     }
 
-    public void startReceivingWorldPackets() {
+    public void start() {
         new Thread(() -> {
             try (ZContext context = new ZContext()) {
-                ZMQ.Socket socket = context.createSocket(SocketType.SUB);
+                this.worldSocket = context.createSocket(SocketType.SUB);
 
-                socket.subscribe("");
-                socket.connect("tcp://127.0.0.1:5558");
+                this.worldSocket.subscribe("");
+                this.worldSocket.connect("tcp://127.0.0.1:5558");
 
                 while (!Thread.currentThread().isInterrupted()) {
                     try {
-                        byte[] buffer = socket.recv();
+                        byte[] buffer = this.worldSocket.recv();
                         StateOuterClass.State packet = StateOuterClass.State.parseFrom(buffer);
                         processWorldState(packet);
 
@@ -91,6 +100,23 @@ public class SSLAutoRef {
                     }
                 }
             }
-        }, "World receiver").start();
+        }, "World Connection").start();
+
+        new Thread(() -> {
+            try {
+                this.gcSocket = new Socket("localhost", 10007);
+                InputStream inputStream = this.gcSocket.getInputStream();
+
+                while (true) {
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, "GC Connection").start();
+    }
+
+    public Referee getReferee() {
+        return referee;
     }
 }

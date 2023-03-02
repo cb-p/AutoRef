@@ -1,8 +1,8 @@
 package nl.roboteamtwente.autoref;
 
-import org.robocup.ssl.proto.MessagesRobocupSslGameEvent;
+import org.robocup.ssl.proto.SslGcGameEvent;
 
 public interface RuleViolation {
     String toString();
-    MessagesRobocupSslGameEvent.GameEvent toPacket();
+    SslGcGameEvent.GameEvent toPacket();
 }
