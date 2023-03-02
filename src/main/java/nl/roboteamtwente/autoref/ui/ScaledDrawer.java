@@ -32,11 +32,11 @@ public class ScaledDrawer {
         );
     }
 
-    private float translateX(float x) {
+    public float translateX(float x) {
         return (float) ((x - center.getX()) * scale + g.getCanvas().getWidth() / 2);
     }
 
-    private float translateY(float y) {
+    public float translateY(float y) {
         return (float) ((y - center.getY()) * scale + g.getCanvas().getHeight() / 2);
     }
 }

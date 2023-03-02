@@ -30,6 +30,10 @@ public class Field {
         return lines.values();
     }
 
+    public FieldLine getLineByName(String name) {
+        return lines.get(name);
+    }
+
     public void addLine(FieldLine line) {
         this.lines.put(line.name(), line);
     }

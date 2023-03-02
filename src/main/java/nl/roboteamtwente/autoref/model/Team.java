@@ -6,6 +6,7 @@ public class Team {
     private final TeamColor color;
     private final Map<Integer, Robot> robots;
     private int goalkeeper;
+    private Side side;
 
     private float robotRadius;
 
@@ -49,6 +50,14 @@ public class Team {
 
     public void setRobotRadius(float robotRadius) {
         this.robotRadius = robotRadius;
+    }
+
+    public void setSide(Side side) {
+        this.side = side;
+    }
+
+    public Side getSide() {
+        return side;
     }
 
     @Override
