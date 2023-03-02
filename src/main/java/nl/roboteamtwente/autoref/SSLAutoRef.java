@@ -9,15 +9,13 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
-import java.io.InputStream;
-import java.net.Socket;
 import java.util.List;
 
 public class SSLAutoRef {
     private Referee referee;
 
     private ZMQ.Socket worldSocket;
-    private Socket gcSocket;
+    private GameControllerConnection gcConnection;
 
     public SSLAutoRef() {
         this.referee = new Referee();
@@ -80,6 +78,14 @@ public class SSLAutoRef {
     }
 
     public void start() {
+        // FIXME: All still pretty temporary.
+        try {
+            gcConnection = new GameControllerConnection();
+            gcConnection.connect("localhost", 10007);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         new Thread(() -> {
             try (ZContext context = new ZContext()) {
                 this.worldSocket = context.createSocket(SocketType.SUB);
@@ -94,26 +100,13 @@ public class SSLAutoRef {
                         processWorldState(packet);
 
                         List<RuleViolation> violations = referee.validate();
-                        System.out.println(violations);
+                        // FIXME: do something with this
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             }
         }, "World Connection").start();
-
-        new Thread(() -> {
-            try {
-                this.gcSocket = new Socket("localhost", 10007);
-                InputStream inputStream = this.gcSocket.getInputStream();
-
-                while (true) {
-
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, "GC Connection").start();
     }
 
     public Referee getReferee() {
