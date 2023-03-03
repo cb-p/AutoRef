@@ -67,6 +67,12 @@ public class GameCanvas extends Canvas {
 
         for (FieldLine fieldLine : sslAutoRef.getReferee().getGame().getField().getLines()) {
             s.drawLine(fieldLine.p1(), fieldLine.p2(), 2, Color.WHITE);
+
+//            g.setFill(Color.WHITE);
+//            g.fillText(
+//                    fieldLine.name(),
+//                    s.translateX((fieldLine.p1().getX() + fieldLine.p2().getX()) / 2),
+//                    s.translateY((fieldLine.p1().getY() + fieldLine.p2().getY()) / 2));
         }
 
         for (Robot robot : sslAutoRef.getReferee().getGame().getRobots()) {
