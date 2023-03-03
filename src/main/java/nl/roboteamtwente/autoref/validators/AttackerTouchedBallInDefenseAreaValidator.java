@@ -10,6 +10,12 @@ import org.robocup.ssl.proto.SslGcGeometry;
 public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator {
     @Override
     public RuleViolation validate(Game game) {
+        // FIXME: This should only return if the ball is in play, we should make an
+        //        abstraction for that based on the current game state.
+        // FIXME: Check if the robot is actually touching the ball!!
+        // FIXME: There should probably be some kind of more general way to implement
+        //        grace periods and repeated fouls.
+
         for (TeamColor teamColor : TeamColor.values()) {
             Side side = game.getTeam(teamColor).getSide();
             String sideString = side == Side.LEFT ? "Left" : "Right";
