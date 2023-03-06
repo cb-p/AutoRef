@@ -1,8 +1,8 @@
 package nl.roboteamtwente.autoref;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import org.robocup.ssl.proto.MessagesRobocupSslReferee;
-import org.robocup.ssl.proto.MessagesRobocupSslWrapperLegacy;
+import org.robocup.ssl.proto.SslGcRefereeMessage;
+import org.robocup.ssl.proto.SslVisionWrapper;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -61,18 +61,18 @@ public class GameLog {
         }
 
         public static class Refbox2013 extends Message {
-            public MessagesRobocupSslReferee.SSL_Referee packet;
+            public SslGcRefereeMessage.SSL_Referee packet;
 
             public Refbox2013(byte[] buffer) throws InvalidProtocolBufferException {
-                this.packet = MessagesRobocupSslReferee.SSL_Referee.parseFrom(buffer);
+                this.packet = SslGcRefereeMessage.SSL_Referee.parseFrom(buffer);
             }
         }
 
         public static class Vision2014 extends Message {
-            public MessagesRobocupSslWrapperLegacy.SSL_WrapperPacket packet;
+            public SslVisionWrapper.SSL_WrapperPacket packet;
 
             public Vision2014(byte[] buffer) throws InvalidProtocolBufferException {
-                this.packet = MessagesRobocupSslWrapperLegacy.SSL_WrapperPacket.parseFrom(buffer);
+                this.packet = SslVisionWrapper.SSL_WrapperPacket.parseFrom(buffer);
             }
         }
     }

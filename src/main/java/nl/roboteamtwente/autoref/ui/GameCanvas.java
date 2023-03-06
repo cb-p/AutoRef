@@ -57,31 +57,30 @@ public class GameCanvas extends Canvas {
         GraphicsContext g = getGraphicsContext2D();
 
         float scale = (float) Math.min(
-                getWidth() / (sslAutoRef.referee.getGame().getField().getSize().getX() + 800.0f),
-                getHeight() / (sslAutoRef.referee.getGame().getField().getSize().getY() + 500.0f)
+                getWidth() / (sslAutoRef.getReferee().getGame().getField().getSize().getX() + 800.0f),
+                getHeight() / (sslAutoRef.getReferee().getGame().getField().getSize().getY() + 500.0f)
         );
         ScaledDrawer s = new ScaledDrawer(g, new Vector2(0, 0), scale);
 
         g.setFill(Color.GREEN);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        for (FieldLine fieldLine : sslAutoRef.referee.getGame().getField().getLines()) {
+        for (FieldLine fieldLine : sslAutoRef.getReferee().getGame().getField().getLines()) {
             s.drawLine(fieldLine.p1(), fieldLine.p2(), 2, Color.WHITE);
 
-            g.setFill(Color.WHITE);
-            g.fillText(
-                    fieldLine.name(),
-                    s.translateX((fieldLine.p1().getX() + fieldLine.p2().getX()) / 2),
-                    s.translateY((fieldLine.p1().getY() + fieldLine.p2().getY()) / 2)
-            );
+//            g.setFill(Color.WHITE);
+//            g.fillText(
+//                    fieldLine.name(),
+//                    s.translateX((fieldLine.p1().getX() + fieldLine.p2().getX()) / 2),
+//                    s.translateY((fieldLine.p1().getY() + fieldLine.p2().getY()) / 2));
         }
 
-        for (Robot robot : sslAutoRef.referee.getGame().getRobots()) {
+        for (Robot robot : sslAutoRef.getReferee().getGame().getRobots()) {
             s.drawCircle(robot.getPosition().xy(), 200.0f, robot.getTeam().getColor() == TeamColor.BLUE ? Color.BLUE : Color.YELLOW);
             s.drawCircle(robot.getPosition().xy(), 100.0f, robot.isGoalkeeper() ? Color.BLACK : Color.WHITE);
             s.drawLine(robot.getPosition().xy(), robot.getPosition().xy().add(new Vector2(150.0f, 0.0f).rotate(robot.getAngle())), 2, Color.CYAN);
         }
 
-        s.drawCircle(sslAutoRef.referee.getGame().getBall().getPosition().xy(), 150.0f, Color.RED);
+        s.drawCircle(sslAutoRef.getReferee().getGame().getBall().getPosition().xy(), 150.0f, Color.RED);
     }
 }

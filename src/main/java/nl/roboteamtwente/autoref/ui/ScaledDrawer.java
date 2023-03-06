@@ -27,7 +27,7 @@ public class ScaledDrawer {
     public void drawCircle(Vector2 center, float radius, Color color) {
         g.setFill(color);
         g.fillOval(
-                translateX(center.getX() - radius / 2), translateY(center.getY() - radius / 2),
+                translateX(center.getX() - radius / 2), translateY(center.getY() - radius / 2) - radius * scale,
                 radius * scale, radius * scale
         );
     }
@@ -37,6 +37,6 @@ public class ScaledDrawer {
     }
 
     public float translateY(float y) {
-        return (float) ((y - center.getY()) * scale + g.getCanvas().getHeight() / 2);
+        return (float) (-(y - center.getY()) * scale + g.getCanvas().getHeight() / 2);
     }
 }

@@ -28,7 +28,7 @@ public class AutoRefController implements Initializable {
         canvas.setSslAutoRef(sslAutoRef);
 
         // FIXME: This is very temporary.
-        sslAutoRef.startReceivingWorldPackets();
+        sslAutoRef.start();
 
         modeBox.getItems().addAll("Passive", "Active");
         modeBox.setValue("Active");
