@@ -70,6 +70,7 @@ public class SSLAutoRef {
         robot.setAngle(worldRobot.getAngle());
     }
 
+
     public void startReceivingWorldPackets() {
         new Thread(() -> {
             try (ZContext context = new ZContext()) {
@@ -85,7 +86,7 @@ public class SSLAutoRef {
                         processWorldState(packet);
 
                         List<RuleViolation> violations = referee.validate();
-                        System.out.println(violations);
+//                        System.out.println(violations.toString());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

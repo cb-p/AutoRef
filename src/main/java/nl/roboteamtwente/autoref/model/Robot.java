@@ -15,7 +15,7 @@ public class Robot extends Entity {
 
     public Team getTeam() {
         return team;
-    }
+    } 
 
     public void setTeam(Team team) {
         this.team = team;
@@ -41,5 +41,10 @@ public class Robot extends Entity {
                 ", position=" + position +
                 ", velocity=" + velocity +
                 '}';
+    }
+
+    //TODO: CREATE THE LASTTOUCHEDBALL METHOD TO DETERMINE WHICH ROBOT HAS TOUCHED THE BALL IN THE PREVIOUS FRAME BEFORE THE BALL WENT OUT
+    public boolean lastTouchedBall() {
+        return true;
     }
 }
