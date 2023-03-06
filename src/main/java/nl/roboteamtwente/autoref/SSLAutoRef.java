@@ -48,6 +48,7 @@ public class SSLAutoRef {
         referee.getGame().getTeam(TeamColor.BLUE).setSide(statePacket.getReferee().getBlueTeamOnPositiveHalf() ? Side.RIGHT : Side.LEFT);
         referee.getGame().getTeam(TeamColor.YELLOW).setSide(statePacket.getReferee().getBlueTeamOnPositiveHalf() ? Side.LEFT : Side.RIGHT);
 
+        referee.getGame().getField().setBoundaryWidth(statePacket.getField().getField().getBoundaryWidth());
         referee.getGame().getField().getSize().setX(statePacket.getField().getField().getFieldLength());
         referee.getGame().getField().getSize().setY(statePacket.getField().getField().getFieldWidth());
         referee.getGame().getField().getPosition().setX(-statePacket.getField().getField().getFieldLength() / 2.0f);

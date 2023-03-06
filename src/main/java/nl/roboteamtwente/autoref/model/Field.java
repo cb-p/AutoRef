@@ -8,12 +8,15 @@ public class Field {
     private final Vector2 position;
     private final Vector2 size;
 
+    private float boundaryWidth;
+
     private final Map<String, FieldLine> lines;
 //    private Map<String, FieldArc> arcs;
 
     public Field() {
         this.position = new Vector2(0, 0);
         this.size = new Vector2(0, 0);
+        this.boundaryWidth = 0.0f;
 
         this.lines = new HashMap<>();
     }
@@ -24,6 +27,14 @@ public class Field {
 
     public Vector2 getSize() {
         return size;
+    }
+
+    public float getBoundaryWidth() {
+        return boundaryWidth;
+    }
+
+    public void setBoundaryWidth(float boundaryWidth) {
+        this.boundaryWidth = boundaryWidth;
     }
 
     public Collection<FieldLine> getLines() {
