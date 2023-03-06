@@ -12,7 +12,9 @@ import org.zeromq.ZMQ;
 import java.util.List;
 
 public class SSLAutoRef {
-    private Referee referee;
+    private static final float BALL_TOUCHING_DISTANCE = 125.0f;
+
+    private final Referee referee;
 
     private ZMQ.Socket worldSocket;
     private GameControllerConnection gcConnection;
@@ -63,6 +65,33 @@ public class SSLAutoRef {
         }
     }
 
+    private void deriveWorldState() {
+        // FIXME: When ball goes out of play, reset state variables.
+
+        Ball ball = getReferee().getGame().getBall();
+        Vector3 ballPosition = ball.getPosition();
+
+        getReferee().getGame().getBall().getRobotsTouching().clear();
+        for (Robot robot : getReferee().getGame().getRobots()) {
+            // FIXME: is this a good way to detect if a robot is touching the ball?
+            float distance = robot.getPosition().xy().distance(ballPosition.xy());
+            if (distance <= BALL_TOUCHING_DISTANCE) {
+                ball.getRobotsTouching().add(robot);
+
+                robot.setJustTouchedBall(!robot.isTouchingBall());
+                robot.setTouchingBall(true);
+            } else {
+                robot.setJustTouchedBall(false);
+                robot.setTouchingBall(false);
+            }
+
+            if (robot.hasJustTouchedBall()) {
+                ball.setLastTouchedBy(robot);
+                ball.setLastTouchedAt(ball.getPosition());
+            }
+        }
+    }
+
     private void processRobotState(TeamColor teamColor, WorldRobotOuterClass.WorldRobot worldRobot) {
         Robot robot = referee.getGame().getTeam(teamColor).getRobotById(worldRobot.getId());
         if (robot == null) {
@@ -99,6 +128,9 @@ public class SSLAutoRef {
                         byte[] buffer = this.worldSocket.recv();
                         StateOuterClass.State packet = StateOuterClass.State.parseFrom(buffer);
                         processWorldState(packet);
+                        deriveWorldState();
+
+                        System.out.println(referee.getGame().getBall().getRobotsTouching());
 
                         List<RuleViolation> violations = referee.validate();
                         // FIXME: do something with this

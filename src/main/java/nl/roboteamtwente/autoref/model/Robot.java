@@ -5,6 +5,9 @@ public class Robot extends Entity {
     private float angle;
     private Team team;
 
+    private boolean touchingBall = false;
+    private boolean justTouchedBall = false;
+
     public Robot(int id) {
         this.id = id;
     }
@@ -15,7 +18,7 @@ public class Robot extends Entity {
 
     public Team getTeam() {
         return team;
-    } 
+    }
 
     public void setTeam(Team team) {
         this.team = team;
@@ -33,6 +36,22 @@ public class Robot extends Entity {
         return this.team.getGoalkeeperId() == this.id;
     }
 
+    public boolean isTouchingBall() {
+        return touchingBall;
+    }
+
+    public void setTouchingBall(boolean touchingBall) {
+        this.touchingBall = touchingBall;
+    }
+
+    public boolean hasJustTouchedBall() {
+        return justTouchedBall;
+    }
+
+    public void setJustTouchedBall(boolean justTouchedBall) {
+        this.justTouchedBall = justTouchedBall;
+    }
+
     @Override
     public String toString() {
         return "Robot{" +
@@ -41,10 +60,5 @@ public class Robot extends Entity {
                 ", position=" + position +
                 ", velocity=" + velocity +
                 '}';
-    }
-
-    //TODO: CREATE THE LASTTOUCHEDBALL METHOD TO DETERMINE WHICH ROBOT HAS TOUCHED THE BALL IN THE PREVIOUS FRAME BEFORE THE BALL WENT OUT
-    public boolean lastTouchedBall() {
-        return true;
     }
 }

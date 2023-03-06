@@ -35,6 +35,10 @@ public class Vector2 {
         return new Vector2(cos * x - sin * y, sin * x - cos * y);
     }
 
+    public float distance(Vector2 other) {
+        return (float) Math.sqrt(Math.pow(x - other.x, 2) + Math.pow(y - other.y, 2));
+    }
+
     @Override
     public String toString() {
         return "Vector2{" + x +
