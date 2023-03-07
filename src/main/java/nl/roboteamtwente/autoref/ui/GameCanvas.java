@@ -56,6 +56,10 @@ public class GameCanvas extends Canvas {
     public void redraw() {
         GraphicsContext g = getGraphicsContext2D();
 
+        if (sslAutoRef.getReferee().getGame() == null) {
+            return;
+        }
+
         float scale = (float) Math.min(
                 getWidth() / (sslAutoRef.getReferee().getGame().getField().getSize().getX() + 800.0f),
                 getHeight() / (sslAutoRef.getReferee().getGame().getField().getSize().getY() + 500.0f)

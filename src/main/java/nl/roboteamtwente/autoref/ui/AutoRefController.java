@@ -27,9 +27,6 @@ public class AutoRefController implements Initializable {
         sslAutoRef = new SSLAutoRef();
         canvas.setSslAutoRef(sslAutoRef);
 
-        // FIXME: This is very temporary.
-        sslAutoRef.start();
-
         modeBox.getItems().addAll("Passive", "Active");
         modeBox.setValue("Active");
 
@@ -43,5 +40,13 @@ public class AutoRefController implements Initializable {
             }
         };
         anim.start();
+    }
+
+    public void start() {
+        sslAutoRef.start();
+    }
+
+    public void stop() {
+        sslAutoRef.stop();
     }
 }

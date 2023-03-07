@@ -10,11 +10,23 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class AutoRefUi extends Application {
+    private AutoRefController controller;
+
     @Override
     public void start(Stage primaryStage) throws IOException {
-        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/auto_ref.fxml")));
+        FXMLLoader fxmlLoader = new FXMLLoader(Objects.requireNonNull(getClass().getResource("/auto_ref.fxml")));
+        Parent root = fxmlLoader.load();
+        controller = fxmlLoader.getController();
+
         primaryStage.setTitle("RoboTeam Twente: AutoRef");
         primaryStage.setScene(new Scene(root, 640, 480));
         primaryStage.show();
+
+        controller.start();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        controller.stop();
     }
 }
