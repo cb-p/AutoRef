@@ -52,6 +52,10 @@ public class Robot extends Entity {
         this.justTouchedBall = justTouchedBall;
     }
 
+    public RobotIdentifier getIdentifier() {
+        return new RobotIdentifier(team.getColor(), id);
+    }
+
     @Override
     public String toString() {
         return "Robot{" +

@@ -7,37 +7,44 @@ import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator {
+    private static final double GRACE_PERIOD = 2.0;
+
+    private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
+
     @Override
     public RuleViolation validate(Game game) {
         // FIXME: This should only return if the ball is in play, we should make an
         //        abstraction for that based on the current game state.
-        // FIXME: There should probably be some kind of more general way to implement
-        //        grace periods and repeated fouls.
-
 
         // FIXME: This doesn't work for non-straight lines
         for (Robot robot : game.getBall().getRobotsTouching()) {
             Team team = robot.getTeam();
-            Side side = team.getSide();
-            String sideString = side == Side.LEFT ? "Left" : "Right";
+            Side oppositeSide = team.getSide().getOpposite();
+            String oppositeSideString = oppositeSide == Side.LEFT ? "Left" : "Right";
 
-            FieldLine penaltyStretch = game.getField().getLineByName(sideString + "PenaltyStretch");
-            if (robot.getPosition().getX() * side.getCardinality() < penaltyStretch.p1().getX() * side.getCardinality()) {
+            FieldLine penaltyStretch = game.getField().getLineByName(oppositeSideString + "PenaltyStretch");
+            if (robot.getPosition().getX() * oppositeSide.getCardinality() < penaltyStretch.p1().getX() * oppositeSide.getCardinality()) {
                 continue;
             }
 
-            FieldLine rightPenaltyStretch = game.getField().getLineByName(sideString + "FieldRightPenaltyStretch");
+            FieldLine rightPenaltyStretch = game.getField().getLineByName(oppositeSideString + "FieldRightPenaltyStretch");
             if (robot.getPosition().getY() < rightPenaltyStretch.p1().getY()) {
                 continue;
             }
 
-            FieldLine leftPenaltyStretch = game.getField().getLineByName(sideString + "FieldLeftPenaltyStretch");
+            FieldLine leftPenaltyStretch = game.getField().getLineByName(oppositeSideString + "FieldLeftPenaltyStretch");
             if (robot.getPosition().getY() > leftPenaltyStretch.p1().getY()) {
                 continue;
             }
 
-            return new Violation(team.getColor().getOpponentColor(), robot.getId(), robot.getPosition().xy(), 0.0f);
+            if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
+                lastViolations.put(robot.getIdentifier(), game.getTime());
+                return new Violation(team.getColor(), robot.getId(), robot.getPosition().xy(), 0.0f);
+            }
         }
 
         return null;

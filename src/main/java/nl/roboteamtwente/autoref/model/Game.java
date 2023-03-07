@@ -12,6 +12,8 @@ public class Game {
 
     private final Field field;
 
+    private double time;
+
     public Game() {
         this.robots = new ArrayList<>();
         this.ball = new Ball();
@@ -53,5 +55,13 @@ public class Game {
 
     public Field getField() {
         return field;
+    }
+
+    public double getTime() {
+        return time;
+    }
+
+    public void setTime(double time) {
+        this.time = time;
     }
 }

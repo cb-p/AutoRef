@@ -26,6 +26,8 @@ public class SSLAutoRef {
     public void processWorldState(StateOuterClass.State statePacket) {
         WorldOuterClass.World world = statePacket.getLastSeenWorld();
 
+        referee.getGame().setTime(world.getTime() / 1000000000.0);
+
         referee.getGame().getBall().getPosition().setX(world.getBall().getPos().getX() * 1000.0f);
         referee.getGame().getBall().getPosition().setY(world.getBall().getPos().getY() * 1000.0f);
         referee.getGame().getBall().getPosition().setZ(world.getBall().getZ() * 1000.0f);
@@ -130,10 +132,10 @@ public class SSLAutoRef {
                         processWorldState(packet);
                         deriveWorldState();
 
-                        System.out.println(referee.getGame().getBall().getRobotsTouching());
-
                         List<RuleViolation> violations = referee.validate();
-                        // FIXME: do something with this
+                        for (RuleViolation violation : violations) {
+                            System.out.println("[" + referee.getGame().getTime() + "] " + violation);
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
