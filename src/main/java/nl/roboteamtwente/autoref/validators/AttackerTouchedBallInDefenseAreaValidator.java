@@ -12,33 +12,32 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
     public RuleViolation validate(Game game) {
         // FIXME: This should only return if the ball is in play, we should make an
         //        abstraction for that based on the current game state.
-        // FIXME: Check if the robot is actually touching the ball!!
         // FIXME: There should probably be some kind of more general way to implement
         //        grace periods and repeated fouls.
 
-        for (TeamColor teamColor : TeamColor.values()) {
-            Side side = game.getTeam(teamColor).getSide();
+
+        // FIXME: This doesn't work for non-straight lines
+        for (Robot robot : game.getBall().getRobotsTouching()) {
+            Team team = robot.getTeam();
+            Side side = team.getSide();
             String sideString = side == Side.LEFT ? "Left" : "Right";
 
-            // FIXME: This doesn't work for non-straight lines
-            for (Robot robot : game.getTeam(teamColor.getOpponentColor()).getRobots()) {
-                FieldLine penaltyStretch = game.getField().getLineByName(sideString + "PenaltyStretch");
-                if (robot.getPosition().getX() * side.getCardinality() < penaltyStretch.p1().getX() * side.getCardinality()) {
-                    continue;
-                }
-
-                FieldLine rightPenaltyStretch = game.getField().getLineByName(sideString + "FieldRightPenaltyStretch");
-                if (robot.getPosition().getY() < rightPenaltyStretch.p1().getY()) {
-                    continue;
-                }
-
-                FieldLine leftPenaltyStretch = game.getField().getLineByName(sideString + "FieldLeftPenaltyStretch");
-                if (robot.getPosition().getY() > leftPenaltyStretch.p1().getY()) {
-                    continue;
-                }
-
-                return new Violation(teamColor.getOpponentColor(), robot.getId(), robot.getPosition().xy(), 0.0f);
+            FieldLine penaltyStretch = game.getField().getLineByName(sideString + "PenaltyStretch");
+            if (robot.getPosition().getX() * side.getCardinality() < penaltyStretch.p1().getX() * side.getCardinality()) {
+                continue;
             }
+
+            FieldLine rightPenaltyStretch = game.getField().getLineByName(sideString + "FieldRightPenaltyStretch");
+            if (robot.getPosition().getY() < rightPenaltyStretch.p1().getY()) {
+                continue;
+            }
+
+            FieldLine leftPenaltyStretch = game.getField().getLineByName(sideString + "FieldLeftPenaltyStretch");
+            if (robot.getPosition().getY() > leftPenaltyStretch.p1().getY()) {
+                continue;
+            }
+
+            return new Violation(team.getColor().getOpponentColor(), robot.getId(), robot.getPosition().xy(), 0.0f);
         }
 
         return null;
