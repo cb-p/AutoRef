@@ -1,5 +1,10 @@
 package nl.roboteamtwente.autoref.model;
 
+
+/**
+ * An enumeration of the half that a team is in. It is either left or right and has a
+ * cardinality of -1 and +1 respectively.
+ */
 public enum Side {
     LEFT(-1),
     RIGHT(+1);
@@ -12,5 +17,9 @@ public enum Side {
 
     public int getCardinality() {
         return cardinality;
+    }
+
+    public Side getOpposite() {
+        return this == LEFT ? RIGHT : LEFT;
     }
 }

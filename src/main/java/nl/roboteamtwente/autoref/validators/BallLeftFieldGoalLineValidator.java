@@ -7,37 +7,37 @@ import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
-import java.util.EnumSet;
-
-public class BallLeftFieldTouchLineValidator implements RuleValidator {
-
-    public String leftAt;
+public class BallLeftFieldGoalLineValidator implements RuleValidator {
     @Override
     public RuleViolation validate(Game game) {
-        Vector2 location;
-        Robot byBot;
-        TeamColor byTeam;
+        Vector2 location = null;
+        Robot byBot = null;
+        TeamColor byTeam = null;
         Vector3 ball = game.getBall().getPosition();
-        FieldLine bottomTouchLine = game.getField().getLineByName("BottomTouchLine");
-        FieldLine topTouchLine = game.getField().getLineByName("TopTouchLine");
-//        FIXME: LINES 21 TO 29 ARE USED ONLY WHEN THE BALL IS MANUALLY RELOCATED, THIS IS TO BE REMOVED LATER
-        if (ball.getY() > topTouchLine.p1().getY()) {
-            leftAt = topTouchLine.name();
+        FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
+        FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
+        FieldLine rightGoalTopLine = game.getField().getLineByName("RightGoalTopLine");
+        FieldLine rightGoalBottomLine = game.getField().getLineByName("RightGoalBottomLine");
+
+
+        //FIXME: If the ball enters the goal itself then this triggers this violation, to prevent that from happening certain dimensions need to be excluded
+//        if (ball.getX() >= rightGoalBottomLine.p1().getX() && ball.getX() <= rightGoalTopLine.p2().getX() &&  ball.getY() <  rightGoalLine.p1().getY() ){
+//            return null;
+//        }
+
+        if (ball.getX() > rightGoalLine.p1().getX()){
             location = ball.xy();
             return new Violation(null, 0, location);
         }
 
-        if (ball.getY() < bottomTouchLine.p1().getY()){
-            leftAt = bottomTouchLine.name();
+        if (ball.getX() < leftGoalLine.p1().getX()){
             location = ball.xy();
             return new Violation(null, 0, location);
         }
 
-        //FIXME: THIS WILL NOT WORK IF A BALL IS LOCATED MANUALLY SINCE byBot.getId() CANNOT BE NULL
         for (TeamColor teamColor : TeamColor.values()) {
             for (Robot robot : game.getTeam(teamColor.getOpponentColor()).getRobots()) {
-                if (robot.hasJustTouchedBall() && ball.getY() > topTouchLine.p1().getY()) {
-                    leftAt = topTouchLine.name();
+                if (robot.hasJustTouchedBall() && ball.getX() > rightGoalLine.p1().getX()) {
                     byBot = robot;
                     byTeam = robot.getTeam().getColor();
                     location = ball.xy();
@@ -45,34 +45,29 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
                 }
 
 
-                if (robot.hasJustTouchedBall() && ball.getY() < bottomTouchLine.p1().getY()){
-                    leftAt = bottomTouchLine.name();
+                if (robot.hasJustTouchedBall() && ball.getX() < leftGoalLine.p1().getX()){
                     byBot = robot;
                     byTeam = robot.getTeam().getColor();
                     location = ball.xy();
                     return new Violation(byTeam, byBot.getId(), location);
                 }
-                }
+            }
         }
-            return null;
-    }
 
-    @Override
-    public EnumSet<GameState> activeStates() {
-        return EnumSet.of(GameState.RUNNING);
+        return null;
     }
 
     record Violation(TeamColor byTeam, int byBot, Vector2 location) implements RuleViolation {
         @Override
         public String toString() {
-            return "Ball left the field (by: " + byTeam + ", by bot #" + byBot + ", at " + location + " )";
+            return "Ball left the Goal line (by: " + byTeam + ", by bot #" + byBot + ", at " + location + " )";
         }
 
         @Override
         public SslGcGameEvent.GameEvent toPacket() {
             return SslGcGameEvent.GameEvent.newBuilder()
-                    .setType(SslGcGameEvent.GameEvent.Type.BALL_LEFT_FIELD_TOUCH_LINE)
-                    .setBallLeftFieldTouchLine(SslGcGameEvent.GameEvent.BallLeftField.newBuilder()
+                    .setType(SslGcGameEvent.GameEvent.Type.BALL_LEFT_FIELD_GOAL_LINE)
+                    .setBallLeftFieldGoalLine(SslGcGameEvent.GameEvent.BallLeftField.newBuilder()
                             .setByTeam(byTeam == TeamColor.BLUE ? SslGcCommon.Team.BLUE : SslGcCommon.Team.YELLOW)
                             .setByBot(byBot)
                             .setLocation(SslGcGeometry.Vector2.newBuilder().setX(location.getX()).setY(location.getY())))
