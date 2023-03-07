@@ -4,6 +4,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * A class which is used to create the Field object of the game
+ */
 public class Field {
     private final Vector2 position;
     private final Vector2 size;
@@ -13,6 +17,9 @@ public class Field {
     private final Map<String, FieldLine> lines;
 //    private Map<String, FieldArc> arcs;
 
+    /**
+     * The constructor of the Field class which is made up of
+     */
     public Field() {
         this.position = new Vector2(0, 0);
         this.size = new Vector2(0, 0);
