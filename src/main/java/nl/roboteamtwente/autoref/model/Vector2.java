@@ -90,8 +90,6 @@ public class Vector2 {
      */
     @Override
     public String toString() {
-        return "Vector2{" + x +
-                ", " + y +
-                '}';
+        return "{" + x + ", " + y + '}';
     }
 }

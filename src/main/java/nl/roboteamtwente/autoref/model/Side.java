@@ -18,4 +18,8 @@ public enum Side {
     public int getCardinality() {
         return cardinality;
     }
+
+    public Side getOpposite() {
+        return this == LEFT ? RIGHT : LEFT;
+    }
 }

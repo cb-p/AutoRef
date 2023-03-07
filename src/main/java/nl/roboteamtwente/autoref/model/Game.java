@@ -31,6 +31,11 @@ public class Game {
      */
     private final Field field;
 
+    private GameState state;
+    private double time;
+
+    private Game previous;
+
     public Game() {
         this.robots = new ArrayList<>();
         this.ball = new Ball();
@@ -38,6 +43,10 @@ public class Game {
 
         this.blue = new Team(TeamColor.BLUE);
         this.yellow = new Team(TeamColor.YELLOW);
+
+        this.state = GameState.HALT;
+        this.time = 0.0;
+        this.previous = this;
     }
 
     /**
@@ -97,5 +106,29 @@ public class Game {
      */
     public Field getField() {
         return field;
+    }
+
+    public double getTime() {
+        return time;
+    }
+
+    public void setTime(double time) {
+        this.time = time;
+    }
+
+    public GameState getState() {
+        return state;
+    }
+
+    public void setState(GameState state) {
+        this.state = state;
+    }
+
+    public void setPrevious(Game previous) {
+        this.previous = previous;
+    }
+
+    public Game getPrevious() {
+        return previous;
     }
 }
