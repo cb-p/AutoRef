@@ -7,6 +7,7 @@ import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,9 +18,6 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
 
     @Override
     public RuleViolation validate(Game game) {
-        // FIXME: This should only return if the ball is in play, we should make an
-        //        abstraction for that based on the current game state.
-
         // FIXME: This doesn't work for non-straight lines
         for (Robot robot : game.getBall().getRobotsTouching()) {
             Team team = robot.getTeam();
@@ -50,10 +48,20 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
         return null;
     }
 
+    @Override
+    public EnumSet<GameState> activeStates() {
+        return EnumSet.of(GameState.RUNNING);
+    }
+
+    @Override
+    public void reset() {
+        lastViolations.clear();
+    }
+
     record Violation(TeamColor byTeam, int byBot, Vector2 location, float distance) implements RuleViolation {
         @Override
         public String toString() {
-            return "Attacker in defense area (by: " + byTeam + ", by bot #" + byBot + ", at " + location + ", distance: " + distance + ")";
+            return "Attacker touched ball in defense area (by: " + byTeam + " #" + byBot + ", at " + location + ", distance: " + distance + ")";
         }
 
         @Override

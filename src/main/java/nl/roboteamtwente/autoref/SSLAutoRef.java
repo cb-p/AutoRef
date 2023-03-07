@@ -24,57 +24,79 @@ public class SSLAutoRef {
     }
 
     public void processWorldState(StateOuterClass.State statePacket) {
+        Game game = new Game();
+        if (referee.getGame() != null) {
+            game.setPrevious(referee.getGame());
+        }
+
         WorldOuterClass.World world = statePacket.getLastSeenWorld();
 
-        referee.getGame().setTime(world.getTime() / 1000000000.0);
+        game.setTime(world.getTime() / 1000000000.0);
 
-        referee.getGame().getBall().getPosition().setX(world.getBall().getPos().getX() * 1000.0f);
-        referee.getGame().getBall().getPosition().setY(world.getBall().getPos().getY() * 1000.0f);
-        referee.getGame().getBall().getPosition().setZ(world.getBall().getZ() * 1000.0f);
-        referee.getGame().getBall().getVelocity().setX(world.getBall().getVel().getX());
-        referee.getGame().getBall().getVelocity().setY(world.getBall().getVel().getY());
-        referee.getGame().getBall().getVelocity().setZ(world.getBall().getZVel());
+        game.setState(switch (statePacket.getReferee().getCommand()) {
+            case HALT -> GameState.HALT;
+            case STOP -> GameState.STOP;
+            //noinspection deprecation
+            case NORMAL_START, FORCE_START, GOAL_YELLOW, GOAL_BLUE -> GameState.RUNNING;
+            case PREPARE_KICKOFF_YELLOW, PREPARE_KICKOFF_BLUE -> GameState.PREPARE_KICKOFF;
+            case PREPARE_PENALTY_YELLOW, PREPARE_PENALTY_BLUE -> GameState.PREPARE_PENALTY;
+            case DIRECT_FREE_YELLOW, DIRECT_FREE_BLUE -> GameState.DIRECT_FREE;
+            //noinspection deprecation
+            case INDIRECT_FREE_YELLOW, INDIRECT_FREE_BLUE -> GameState.INDIRECT_FREE;
+            case TIMEOUT_YELLOW, TIMEOUT_BLUE -> GameState.TIMEOUT;
+            case BALL_PLACEMENT_YELLOW, BALL_PLACEMENT_BLUE -> GameState.BALL_PLACEMENT;
+        });
+
+        game.getBall().getPosition().setX(world.getBall().getPos().getX() * 1000.0f);
+        game.getBall().getPosition().setY(world.getBall().getPos().getY() * 1000.0f);
+        game.getBall().getPosition().setZ(world.getBall().getZ() * 1000.0f);
+        game.getBall().getVelocity().setX(world.getBall().getVel().getX());
+        game.getBall().getVelocity().setY(world.getBall().getVel().getY());
+        game.getBall().getVelocity().setZ(world.getBall().getZVel());
 
         for (WorldRobotOuterClass.WorldRobot robot : world.getBlueList()) {
-            processRobotState(TeamColor.BLUE, robot);
+            processRobotState(game, TeamColor.BLUE, robot);
         }
 
         for (WorldRobotOuterClass.WorldRobot robot : world.getYellowList()) {
-            processRobotState(TeamColor.YELLOW, robot);
+            processRobotState(game, TeamColor.YELLOW, robot);
         }
 
-        referee.getGame().getTeam(TeamColor.BLUE).setRobotRadius(statePacket.getBlueRobotParameters().getParameters().getRadius() * 1000.0f);
-        referee.getGame().getTeam(TeamColor.YELLOW).setRobotRadius(statePacket.getYellowRobotParameters().getParameters().getRadius() * 1000.0f);
+        game.getTeam(TeamColor.BLUE).setRobotRadius(statePacket.getBlueRobotParameters().getParameters().getRadius() * 1000.0f);
+        game.getTeam(TeamColor.YELLOW).setRobotRadius(statePacket.getYellowRobotParameters().getParameters().getRadius() * 1000.0f);
 
-        referee.getGame().getTeam(TeamColor.BLUE).setGoalkeeperId(statePacket.getReferee().getBlue().getGoalkeeper());
-        referee.getGame().getTeam(TeamColor.YELLOW).setGoalkeeperId(statePacket.getReferee().getYellow().getGoalkeeper());
+        game.getTeam(TeamColor.BLUE).setGoalkeeperId(statePacket.getReferee().getBlue().getGoalkeeper());
+        game.getTeam(TeamColor.YELLOW).setGoalkeeperId(statePacket.getReferee().getYellow().getGoalkeeper());
 
-        referee.getGame().getTeam(TeamColor.BLUE).setSide(statePacket.getReferee().getBlueTeamOnPositiveHalf() ? Side.RIGHT : Side.LEFT);
-        referee.getGame().getTeam(TeamColor.YELLOW).setSide(statePacket.getReferee().getBlueTeamOnPositiveHalf() ? Side.LEFT : Side.RIGHT);
+        game.getTeam(TeamColor.BLUE).setSide(statePacket.getReferee().getBlueTeamOnPositiveHalf() ? Side.RIGHT : Side.LEFT);
+        game.getTeam(TeamColor.YELLOW).setSide(statePacket.getReferee().getBlueTeamOnPositiveHalf() ? Side.LEFT : Side.RIGHT);
 
-        referee.getGame().getField().setBoundaryWidth(statePacket.getField().getField().getBoundaryWidth());
-        referee.getGame().getField().getSize().setX(statePacket.getField().getField().getFieldLength());
-        referee.getGame().getField().getSize().setY(statePacket.getField().getField().getFieldWidth());
-        referee.getGame().getField().getPosition().setX(-statePacket.getField().getField().getFieldLength() / 2.0f);
-        referee.getGame().getField().getPosition().setY(-statePacket.getField().getField().getFieldWidth() / 2.0f);
+        game.getField().setBoundaryWidth(statePacket.getField().getField().getBoundaryWidth());
+        game.getField().getSize().setX(statePacket.getField().getField().getFieldLength());
+        game.getField().getSize().setY(statePacket.getField().getField().getFieldWidth());
+        game.getField().getPosition().setX(-statePacket.getField().getField().getFieldLength() / 2.0f);
+        game.getField().getPosition().setY(-statePacket.getField().getField().getFieldWidth() / 2.0f);
 
         for (SslVisionGeometry.SSL_FieldLineSegment lineSegment : statePacket.getField().getField().getFieldLinesList()) {
             Vector2 p1 = new Vector2(lineSegment.getP1().getX(), lineSegment.getP1().getY());
             Vector2 p2 = new Vector2(lineSegment.getP2().getX(), lineSegment.getP2().getY());
             FieldLine fieldLine = new FieldLine(lineSegment.getName(), p1, p2, lineSegment.getThickness());
 
-            referee.getGame().getField().addLine(fieldLine);
+            game.getField().addLine(fieldLine);
         }
+
+        deriveWorldState(game);
+        referee.setGame(game);
     }
 
-    private void deriveWorldState() {
+    private void deriveWorldState(Game game) {
         // FIXME: When ball goes out of play, reset state variables.
 
-        Ball ball = getReferee().getGame().getBall();
+        Ball ball = game.getBall();
         Vector3 ballPosition = ball.getPosition();
 
-        getReferee().getGame().getBall().getRobotsTouching().clear();
-        for (Robot robot : getReferee().getGame().getRobots()) {
+        game.getBall().getRobotsTouching().clear();
+        for (Robot robot : game.getRobots()) {
             // FIXME: is this a good way to detect if a robot is touching the ball?
             float distance = robot.getPosition().xy().distance(ballPosition.xy());
             if (distance <= BALL_TOUCHING_DISTANCE) {
@@ -94,12 +116,12 @@ public class SSLAutoRef {
         }
     }
 
-    private void processRobotState(TeamColor teamColor, WorldRobotOuterClass.WorldRobot worldRobot) {
-        Robot robot = referee.getGame().getTeam(teamColor).getRobotById(worldRobot.getId());
+    private void processRobotState(Game game, TeamColor teamColor, WorldRobotOuterClass.WorldRobot worldRobot) {
+        Robot robot = game.getTeam(teamColor).getRobotById(worldRobot.getId());
         if (robot == null) {
             robot = new Robot(worldRobot.getId());
-            referee.getGame().addRobot(robot);
-            referee.getGame().getTeam(teamColor).addRobot(robot);
+            game.addRobot(robot);
+            game.getTeam(teamColor).addRobot(robot);
         }
 
         robot.getPosition().setX(worldRobot.getPos().getX() * 1000.0f);
@@ -130,7 +152,6 @@ public class SSLAutoRef {
                         byte[] buffer = this.worldSocket.recv();
                         StateOuterClass.State packet = StateOuterClass.State.parseFrom(buffer);
                         processWorldState(packet);
-                        deriveWorldState();
 
                         List<RuleViolation> violations = referee.validate();
                         for (RuleViolation violation : violations) {

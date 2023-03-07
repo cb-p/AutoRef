@@ -7,6 +7,8 @@ import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
+import java.util.EnumSet;
+
 public class BallLeftFieldTouchLineValidator implements RuleValidator {
 
     @Override
@@ -43,6 +45,11 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
 //        }
 
             return null;
+    }
+
+    @Override
+    public EnumSet<GameState> activeStates() {
+        return EnumSet.of(GameState.RUNNING);
     }
 
     record Violation(TeamColor byTeam, int byBot, Vector2 location) implements RuleViolation {
