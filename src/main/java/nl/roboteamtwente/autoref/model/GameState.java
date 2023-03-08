@@ -13,5 +13,5 @@ public enum GameState {
 
     PREPARE_PENALTY,
     DIRECT_FREE,
-    INDIRECT_FREE;
+    INDIRECT_FREE
 }
