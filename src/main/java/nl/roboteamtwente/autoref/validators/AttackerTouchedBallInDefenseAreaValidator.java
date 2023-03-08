@@ -30,12 +30,16 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
             }
 
             FieldLine rightPenaltyStretch = game.getField().getLineByName(oppositeSideString + "FieldRightPenaltyStretch");
-            if (robot.getPosition().getY() < rightPenaltyStretch.p1().getY()) {
+            FieldLine leftPenaltyStretch = game.getField().getLineByName(oppositeSideString + "FieldLeftPenaltyStretch");
+
+            FieldLine topPenaltyStretch = rightPenaltyStretch.p1().getY() > leftPenaltyStretch.p1().getY() ? rightPenaltyStretch : leftPenaltyStretch;
+            FieldLine bottomPenaltyStretch = topPenaltyStretch == rightPenaltyStretch ? leftPenaltyStretch : rightPenaltyStretch;
+
+            if (robot.getPosition().getY() < bottomPenaltyStretch.p1().getY()) {
                 continue;
             }
 
-            FieldLine leftPenaltyStretch = game.getField().getLineByName(oppositeSideString + "FieldLeftPenaltyStretch");
-            if (robot.getPosition().getY() > leftPenaltyStretch.p1().getY()) {
+            if (robot.getPosition().getY() > topPenaltyStretch.p1().getY()) {
                 continue;
             }
 
