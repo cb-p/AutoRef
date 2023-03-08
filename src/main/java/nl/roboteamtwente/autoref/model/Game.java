@@ -50,7 +50,6 @@ public class Game {
     }
 
     /**
-     *
      * @return the ball object of the game
      */
     public Ball getBall() {
@@ -58,7 +57,6 @@ public class Game {
     }
 
     /**
-     *
      * @param color is an object TeamColor which we want the Team for
      * @return the Team object (blue || yellow) based on the color given to the method.
      */
@@ -71,7 +69,6 @@ public class Game {
     }
 
     /**
-     *
      * @return the list of robots playing the game.
      */
     public List<Robot> getRobots() {
@@ -79,7 +76,6 @@ public class Game {
     }
 
     /**
-     *
      * @param robot is added to the list of robots on the playing field.
      */
     public void addRobot(Robot robot) {
@@ -87,7 +83,16 @@ public class Game {
     }
 
     /**
+     * Get the robot corresponding to the identifier.
      *
+     * @param identifier the identifier to search.
+     * @return the matching robot.
+     */
+    public Robot getRobot(RobotIdentifier identifier) {
+        return this.robots.stream().filter((robot) -> robot.getIdentifier().equals(identifier)).findAny().orElse(null);
+    }
+
+    /**
      * @return a string value for the game objects with all robot objects, ball and the teams.
      */
     @Override
@@ -101,7 +106,6 @@ public class Game {
     }
 
     /**
-     *
      * @return the field the game is played at.
      */
     public Field getField() {

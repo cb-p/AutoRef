@@ -102,12 +102,14 @@ public class SSLAutoRef {
 
         game.getBall().getRobotsTouching().clear();
         for (Robot robot : game.getRobots()) {
+            Robot oldRobot = game.getPrevious().getRobot(robot.getIdentifier());
+
             // FIXME: is this a good way to detect if a robot is touching the ball?
             float distance = robot.getPosition().xy().distance(ballPosition.xy());
             if (distance <= BALL_TOUCHING_DISTANCE) {
                 ball.getRobotsTouching().add(robot);
 
-                robot.setJustTouchedBall(!robot.isTouchingBall());
+                robot.setJustTouchedBall(oldRobot == null || !oldRobot.isTouchingBall());
                 robot.setTouchingBall(true);
             } else {
                 robot.setJustTouchedBall(false);
@@ -117,6 +119,9 @@ public class SSLAutoRef {
             if (robot.hasJustTouchedBall()) {
                 ball.setLastTouchedBy(robot);
                 ball.setLastTouchedAt(ball.getPosition());
+            } else {
+                ball.setLastTouchedBy(game.getPrevious().getBall().getLastTouchedBy());
+                ball.setLastTouchedAt(game.getPrevious().getBall().getLastTouchedAt());
             }
         }
     }
@@ -193,6 +198,7 @@ public class SSLAutoRef {
     }
 
     public void setActive(boolean active) {
+        // FIXME: Disconnect from game controller while not active.
         this.active = active;
     }
 
