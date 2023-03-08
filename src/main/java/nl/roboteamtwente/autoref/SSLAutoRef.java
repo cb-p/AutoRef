@@ -9,6 +9,7 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+import java.io.IOException;
 import java.util.List;
 
 public class SSLAutoRef {
@@ -16,7 +17,7 @@ public class SSLAutoRef {
 
     private final Referee referee;
 
-    private ZMQ.Socket worldSocket;
+    private Thread worldThread;
     private GameControllerConnection gcConnection;
 
     public SSLAutoRef() {
@@ -140,16 +141,16 @@ public class SSLAutoRef {
             e.printStackTrace();
         }
 
-        new Thread(() -> {
+        worldThread = new Thread(() -> {
             try (ZContext context = new ZContext()) {
-                this.worldSocket = context.createSocket(SocketType.SUB);
+                ZMQ.Socket worldSocket = context.createSocket(SocketType.SUB);
 
-                this.worldSocket.subscribe("");
-                this.worldSocket.connect("tcp://127.0.0.1:5558");
+                worldSocket.subscribe("");
+                worldSocket.connect("tcp://127.0.0.1:5558");
 
                 while (!Thread.currentThread().isInterrupted()) {
                     try {
-                        byte[] buffer = this.worldSocket.recv();
+                        byte[] buffer = worldSocket.recv();
                         StateOuterClass.State packet = StateOuterClass.State.parseFrom(buffer);
                         processWorldState(packet);
 
@@ -162,7 +163,19 @@ public class SSLAutoRef {
                     }
                 }
             }
-        }, "World Connection").start();
+        }, "World Connection");
+        worldThread.start();
+    }
+
+    public void stop() {
+        // FIXME: Very dirty way to stop everything.
+
+        try {
+            gcConnection.disconnect();
+            worldThread.stop();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Referee getReferee() {

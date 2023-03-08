@@ -45,7 +45,10 @@ public class GameControllerConnection {
     }
 
     public void disconnect() throws IOException {
-        socket.close();
+        if (socket != null) {
+            socket.close();
+            socket = null;
+        }
     }
 
     public void sendGameEvent(SslGcGameEvent.GameEvent gameEvent) throws IOException, SignatureException {
