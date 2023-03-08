@@ -22,6 +22,7 @@ public class SSLAutoRef {
     private GameControllerConnection gcConnection;
 
     private Consumer<RuleViolation> onViolation;
+    private boolean active = false;
 
     public SSLAutoRef() {
         this.referee = new Referee();
@@ -162,6 +163,10 @@ public class SSLAutoRef {
                             if (onViolation != null) {
                                 onViolation.accept(violation);
                             }
+
+                            if (active && gcConnection.isConnected()) {
+                                gcConnection.sendGameEvent(violation.toPacket());
+                            }
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -185,6 +190,10 @@ public class SSLAutoRef {
 
     public void setOnViolation(Consumer<RuleViolation> onViolation) {
         this.onViolation = onViolation;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public Referee getReferee() {

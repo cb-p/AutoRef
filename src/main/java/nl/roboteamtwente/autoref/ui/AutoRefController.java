@@ -12,6 +12,7 @@ import javafx.scene.text.TextFlow;
 import nl.roboteamtwente.autoref.SSLAutoRef;
 
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class AutoRefController implements Initializable {
@@ -44,11 +45,16 @@ public class AutoRefController implements Initializable {
 
             Platform.runLater(() -> {
                 logList.getItems().add(new TextFlow(timeText, new Text(violation.toString())));
+                logList.scrollTo(logList.getItems().size() - 1);
             });
         });
 
         modeBox.getItems().addAll("Passive", "Active");
         modeBox.setValue("Passive");
+
+        modeBox.setOnAction((event) -> {
+            sslAutoRef.setActive(Objects.equals(modeBox.getValue(), "Active"));
+        });
 
         clearButton.setOnAction((event) -> {
             logList.getItems().clear();
