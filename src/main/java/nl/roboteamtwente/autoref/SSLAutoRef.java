@@ -11,6 +11,7 @@ import org.zeromq.ZMQ;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class SSLAutoRef {
     private static final float BALL_TOUCHING_DISTANCE = 125.0f;
@@ -19,6 +20,8 @@ public class SSLAutoRef {
 
     private Thread worldThread;
     private GameControllerConnection gcConnection;
+
+    private Consumer<RuleViolation> onViolation;
 
     public SSLAutoRef() {
         this.referee = new Referee();
@@ -156,7 +159,9 @@ public class SSLAutoRef {
 
                         List<RuleViolation> violations = referee.validate();
                         for (RuleViolation violation : violations) {
-                            System.out.println("[" + referee.getGame().getTime() + "] " + violation);
+                            if (onViolation != null) {
+                                onViolation.accept(violation);
+                            }
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -176,6 +181,10 @@ public class SSLAutoRef {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setOnViolation(Consumer<RuleViolation> onViolation) {
+        this.onViolation = onViolation;
     }
 
     public Referee getReferee() {

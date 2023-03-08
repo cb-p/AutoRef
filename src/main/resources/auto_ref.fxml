@@ -28,5 +28,6 @@
             </padding>
         </HBox>
         <ListView fx:id="logList" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS"/>
+        <Button fx:id="clearButton" maxWidth="Infinity">Clear log</Button>
     </VBox>
 </SplitPane>
