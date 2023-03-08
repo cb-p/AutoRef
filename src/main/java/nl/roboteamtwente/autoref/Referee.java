@@ -45,7 +45,7 @@ public class Referee {
         }
 
         List<RuleViolation> violations = new ArrayList<>();
-        for (RuleValidator validator : RULE_VALIDATORS) {
+        for (RuleValidator validator : activeValidators) {
             RuleViolation violation = validator.validate(game);
             if (violation != null) {
                 violations.add(violation);
