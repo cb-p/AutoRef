@@ -55,4 +55,27 @@ public class Field {
     public void addLine(FieldLine line) {
         this.lines.put(line.name(), line);
     }
+
+    public boolean isInDefenseArea(Side side, Vector2 location) {
+        // FIXME: This doesn't work for non-straight lines
+
+        String sideString = side == Side.LEFT ? "Left" : "Right";
+
+        FieldLine penaltyStretch = getLineByName(sideString + "PenaltyStretch");
+        if (location.getX() * side.getCardinality() < penaltyStretch.p1().getX() * side.getCardinality()) {
+            return false;
+        }
+
+        FieldLine rightPenaltyStretch = getLineByName(sideString + "FieldRightPenaltyStretch");
+        FieldLine leftPenaltyStretch = getLineByName(sideString + "FieldLeftPenaltyStretch");
+
+        FieldLine topPenaltyStretch = rightPenaltyStretch.p1().getY() > leftPenaltyStretch.p1().getY() ? rightPenaltyStretch : leftPenaltyStretch;
+        FieldLine bottomPenaltyStretch = topPenaltyStretch == rightPenaltyStretch ? leftPenaltyStretch : rightPenaltyStretch;
+
+        if (location.getY() < bottomPenaltyStretch.p1().getY()) {
+            return false;
+        }
+
+        return !(location.getY() > topPenaltyStretch.p1().getY());
+    }
 }
