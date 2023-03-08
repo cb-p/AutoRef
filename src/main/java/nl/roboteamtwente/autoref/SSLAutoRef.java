@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class SSLAutoRef {
-    private static final float BALL_TOUCHING_DISTANCE = 125.0f;
+    private static final float BALL_TOUCHING_DISTANCE = 0.125f;
 
     private final Referee referee;
 
@@ -52,9 +52,9 @@ public class SSLAutoRef {
             case BALL_PLACEMENT_YELLOW, BALL_PLACEMENT_BLUE -> GameState.BALL_PLACEMENT;
         });
 
-        game.getBall().getPosition().setX(world.getBall().getPos().getX() * 1000.0f);
-        game.getBall().getPosition().setY(world.getBall().getPos().getY() * 1000.0f);
-        game.getBall().getPosition().setZ(world.getBall().getZ() * 1000.0f);
+        game.getBall().getPosition().setX(world.getBall().getPos().getX());
+        game.getBall().getPosition().setY(world.getBall().getPos().getY());
+        game.getBall().getPosition().setZ(world.getBall().getZ());
         game.getBall().getVelocity().setX(world.getBall().getVel().getX());
         game.getBall().getVelocity().setY(world.getBall().getVel().getY());
         game.getBall().getVelocity().setZ(world.getBall().getZVel());
@@ -67,8 +67,8 @@ public class SSLAutoRef {
             processRobotState(game, TeamColor.YELLOW, robot);
         }
 
-        game.getTeam(TeamColor.BLUE).setRobotRadius(statePacket.getBlueRobotParameters().getParameters().getRadius() * 1000.0f);
-        game.getTeam(TeamColor.YELLOW).setRobotRadius(statePacket.getYellowRobotParameters().getParameters().getRadius() * 1000.0f);
+        game.getTeam(TeamColor.BLUE).setRobotRadius(statePacket.getBlueRobotParameters().getParameters().getRadius());
+        game.getTeam(TeamColor.YELLOW).setRobotRadius(statePacket.getYellowRobotParameters().getParameters().getRadius());
 
         game.getTeam(TeamColor.BLUE).setGoalkeeperId(statePacket.getReferee().getBlue().getGoalkeeper());
         game.getTeam(TeamColor.YELLOW).setGoalkeeperId(statePacket.getReferee().getYellow().getGoalkeeper());
@@ -76,16 +76,16 @@ public class SSLAutoRef {
         game.getTeam(TeamColor.BLUE).setSide(statePacket.getReferee().getBlueTeamOnPositiveHalf() ? Side.RIGHT : Side.LEFT);
         game.getTeam(TeamColor.YELLOW).setSide(statePacket.getReferee().getBlueTeamOnPositiveHalf() ? Side.LEFT : Side.RIGHT);
 
-        game.getField().setBoundaryWidth(statePacket.getField().getField().getBoundaryWidth());
-        game.getField().getSize().setX(statePacket.getField().getField().getFieldLength());
-        game.getField().getSize().setY(statePacket.getField().getField().getFieldWidth());
-        game.getField().getPosition().setX(-statePacket.getField().getField().getFieldLength() / 2.0f);
-        game.getField().getPosition().setY(-statePacket.getField().getField().getFieldWidth() / 2.0f);
+        game.getField().setBoundaryWidth(statePacket.getField().getField().getBoundaryWidth() / 1000.0f);
+        game.getField().getSize().setX(statePacket.getField().getField().getFieldLength() / 1000.0f);
+        game.getField().getSize().setY(statePacket.getField().getField().getFieldWidth() / 1000.0f);
+        game.getField().getPosition().setX(-statePacket.getField().getField().getFieldLength() / 2.0f / 1000.0f);
+        game.getField().getPosition().setY(-statePacket.getField().getField().getFieldWidth() / 2.0f / 1000.0f);
 
         for (SslVisionGeometry.SSL_FieldLineSegment lineSegment : statePacket.getField().getField().getFieldLinesList()) {
-            Vector2 p1 = new Vector2(lineSegment.getP1().getX(), lineSegment.getP1().getY());
-            Vector2 p2 = new Vector2(lineSegment.getP2().getX(), lineSegment.getP2().getY());
-            FieldLine fieldLine = new FieldLine(lineSegment.getName(), p1, p2, lineSegment.getThickness());
+            Vector2 p1 = new Vector2(lineSegment.getP1().getX() / 1000.0f, lineSegment.getP1().getY() / 1000.0f);
+            Vector2 p2 = new Vector2(lineSegment.getP2().getX() / 1000.0f, lineSegment.getP2().getY() / 1000.0f);
+            FieldLine fieldLine = new FieldLine(lineSegment.getName(), p1, p2, lineSegment.getThickness() / 1000.0f);
 
             game.getField().addLine(fieldLine);
         }
@@ -134,10 +134,10 @@ public class SSLAutoRef {
             game.getTeam(teamColor).addRobot(robot);
         }
 
-        robot.getPosition().setX(worldRobot.getPos().getX() * 1000.0f);
-        robot.getPosition().setY(worldRobot.getPos().getY() * 1000.0f);
-        robot.getVelocity().setX(worldRobot.getVel().getX() * 1000.0f);
-        robot.getVelocity().setY(worldRobot.getVel().getY() * 1000.0f);
+        robot.getPosition().setX(worldRobot.getPos().getX());
+        robot.getPosition().setY(worldRobot.getPos().getY());
+        robot.getVelocity().setX(worldRobot.getVel().getX());
+        robot.getVelocity().setY(worldRobot.getVel().getY());
         robot.setAngle(worldRobot.getAngle());
     }
 

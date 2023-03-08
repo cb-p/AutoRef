@@ -61,8 +61,8 @@ public class GameCanvas extends Canvas {
         }
 
         float scale = (float) Math.min(
-                getWidth() / (sslAutoRef.getReferee().getGame().getField().getSize().getX() + 800.0f),
-                getHeight() / (sslAutoRef.getReferee().getGame().getField().getSize().getY() + 500.0f)
+                getWidth() / (sslAutoRef.getReferee().getGame().getField().getSize().getX() + 0.8f),
+                getHeight() / (sslAutoRef.getReferee().getGame().getField().getSize().getY() + 0.5f)
         );
         ScaledDrawer s = new ScaledDrawer(g, new Vector2(0, 0), scale);
 
@@ -80,9 +80,9 @@ public class GameCanvas extends Canvas {
         }
 
         for (Robot robot : sslAutoRef.getReferee().getGame().getRobots()) {
-            s.drawCircle(robot.getPosition().xy(), 200.0f, robot.getTeam().getColor() == TeamColor.BLUE ? Color.BLUE : Color.YELLOW);
-            s.drawCircle(robot.getPosition().xy(), 100.0f, robot.isGoalkeeper() ? Color.BLACK : Color.WHITE);
-            s.drawLine(robot.getPosition().xy(), robot.getPosition().xy().add(new Vector2(150.0f, 0.0f).rotate(robot.getAngle())), 2, Color.CYAN);
+            s.drawCircle(robot.getPosition().xy(), 0.2f, robot.getTeam().getColor() == TeamColor.BLUE ? Color.BLUE : Color.YELLOW);
+            s.drawCircle(robot.getPosition().xy(), 0.1f, robot.isGoalkeeper() ? Color.BLACK : Color.WHITE);
+            s.drawLine(robot.getPosition().xy(), robot.getPosition().xy().add(new Vector2(0.15f, 0.0f).rotate(robot.getAngle())), 2, Color.CYAN);
 
             g.setFill(Color.WHITE);
             float x = s.translateX(robot.getPosition().getX());
@@ -90,6 +90,6 @@ public class GameCanvas extends Canvas {
             g.fillText(robot.isTouchingBall() + ", " + robot.hasJustTouchedBall(), x, y - 20f);
         }
 
-        s.drawCircle(sslAutoRef.getReferee().getGame().getBall().getPosition().xy(), 150.0f, Color.RED);
+        s.drawCircle(sslAutoRef.getReferee().getGame().getBall().getPosition().xy(), 0.15f, Color.RED);
     }
 }
