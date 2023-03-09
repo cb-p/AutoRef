@@ -40,9 +40,9 @@ public class SSLAutoRef {
 
         game.setState(switch (statePacket.getReferee().getCommand()) {
             case HALT -> GameState.HALT;
-            case STOP -> GameState.STOP;
             //noinspection deprecation
-            case NORMAL_START, FORCE_START, GOAL_YELLOW, GOAL_BLUE -> GameState.RUNNING;
+            case STOP, GOAL_YELLOW, GOAL_BLUE -> GameState.STOP;
+            case NORMAL_START, FORCE_START -> GameState.RUNNING;
             case PREPARE_KICKOFF_YELLOW, PREPARE_KICKOFF_BLUE -> GameState.PREPARE_KICKOFF;
             case PREPARE_PENALTY_YELLOW, PREPARE_PENALTY_BLUE -> GameState.PREPARE_PENALTY;
             case DIRECT_FREE_YELLOW, DIRECT_FREE_BLUE -> GameState.DIRECT_FREE;
@@ -141,6 +141,68 @@ public class SSLAutoRef {
         robot.setAngle(worldRobot.getAngle());
     }
 
+    /**
+     *
+     * @param ip ip where all software is running on
+     * @param portGameController port GameContoller
+     * @param portWorld port World
+     */
+    public void start(String ip, int portGameController, int portWorld) {
+        //setup connection with GameControl
+        try {
+            gcConnection = new GameControllerConnection();
+            gcConnection.connect(ip, portGameController);
+            createWorldThread(ip, portGameController, portWorld);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createWorldThread(String ip, int portGameController, int portWorld) {
+        worldThread = new Thread(() -> {
+            try (ZContext context = new ZContext()) {
+                //Create connection
+                ZMQ.Socket worldSocket = context.createSocket(SocketType.SUB);
+                worldSocket.subscribe("");
+                worldSocket.connect("tcp:// " + ip + ":" + portWorld);
+
+                //While AutoRef is running
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        //receive packet from world
+                        byte[] buffer = worldSocket.recv();
+                        StateOuterClass.State packet = StateOuterClass.State.parseFrom(buffer);
+                        processWorldState(packet);
+
+                        //check for any violations
+                        List<RuleViolation> violations = referee.validate();
+                        for (RuleViolation violation : violations) {
+                            //TODO what does this do?
+                            if (onViolation != null) {
+                                onViolation.accept(violation);
+                            }
+
+                            //if AutoRef is in active mode, try to send gameEvent
+                            if (active) {
+                                if (gcConnection.isConnected()) {
+                                    gcConnection.sendGameEvent(violation.toPacket());
+                                } else {
+                                    //reconnect
+                                    gcConnection.connect(ip, portGameController);
+                                    gcConnection.sendGameEvent(violation.toPacket());
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, "World Connection");
+        worldThread.start();
+    }
+
+
     public void start() {
         // FIXME: All still pretty temporary.
         try {
@@ -184,7 +246,6 @@ public class SSLAutoRef {
 
     public void stop() {
         // FIXME: Very dirty way to stop everything.
-
         try {
             gcConnection.disconnect();
             worldThread.stop();
