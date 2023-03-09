@@ -29,7 +29,6 @@ public class GameLog {
             throw new IllegalStateException("Unsupported log file format version " + version + ".");
         }
 
-
         while (dataInputStream.available() != 0) {
             long timestamp = dataInputStream.readLong();
             int type = dataInputStream.readInt();

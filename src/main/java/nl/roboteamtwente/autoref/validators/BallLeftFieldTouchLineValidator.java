@@ -44,7 +44,6 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
                     return new Violation(byTeam, byBot.getId(), location);
                 }
 
-
                 if (robot.hasJustTouchedBall() && ball.getY() < bottomTouchLine.p1().getY()){
                     leftAt = bottomTouchLine.name();
                     byBot = robot;
@@ -52,9 +51,9 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
                     location = ball.xy();
                     return new Violation(byTeam, byBot.getId(), location);
                 }
-                }
+            }
         }
-            return null;
+        return null;
     }
 
     @Override

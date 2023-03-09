@@ -46,7 +46,6 @@ public class BallLeftFieldGoalLineValidator implements RuleValidator {
                     return new Violation(byTeam, byBot.getId(), location);
                 }
 
-
                 if (robot.hasJustTouchedBall() && ball.getX() < leftGoalLine.p1().getX()){
                     byBot = robot;
                     byTeam = robot.getTeam().getColor();
@@ -55,7 +54,6 @@ public class BallLeftFieldGoalLineValidator implements RuleValidator {
                 }
             }
         }
-
         return null;
     }
 

@@ -11,7 +11,6 @@ import java.util.EnumSet;
 
 public class DefenderInDefenseAreaValidator implements RuleValidator {
 
-
     //FIXME: The logic here is implemented correctly and works well, however what should happen if there are 2 robots from each team both in the defense area?
     @Override
     public RuleViolation validate(Game game) {
@@ -34,7 +33,7 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
                     continue;
                 }
 
-
+                //FIXME: properly set the distance.
                 return new Violation(teamColor, robot.getId(), robot.getPosition().xy(), 0.0f);
 
             }
