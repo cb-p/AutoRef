@@ -34,7 +34,7 @@ public class SSLAutoRef {
             game.setPrevious(referee.getGame());
         }
 
-        WorldOuterClass.World world = statePacket.getLastSeenWorld();
+        WorldOuterClass.World world = statePacket.getCommandExtrapolatedWorld();
 
         game.setTime(world.getTime() / 1000000000.0);
 
@@ -95,7 +95,12 @@ public class SSLAutoRef {
     }
 
     private void deriveWorldState(Game game) {
-        // FIXME: When ball goes out of play, reset state variables.
+        // FIXME: Should it reset at any state change?
+        if (game.getState() != game.getPrevious().getState()) {
+            game.getBall().setLastTouchedAt(null);
+            game.getBall().setLastTouchedBy(null);
+            game.getKicks().clear();
+        }
 
         Ball ball = game.getBall();
         Vector3 ballPosition = ball.getPosition();
@@ -122,6 +127,10 @@ public class SSLAutoRef {
             } else {
                 ball.setLastTouchedBy(game.getPrevious().getBall().getLastTouchedBy());
                 ball.setLastTouchedAt(game.getPrevious().getBall().getLastTouchedAt());
+            }
+
+            if (oldRobot != null && oldRobot.isTouchingBall() && !robot.isTouchingBall()) {
+                game.getKicks().add(new Kick(game.getPrevious().getTime(), robot.getIdentifier(), oldRobot.getPosition()));
             }
         }
     }
