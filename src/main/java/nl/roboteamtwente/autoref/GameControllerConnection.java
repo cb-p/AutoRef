@@ -90,7 +90,7 @@ public class GameControllerConnection {
         //FIXME make sure we do not get stuck here (how long could it take to get back controller reply?)
         SslGcRcon.ControllerReply reply = receivePacket();
         if (reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
-            //FIXME rejection is not necessarily a bad thing
+            //FIXME rejection is not necessarily a bad thing I think
             throw new RuntimeException("Game event rejected: " + reply.getReason());
         }
     }

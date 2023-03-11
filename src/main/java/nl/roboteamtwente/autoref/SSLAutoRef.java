@@ -36,7 +36,7 @@ public class SSLAutoRef {
 
         WorldOuterClass.World world = statePacket.getLastSeenWorld();
 
-        game.setTime(world.getTime() / 1000000000.0);
+        game.setTime(world.getTime() / 1_000_000_000.0);
 
         game.setState(switch (statePacket.getReferee().getCommand()) {
             case HALT -> GameState.HALT;
@@ -152,56 +152,12 @@ public class SSLAutoRef {
         try {
             gcConnection = new GameControllerConnection();
             gcConnection.connect(ip, portGameController);
-            createWorldThread(ip, portGameController, portWorld);
+            worldThread = new Thread(new WorldConnection(ip, portWorld, this));
+            worldThread.run();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    public void createWorldThread(String ip, int portGameController, int portWorld) {
-        worldThread = new Thread(() -> {
-            try (ZContext context = new ZContext()) {
-                //Create connection
-                ZMQ.Socket worldSocket = context.createSocket(SocketType.SUB);
-                worldSocket.subscribe("");
-                worldSocket.connect("tcp:// " + ip + ":" + portWorld);
-
-                //While AutoRef is running
-                while (!Thread.currentThread().isInterrupted()) {
-                    try {
-                        //receive packet from world
-                        byte[] buffer = worldSocket.recv();
-                        StateOuterClass.State packet = StateOuterClass.State.parseFrom(buffer);
-                        processWorldState(packet);
-
-                        //check for any violations
-                        List<RuleViolation> violations = referee.validate();
-                        for (RuleViolation violation : violations) {
-                            //TODO what does this do?
-                            if (onViolation != null) {
-                                onViolation.accept(violation);
-                            }
-
-                            //if AutoRef is in active mode, try to send gameEvent
-                            if (active) {
-                                if (gcConnection.isConnected()) {
-                                    gcConnection.sendGameEvent(violation.toPacket());
-                                } else {
-                                    //reconnect
-                                    gcConnection.connect(ip, portGameController);
-                                    gcConnection.sendGameEvent(violation.toPacket());
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }, "World Connection");
-        worldThread.start();
-    }
-
 
     public void start() {
         // FIXME: All still pretty temporary.
@@ -248,7 +204,8 @@ public class SSLAutoRef {
         // FIXME: Very dirty way to stop everything.
         try {
             gcConnection.disconnect();
-            worldThread.stop();
+            //FIXME close socket first
+            worldThread.interrupt();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
