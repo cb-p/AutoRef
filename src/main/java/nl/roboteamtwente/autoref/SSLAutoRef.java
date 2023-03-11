@@ -149,21 +149,22 @@ public class SSLAutoRef {
      */
     public void start(String ip, int portGameController, int portWorld) {
         //setup connection with GameControl
-        try {
-            gcConnection = new GameControllerConnection();
-            gcConnection.connect(ip, portGameController);
-            worldThread = new Thread(new WorldConnection(ip, portWorld, this));
-            worldThread.run();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        gcConnection = new GameControllerConnection();
+        gcConnection.setIp(ip);
+        gcConnection.setPort(portGameController);
+        gcConnection.connect();
+        worldThread = new Thread(new WorldConnection(ip, portWorld, this));
+        worldThread.run();
+
     }
 
     public void start() {
         // FIXME: All still pretty temporary.
         try {
             gcConnection = new GameControllerConnection();
-            gcConnection.connect("localhost", 10007);
+            gcConnection.setIp("localhost");
+            gcConnection.setPort(10007);
+            gcConnection.connect();
         } catch (Exception e) {
             e.printStackTrace();
         }

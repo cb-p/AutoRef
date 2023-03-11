@@ -14,6 +14,9 @@ public class GameControllerConnection {
     private Socket socket;
     private Signature signature;
     private String token;
+    private String ip;
+    private int port;
+
 
     /**
      * Connect AutoRef to GameControl by:
@@ -22,41 +25,46 @@ public class GameControllerConnection {
      * AutoRef identifies itself by sending AutoRefRegistration
      * GameControl verifies
      * GameControl sends reply (OK|REJECT)
-     * @param ip ip to establish connection on
-     * @param port port to establish connection on
      * @throws Exception RunTimeExceptions
      */
-    public void connect(String ip, int port) throws Exception {
-        this.socket = new Socket(ip, port);
+    public void connect() {
+        try {
+            this.socket = new Socket(ip, port);
 
-        //Generate keyPair
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-        keyGen.initialize(512, new SecureRandom());
-        KeyPair keyPair = keyGen.generateKeyPair();
+            //Generate keyPair
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            keyGen.initialize(512, new SecureRandom());
+            KeyPair keyPair = keyGen.generateKeyPair();
 
-        //Generate signature
-        this.signature = Signature.getInstance("SHA256withRSA");
-        signature.initSign(keyPair.getPrivate());
+            //Generate signature
+            this.signature = Signature.getInstance("SHA256withRSA");
+            signature.initSign(keyPair.getPrivate());
 
-        //receive token from GameController
-        SslGcRcon.ControllerReply reply = receivePacket();
-        if (!reply.hasNextToken()) {
-            throw new RuntimeException("Missing next token");
-        }
+            //receive token from GameController
+            SslGcRcon.ControllerReply reply = receivePacket();
+            if (!reply.hasNextToken()) {
+                throw new RuntimeException("Missing next token");
+            }
 
-        //send registration
-        SslGcRconAutoref.AutoRefRegistration registration = SslGcRconAutoref.AutoRefRegistration.newBuilder()
-                .setIdentifier("RoboTeam Twente")
-                .setSignature(getSignature())
-                .build();
+            //send registration
+            SslGcRconAutoref.AutoRefRegistration registration = SslGcRconAutoref.AutoRefRegistration.newBuilder()
+                    .setIdentifier("RoboTeam Twente")
+                    .setSignature(getSignature())
+                    .build();
 
-        registration.writeDelimitedTo(socket.getOutputStream());
-        socket.getOutputStream().flush();
+            registration.writeDelimitedTo(socket.getOutputStream());
+            socket.getOutputStream().flush();
 
-        //receive reply
-        reply = receivePacket();
-        if (reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
-            throw new RuntimeException("Registration rejected: " + reply.getReason());
+            //receive reply
+            reply = receivePacket();
+            if (reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
+                //FIXME MESSAGE TO UI
+                reconnect();
+            }
+        } catch (IOException | SignatureException e) {
+            reconnect();
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            e.printStackTrace();
         }
     }
 
@@ -66,60 +74,79 @@ public class GameControllerConnection {
      */
 
     public void disconnect() throws IOException {
+        //FIXME remove throws
         if (socket != null) {
             socket.close();
             socket = null;
         }
     }
 
+
+    /**
+     * Reconnect
+     */
+    public void reconnect() {
+        //FIXME message to UI (perhaps at place where reconnect is called
+        this.socket = null;
+        this.signature = null;
+        this.connect();
+    }
+
     /**
      * Send Game Event to GameController
      * @param gameEvent game event with details about the violation
-     * @throws IOException thrown when there is something wrong with the connection
-     * @throws SignatureException exception with signature
      */
-    public void sendGameEvent(SslGcGameEvent.GameEvent gameEvent) throws IOException, SignatureException {
-        //build packet
-        SslGcRconAutoref.AutoRefToController.newBuilder()
-                .setSignature(getSignature())
-                .setGameEvent(gameEvent)
-                .build()
-                .writeDelimitedTo(socket.getOutputStream());
-        socket.getOutputStream().flush();
+    public void sendGameEvent(SslGcGameEvent.GameEvent gameEvent) {
+        try {
+            //build packet
+            SslGcRconAutoref.AutoRefToController.newBuilder()
+                    .setSignature(getSignature())
+                    .setGameEvent(gameEvent)
+                    .build()
+                    .writeDelimitedTo(socket.getOutputStream());
+            socket.getOutputStream().flush();
 
-        //FIXME make sure we do not get stuck here (how long could it take to get back controller reply?)
-        SslGcRcon.ControllerReply reply = receivePacket();
-        if (reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
-            //FIXME rejection is not necessarily a bad thing I think
-            throw new RuntimeException("Game event rejected: " + reply.getReason());
+            //FIXME make sure we do not get stuck here (how long could it take to get back controller reply?)
+            SslGcRcon.ControllerReply reply = receivePacket();
+            if (reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
+                //FIXME rejection is not necessarily a bad thing I think, just log to UI?
+                throw new RuntimeException("Game event rejected: " + reply.getReason());
+            }
+        } catch (IOException | SignatureException e) {
+            reconnect();
         }
     }
 
     /**
      * @return signature
-     * @throws SignatureException generic exception
      */
     private SslGcRcon.Signature getSignature() throws SignatureException {
         return SslGcRcon.Signature.newBuilder()
-                .setToken(this.token)
-                .setPkcs1V15(ByteString.copyFrom(signature.sign())).build();
+                    .setToken(this.token)
+                    .setPkcs1V15(ByteString.copyFrom(signature.sign())).build();
     }
 
     /**
      * Receive controller reply
      * If reply has a nextToken, set this.token to nextToken and update signature
      * @return reply
-     * @throws IOException
-     * @throws SignatureException
      */
-    private SslGcRcon.ControllerReply receivePacket() throws IOException, SignatureException {
-        SslGcRcon.ControllerReply reply = SslGcRconAutoref.ControllerToAutoRef.parseDelimitedFrom(this.socket.getInputStream()).getControllerReply();
-        if (reply.hasNextToken()) {
-            this.token = reply.getNextToken();
-            signature.update(reply.getNextTokenBytes().toByteArray());
+    private SslGcRcon.ControllerReply receivePacket() {
+        try {
+            SslGcRcon.ControllerReply reply = SslGcRconAutoref.ControllerToAutoRef.parseDelimitedFrom(this.socket.getInputStream()).getControllerReply();
+            if (reply.hasNextToken()) {
+                this.token = reply.getNextToken();
+                signature.update(reply.getNextTokenBytes().toByteArray());
+            }
+            return reply;
+        } catch (IOException e) {
+            this.reconnect();
+        } catch (SignatureException e) {
+            //FIXME handle error
         }
 
-        return reply;
+        //FIXME handle null when calling this method
+        return null;
     }
 
     /**
@@ -129,6 +156,14 @@ public class GameControllerConnection {
         return socket != null && socket.isConnected();
     }
 
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     //TODO deprecate
     public static void main(String[] args) throws Exception {
         // We test the connection by sending a single game event.
@@ -136,7 +171,9 @@ public class GameControllerConnection {
         GameControllerConnection connection = new GameControllerConnection();
 
         try {
-            connection.connect("localhost", 10007);
+            connection.setIp("localhost");
+            connection.setPort(10007);
+            connection.connect();
             connection.sendGameEvent(SslGcGameEvent.GameEvent.newBuilder()
                     .setType(SslGcGameEvent.GameEvent.Type.AIMLESS_KICK)
                     .setAimlessKick(SslGcGameEvent.GameEvent.AimlessKick.newBuilder()
