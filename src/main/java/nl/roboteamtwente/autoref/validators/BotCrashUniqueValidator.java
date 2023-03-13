@@ -17,14 +17,12 @@ public class BotCrashUniqueValidator implements RuleValidator {
     private static final double MIN_SPEED_DIFFERENCE = 0.3;
 
     public float angleBetweenVectors(Vector2 velocity1, Vector2 velocity2) {
+        float epsilon = 0.000001f;
         float dotProduct = velocity1.dotProduct(velocity2);
-        if (Float.compare(dotProduct, -0.0f) == 0) {
-            dotProduct = 0.0f;
-        }
-        System.out.println(dotProduct);
         float cosTheta = dotProduct / (velocity1.magnitude() * velocity2.magnitude());
-        System.out.println(cosTheta);
-        System.out.println(Math.acos(cosTheta));
+        if (Math.abs(dotProduct - 0) < epsilon) {
+            cosTheta = 0.0f;
+        }
         return (float) Math.acos(cosTheta);
     }
 
