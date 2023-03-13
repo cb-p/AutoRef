@@ -36,6 +36,8 @@ public class Game {
 
     private Game previous;
 
+    private List<Kick> kicks;
+
     public Game() {
         this.robots = new ArrayList<>();
         this.ball = new Ball();
@@ -47,6 +49,8 @@ public class Game {
         this.state = GameState.HALT;
         this.time = 0.0;
         this.previous = this;
+
+        this.kicks = new ArrayList<>();
     }
 
     /**
@@ -134,5 +138,13 @@ public class Game {
 
     public Game getPrevious() {
         return previous;
+    }
+
+    public List<Kick> getKicks() {
+        return kicks;
+    }
+
+    public Kick getLastKick() {
+        return kicks.isEmpty() ? null : kicks.get(kicks.size() - 1);
     }
 }
