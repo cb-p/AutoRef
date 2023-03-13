@@ -11,8 +11,8 @@ import java.util.EnumSet;
 
 public class BotCrashUniqueValidator implements RuleValidator {
 
-    private static final float BOT_CRASH_DISTANCE = 0.3f;
-    private static double SPEED_VECTOR_THRESHOLD = 1.5;
+    private static final float BOT_CRASH_DISTANCE = 0.21f;
+    private static final float SPEED_VECTOR_THRESHOLD = 1.5f;
 
     private static final double MIN_SPEED_DIFFERENCE = 0.3;
 
@@ -31,16 +31,17 @@ public class BotCrashUniqueValidator implements RuleValidator {
         Vector2 positionDifference = position2.subtract(position1);
 
         // Calculate projection of velocity difference vector onto position difference vector
-        float projection = velocityDifference.dotProduct(positionDifference) / positionDifference.magnitude();
+        float scalar = velocityDifference.dotProduct(positionDifference) / (positionDifference.magnitude() * positionDifference.magnitude());
+
+        Vector2 projection = new Vector2(positionDifference.getX() * scalar, positionDifference.getY() * scalar);
 
         // Return the result
-        return projection;
+        return projection.magnitude();
     }
 
     @Override
     public RuleViolation validate(Game game) {
 
-        System.out.println("HEREREE");
         for (TeamColor teamColor : TeamColor.values()) {
             for (Robot robotYellow : game.getTeam(teamColor.YELLOW).getRobots()) {
                 for (Robot robotBlue : game.getTeam(teamColor.BLUE).getRobots()) {
@@ -48,19 +49,14 @@ public class BotCrashUniqueValidator implements RuleValidator {
                     Vector2 robotBluePos = robotBlue.getPosition().xy();
                     Vector2 robotYellowVel = robotYellow.getVelocity().xy();
                     Vector2 robotBlueVel = robotBlue.getVelocity().xy();
+                    float distanceBetweenRobots = robotYellowPos.distance(robotBluePos);
 
-
-                    if (robotYellowPos.distance(robotBluePos) <= BOT_CRASH_DISTANCE) {
+                    if (distanceBetweenRobots <= BOT_CRASH_DISTANCE) {
 
 //                        TODO check if bot in cool down Wait time before reporting a crash with a robot again
                         float crashSpeed = calculateCollisionVelocity(robotBluePos, robotBlueVel, robotYellowPos, robotYellowVel);
                         float speedDiff = robotBlueVel.magnitude() - robotYellowVel.magnitude();
                         //center position of 2 robots
-
-                        if ((robotBlue.getId() == 1) && (robotYellow.getId() == 3)) {
-                            System.out.println("HEREREE");
-                            System.out.println(crashSpeed);
-                        }
 
                         Vector2 location = new Vector2((float) ((robotBluePos.getX() + robotYellowPos.getX()) * 0.5)
                                 , (float) ((robotBluePos.getY() + robotYellowPos.getY()) * 0.5));
@@ -89,7 +85,7 @@ public class BotCrashUniqueValidator implements RuleValidator {
                                 System.out.println(speedDiff);
                                 System.out.println(location);
                                 System.out.println(crashAngle);
-                                return new Violation(byTeam, violator, victim, location, crashSpeed, speedDiff, crashAngle);
+                                return new Violation(distanceBetweenRobots, byTeam, violator, victim, location, crashSpeed, speedDiff, crashAngle);
                             }
                         }
 
@@ -110,11 +106,11 @@ public class BotCrashUniqueValidator implements RuleValidator {
     }
 
 
-    record Violation(TeamColor byTeam, int violator, int victim, Vector2 location, float crash_speed, float speed_diff, float crash_angle) implements RuleViolation {
+    record Violation(float distance, TeamColor byTeam, int violator, int victim, Vector2 location, float crash_speed, float speed_diff, float crash_angle) implements RuleViolation {
         @Override
         public String toString() {
-            return "Bot crash unique (by: " + byTeam + ", main violator #" + violator + " , victim #" + victim + ", at " + location + " crash speed :" + crash_speed
-                    + " speed diff: " + speed_diff + " )";
+            return "Bot crash unique (by: " + byTeam + ", main violator #" + violator + " , victim #" + victim + "distance: " + distance + ", at " + location + " crash speed :" + crash_speed
+                    + " speed diff: " + speed_diff + " angle:" + crash_angle + " )";
         }
 
         @Override
