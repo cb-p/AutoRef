@@ -16,6 +16,8 @@ public class WorldConnection implements Runnable {
     private final SSLAutoRef ref;
     private Consumer<RuleViolation> onViolation;
 
+    private GameControllerConnection gameControllerConnection;
+
     /**
      * Establish connection with World
      */
@@ -48,7 +50,9 @@ public class WorldConnection implements Runnable {
                         onViolation.accept(violation);
                     }
 
-                    //FIXME send to gamecontroller connection
+                    if (ref.isActive()) {
+                        gameControllerConnection.addToQueue(violation.toPacket());
+                    }
                 }
             }
         } catch (InvalidProtocolBufferException e) {
@@ -74,10 +78,11 @@ public class WorldConnection implements Runnable {
         this.onViolation = onViolation;
     }
 
-    public WorldConnection(String ip, int port, SSLAutoRef ref) {
+    public WorldConnection(String ip, int port, SSLAutoRef ref, GameControllerConnection gcc) {
         this.ip = ip;
         this.port = port;
         this.ref = ref;
         this.worldSocket = null;
+        this.gameControllerConnection = gcc;
     }
 }

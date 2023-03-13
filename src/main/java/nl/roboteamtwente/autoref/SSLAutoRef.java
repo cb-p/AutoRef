@@ -20,6 +20,7 @@ public class SSLAutoRef {
 
     private Thread worldThread;
     private GameControllerConnection gcConnection;
+    private Thread gcThread;
 
     private Consumer<RuleViolation> onViolation;
     private boolean active = false;
@@ -152,9 +153,10 @@ public class SSLAutoRef {
         gcConnection = new GameControllerConnection();
         gcConnection.setIp(ip);
         gcConnection.setPort(portGameController);
-        gcConnection.connect();
-        worldThread = new Thread(new WorldConnection(ip, portWorld, this));
-        worldThread.run();
+        gcThread = new Thread(gcConnection);
+        gcThread.start();
+        worldThread = new Thread(new WorldConnection(ip, portWorld, this, gcConnection));
+        worldThread.start();
 
     }
 
@@ -189,7 +191,7 @@ public class SSLAutoRef {
                             }
 
                             if (active && gcConnection.isConnected()) {
-                                gcConnection.sendGameEvent(violation.toPacket());
+                                gcConnection.addToQueue(violation.toPacket());
                             }
                         }
                     } catch (Exception e) {
@@ -219,6 +221,10 @@ public class SSLAutoRef {
     public void setActive(boolean active) {
         // FIXME: Disconnect from game controller while not active.
         this.active = active;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     public Referee getReferee() {

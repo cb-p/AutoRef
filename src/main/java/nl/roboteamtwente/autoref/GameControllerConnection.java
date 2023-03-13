@@ -1,7 +1,6 @@
 package nl.roboteamtwente.autoref;
 
 import com.google.protobuf.ByteString;
-import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcRcon;
 import org.robocup.ssl.proto.SslGcRconAutoref;
@@ -9,13 +8,16 @@ import org.robocup.ssl.proto.SslGcRconAutoref;
 import java.io.IOException;
 import java.net.Socket;
 import java.security.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class GameControllerConnection {
+public class GameControllerConnection implements Runnable {
     private Socket socket;
     private Signature signature;
     private String token;
     private String ip;
     private int port;
+    private List<SslGcGameEvent.GameEvent> queue;
 
 
     /**
@@ -27,7 +29,7 @@ public class GameControllerConnection {
      * GameControl sends reply (OK|REJECT)
      * @throws Exception RunTimeExceptions
      */
-    public void connect() {
+    public void connect() throws InterruptedException{
         try {
             this.socket = new Socket(ip, port);
 
@@ -42,6 +44,9 @@ public class GameControllerConnection {
 
             //receive token from GameController
             SslGcRcon.ControllerReply reply = receivePacket();
+            if (reply == null) {
+                return;
+            }
             if (!reply.hasNextToken()) {
                 throw new RuntimeException("Missing next token");
             }
@@ -57,14 +62,36 @@ public class GameControllerConnection {
 
             //receive reply
             reply = receivePacket();
+            //FIXME handle reply == null
             if (reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
                 //FIXME MESSAGE TO UI
                 reconnect();
             }
         } catch (IOException | SignatureException e) {
+            //prevent spamming of trying to reconnect
+            Thread.sleep(1000);
             reconnect();
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Check if something is in the queue, if there is, send the first item in the queue to GC.
+     * queue follows FIFO principle
+     * @throws InterruptedException
+     */
+    private void processQueue() throws InterruptedException {
+        while (!Thread.currentThread().isInterrupted()) {
+            if (isConnected()) {
+                if (!queue.isEmpty()) {
+                    SslGcGameEvent.GameEvent gameEvent = queue.remove(0);
+                    sendGameEvent(gameEvent);
+                }
+            } else {
+                reconnect();
+            }
+            Thread.sleep(1000/100); //1 second / 100Hz
         }
     }
 
@@ -86,10 +113,14 @@ public class GameControllerConnection {
      * Reconnect
      */
     public void reconnect() {
-        //FIXME message to UI (perhaps at place where reconnect is called
-        this.socket = null;
-        this.signature = null;
-        this.connect();
+        //FIXME message to UI (perhaps at place where reconnect is called)
+        try {
+            this.socket = null;
+            this.signature = null;
+            this.connect();
+        } catch (InterruptedException e ) {
+            //FIXME handle exception
+        }
     }
 
     /**
@@ -108,6 +139,7 @@ public class GameControllerConnection {
 
             //FIXME make sure we do not get stuck here (how long could it take to get back controller reply?)
             SslGcRcon.ControllerReply reply = receivePacket();
+            //FIXME handle null
             if (reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
                 //FIXME rejection is not necessarily a bad thing I think, just log to UI?
                 throw new RuntimeException("Game event rejected: " + reply.getReason());
@@ -142,7 +174,7 @@ public class GameControllerConnection {
         } catch (IOException e) {
             this.reconnect();
         } catch (SignatureException e) {
-            //FIXME handle error
+            //FIXME handle error -> reconnect?
         }
 
         //FIXME handle null when calling this method
@@ -164,24 +196,18 @@ public class GameControllerConnection {
         this.port = port;
     }
 
-    //TODO deprecate
-    public static void main(String[] args) throws Exception {
-        // We test the connection by sending a single game event.
+    public void addToQueue(SslGcGameEvent.GameEvent gameEvent) {
+        this.queue.add(gameEvent);
+    }
 
-        GameControllerConnection connection = new GameControllerConnection();
-
+    @Override
+    public void run() {
+        this.queue = new ArrayList<>();
         try {
-            connection.setIp("localhost");
-            connection.setPort(10007);
-            connection.connect();
-            connection.sendGameEvent(SslGcGameEvent.GameEvent.newBuilder()
-                    .setType(SslGcGameEvent.GameEvent.Type.AIMLESS_KICK)
-                    .setAimlessKick(SslGcGameEvent.GameEvent.AimlessKick.newBuilder()
-                            .setByTeam(SslGcCommon.Team.BLUE)
-                            .setByBot(5))
-                    .build());
-        } finally {
-            connection.disconnect();
+            this.connect();
+            this.processQueue();
+        } catch (InterruptedException e) {
+            //FIXME handle exception
         }
     }
 }
