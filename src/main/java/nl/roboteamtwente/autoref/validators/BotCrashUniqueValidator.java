@@ -18,7 +18,13 @@ public class BotCrashUniqueValidator implements RuleValidator {
 
     public float angleBetweenVectors(Vector2 velocity1, Vector2 velocity2) {
         float dotProduct = velocity1.dotProduct(velocity2);
+        if (Float.compare(dotProduct, -0.0f) == 0) {
+            dotProduct = 0.0f;
+        }
+        System.out.println(dotProduct);
         float cosTheta = dotProduct / (velocity1.magnitude() * velocity2.magnitude());
+        System.out.println(cosTheta);
+        System.out.println(Math.acos(cosTheta));
         return (float) Math.acos(cosTheta);
     }
 
@@ -77,14 +83,14 @@ public class BotCrashUniqueValidator implements RuleValidator {
                                     victim = robotBlue.getId();
                                     byTeam = TeamColor.YELLOW;
                                 }
-                                System.out.println("VIOLATION");
-                                System.out.println(byTeam);
-                                System.out.println(violator);
-                                System.out.println(victim);
-                                System.out.println(crashSpeed);
-                                System.out.println(speedDiff);
-                                System.out.println(location);
-                                System.out.println(crashAngle);
+//                                System.out.println("VIOLATION");
+//                                System.out.println(byTeam);
+//                                System.out.println(violator);
+//                                System.out.println(victim);
+//                                System.out.println(crashSpeed);
+//                                System.out.println(speedDiff);
+//                                System.out.println(location);
+//                                System.out.println(crashAngle);
                                 return new Violation(distanceBetweenRobots, byTeam, violator, victim, location, crashSpeed, speedDiff, crashAngle);
                             }
                         }

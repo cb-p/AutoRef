@@ -80,7 +80,7 @@ public class Vector2 {
      * @return the new Vector object.
      */
     public float dotProduct(Vector2 other) {
-        return (this.getX()*other.getX() + this.getY()* other.getY());
+        return (this.getX() *other.getX() + this.getY()* other.getY());
     }
 
     /**

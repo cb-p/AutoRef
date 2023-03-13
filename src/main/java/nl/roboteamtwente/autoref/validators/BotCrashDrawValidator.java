@@ -18,7 +18,10 @@ public class BotCrashDrawValidator implements RuleValidator {
 
     public float angleBetweenVectors(Vector2 velocity1, Vector2 velocity2) {
         float dotProduct = velocity1.dotProduct(velocity2);
+        System.out.println(dotProduct);
         float cosTheta = dotProduct / (velocity1.magnitude() * velocity2.magnitude());
+        System.out.println(cosTheta);
+        System.out.println(Math.acos(cosTheta));
         return (float) Math.acos(cosTheta);
     }
 
@@ -31,16 +34,16 @@ public class BotCrashDrawValidator implements RuleValidator {
         Vector2 positionDifference = position2.subtract(position1);
 
         // Calculate projection of velocity difference vector onto position difference vector
-        float projection = velocityDifference.dotProduct(positionDifference) / positionDifference.magnitude();
+        float scalar = velocityDifference.dotProduct(positionDifference) / (positionDifference.magnitude() * positionDifference.magnitude());
+
+        Vector2 projection = new Vector2(positionDifference.getX() * scalar, positionDifference.getY() * scalar);
 
         // Return the result
-        return projection;
+        return projection.magnitude();
     }
 
     @Override
     public RuleViolation validate(Game game) {
-
-        System.out.println("HEREREE");
         for (TeamColor teamColor : TeamColor.values()) {
             for (Robot robotYellow : game.getTeam(teamColor.YELLOW).getRobots()) {
                 for (Robot robotBlue : game.getTeam(teamColor.BLUE).getRobots()) {
@@ -67,12 +70,6 @@ public class BotCrashDrawValidator implements RuleValidator {
                                 return new BotCrashDrawValidator.Violation(botBlue, botYellow, location, crashSpeed, speedDiff, crashAngle);
                             }
                         }
-
-
-                        System.out.println(crashSpeed);
-                        System.out.println(speedDiff);
-                        System.out.println(location);
-                        System.out.println(crashAngle);
                     }
                 }
             }
