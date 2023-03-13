@@ -8,6 +8,8 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BotCrashUniqueValidator implements RuleValidator {
 
@@ -15,6 +17,11 @@ public class BotCrashUniqueValidator implements RuleValidator {
     private static final float SPEED_VECTOR_THRESHOLD = 1.5f;
 
     private static final double MIN_SPEED_DIFFERENCE = 0.3;
+
+    private static final double GRACE_PERIOD = 2.0;
+
+    //Map from robotId -> last violation time
+    private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
 
     public float angleBetweenVectors(Vector2 velocity1, Vector2 velocity2) {
         float epsilon = 0.000001f;
@@ -43,12 +50,28 @@ public class BotCrashUniqueValidator implements RuleValidator {
         return projection.magnitude();
     }
 
+    private boolean botStillOnCoolDown(RobotIdentifier bot, double currentTS)
+    {
+        if (lastViolations.containsKey(bot))
+        {
+            Double ts = lastViolations.get(bot);
+            return (currentTS < ts + GRACE_PERIOD);
+        }
+        return false;
+    }
+
     @Override
     public RuleViolation validate(Game game) {
 
         for (TeamColor teamColor : TeamColor.values()) {
             for (Robot robotYellow : game.getTeam(teamColor.YELLOW).getRobots()) {
+                if (botStillOnCoolDown(robotYellow.getIdentifier(), game.getTime())) {
+                    continue;
+                }
                 for (Robot robotBlue : game.getTeam(teamColor.BLUE).getRobots()) {
+                    if (botStillOnCoolDown(robotBlue.getIdentifier(), game.getTime())) {
+                        continue;
+                    }
                     Vector2 robotYellowPos = robotYellow.getPosition().xy();
                     Vector2 robotBluePos = robotBlue.getPosition().xy();
                     Vector2 robotYellowVel = robotYellow.getVelocity().xy();
@@ -56,12 +79,9 @@ public class BotCrashUniqueValidator implements RuleValidator {
                     float distanceBetweenRobots = robotYellowPos.distance(robotBluePos);
 
                     if (distanceBetweenRobots <= BOT_CRASH_DISTANCE) {
-
-//                        TODO check if bot in cool down Wait time before reporting a crash with a robot again
                         float crashSpeed = calculateCollisionVelocity(robotBluePos, robotBlueVel, robotYellowPos, robotYellowVel);
                         float speedDiff = robotBlueVel.magnitude() - robotYellowVel.magnitude();
                         //center position of 2 robots
-
                         Vector2 location = new Vector2((float) ((robotBluePos.getX() + robotYellowPos.getX()) * 0.5)
                                 , (float) ((robotBluePos.getY() + robotYellowPos.getY()) * 0.5));
                         float crashAngle = angleBetweenVectors(robotBlueVel, robotYellowVel);
@@ -81,15 +101,13 @@ public class BotCrashUniqueValidator implements RuleValidator {
                                     victim = robotBlue.getId();
                                     byTeam = TeamColor.YELLOW;
                                 }
-//                                System.out.println("VIOLATION");
-//                                System.out.println(byTeam);
-//                                System.out.println(violator);
-//                                System.out.println(victim);
-//                                System.out.println(crashSpeed);
-//                                System.out.println(speedDiff);
-//                                System.out.println(location);
-//                                System.out.println(crashAngle);
-                                return new Violation(distanceBetweenRobots, byTeam, violator, victim, location, crashSpeed, speedDiff, crashAngle);
+                                System.out.println(lastViolations);
+                                if ((!botStillOnCoolDown(robotBlue.getIdentifier(), game.getTime())) && (!botStillOnCoolDown(robotYellow.getIdentifier(), game.getTime()))) {
+                                    System.out.println("Here");
+                                    lastViolations.put(robotBlue.getIdentifier(), game.getTime());
+                                    lastViolations.put(robotYellow.getIdentifier(), game.getTime());
+                                    return new Violation(distanceBetweenRobots, byTeam, violator, victim, location, crashSpeed, speedDiff, crashAngle);
+                                }
                             }
                         }
 
@@ -108,7 +126,6 @@ public class BotCrashUniqueValidator implements RuleValidator {
     public EnumSet<GameState> activeStates() {
         return EnumSet.of(GameState.RUNNING);
     }
-
 
     record Violation(float distance, TeamColor byTeam, int violator, int victim, Vector2 location, float crash_speed, float speed_diff, float crash_angle) implements RuleViolation {
         @Override

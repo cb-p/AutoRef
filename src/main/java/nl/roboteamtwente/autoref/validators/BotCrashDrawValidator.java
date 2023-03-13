@@ -8,20 +8,28 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BotCrashDrawValidator implements RuleValidator {
 
-    private static final float BOT_CRASH_DISTANCE = 0.3f;
-    private static double SPEED_VECTOR_THRESHOLD = 1.5;
+    private static final float BOT_CRASH_DISTANCE = 0.2f;
+    private static final float SPEED_VECTOR_THRESHOLD = 1.5f;
 
     private static final double MIN_SPEED_DIFFERENCE = 0.3;
 
+    private static final double GRACE_PERIOD = 2.0;
+
+    //Map from robotId -> last violation time
+    private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
+
     public float angleBetweenVectors(Vector2 velocity1, Vector2 velocity2) {
+        float epsilon = 0.000001f;
         float dotProduct = velocity1.dotProduct(velocity2);
-        System.out.println(dotProduct);
         float cosTheta = dotProduct / (velocity1.magnitude() * velocity2.magnitude());
-        System.out.println(cosTheta);
-        System.out.println(Math.acos(cosTheta));
+        if (Math.abs(dotProduct - 0) < epsilon) {
+            cosTheta = 0.0f;
+        }
         return (float) Math.acos(cosTheta);
     }
 
@@ -42,18 +50,34 @@ public class BotCrashDrawValidator implements RuleValidator {
         return projection.magnitude();
     }
 
+    private boolean botStillOnCoolDown(RobotIdentifier bot, double currentTS)
+    {
+        if (lastViolations.containsKey(bot))
+        {
+            Double ts = lastViolations.get(bot);
+            return (currentTS < ts + GRACE_PERIOD);
+        }
+        return false;
+    }
+
     @Override
     public RuleViolation validate(Game game) {
         for (TeamColor teamColor : TeamColor.values()) {
+
             for (Robot robotYellow : game.getTeam(teamColor.YELLOW).getRobots()) {
+                if (botStillOnCoolDown(robotYellow.getIdentifier(), game.getTime())) {
+                    continue;
+                }
                 for (Robot robotBlue : game.getTeam(teamColor.BLUE).getRobots()) {
+                    if (botStillOnCoolDown(robotBlue.getIdentifier(), game.getTime())) {
+                        continue;
+                    }
                     Vector2 robotYellowPos = robotYellow.getPosition().xy();
                     Vector2 robotBluePos = robotBlue.getPosition().xy();
                     Vector2 robotYellowVel = robotYellow.getVelocity().xy();
                     Vector2 robotBlueVel = robotBlue.getVelocity().xy();
 
                     if (robotYellowPos.distance(robotBluePos) <= BOT_CRASH_DISTANCE) {
-//                        TODO check if bot in cool down Wait time before reporting a crash with a robot again
                         float crashSpeed = calculateCollisionVelocity(robotBluePos, robotBlueVel, robotYellowPos, robotYellowVel);
                         float speedDiff = robotBlueVel.magnitude() - robotYellowVel.magnitude();
                         //center position of 2 robots
@@ -66,8 +90,12 @@ public class BotCrashDrawValidator implements RuleValidator {
                             } else {
                                 int botBlue = robotBlue.getId();
                                 int botYellow = robotYellow.getId();
-
-                                return new BotCrashDrawValidator.Violation(botBlue, botYellow, location, crashSpeed, speedDiff, crashAngle);
+                                if ((!botStillOnCoolDown(robotBlue.getIdentifier(), game.getTime())) && (!botStillOnCoolDown(robotYellow.getIdentifier(), game.getTime()))) {
+                                    System.out.println("Here");
+                                    lastViolations.put(robotBlue.getIdentifier(), game.getTime());
+                                    lastViolations.put(robotYellow.getIdentifier(), game.getTime());
+                                    return new BotCrashDrawValidator.Violation(botBlue, botYellow, location, crashSpeed, speedDiff, crashAngle);
+                                }
                             }
                         }
                     }
@@ -89,7 +117,7 @@ public class BotCrashDrawValidator implements RuleValidator {
         @Override
         public String toString() {
             return "Bot crash drawn (bot blue #" + botBlue + " , bot yellow #" + botYellow + ", at " + location + " crash speed :" + crash_speed
-                    + " speed diff: " + speed_diff + " )";
+                    + " speed diff: " + speed_diff +  " angle:" + crash_angle + " )";
         }
 
         @Override
