@@ -1,10 +1,7 @@
 package nl.roboteamtwente.autoref;
 
 import nl.roboteamtwente.autoref.model.Game;
-import nl.roboteamtwente.autoref.validators.AttackerTouchedBallInDefenseAreaValidator;
-import nl.roboteamtwente.autoref.validators.BallLeftFieldGoalLineValidator;
-import nl.roboteamtwente.autoref.validators.BallLeftFieldTouchLineValidator;
-import nl.roboteamtwente.autoref.validators.DefenderInDefenseAreaValidator;
+import nl.roboteamtwente.autoref.validators.*;
 
 import java.util.ArrayList;
 import java.util.List;

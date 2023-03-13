@@ -20,18 +20,18 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
         Vector3 ball = game.getBall().getPosition();
         FieldLine bottomTouchLine = game.getField().getLineByName("BottomTouchLine");
         FieldLine topTouchLine = game.getField().getLineByName("TopTouchLine");
-//        FIXME: LINES 21 TO 29 ARE USED ONLY WHEN THE BALL IS MANUALLY RELOCATED, THIS IS TO BE REMOVED LATER
-        if (ball.getY() > topTouchLine.p1().getY()) {
-            leftAt = topTouchLine.name();
-            location = ball.xy();
-            return new Violation(null, 0, location);
-        }
-
-        if (ball.getY() < bottomTouchLine.p1().getY()){
-            leftAt = bottomTouchLine.name();
-            location = ball.xy();
-            return new Violation(null, 0, location);
-        }
+//        FIXME: LINES 24 TO 34 ARE USED ONLY WHEN THE BALL IS MANUALLY RELOCATED, THIS IS TO BE REMOVED LATER
+//        if (ball.getY() > topTouchLine.p1().getY()) {
+//            leftAt = topTouchLine.name();
+//            location = ball.xy();
+//            return new Violation(null, 0, location);
+//        }
+//
+//        if (ball.getY() < bottomTouchLine.p1().getY()){
+//            leftAt = bottomTouchLine.name();
+//            location = ball.xy();
+//            return new Violation(null, 0, location);
+//        }
 
         //FIXME: THIS WILL NOT WORK IF A BALL IS LOCATED MANUALLY SINCE byBot.getId() CANNOT BE NULL
         for (TeamColor teamColor : TeamColor.values()) {
