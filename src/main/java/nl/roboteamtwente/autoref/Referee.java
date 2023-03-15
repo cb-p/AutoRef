@@ -12,7 +12,8 @@ public class Referee {
             new BallLeftFieldTouchLineValidator(),
             new BallLeftFieldGoalLineValidator(),
             new DefenderInDefenseAreaValidator(),
-            new DefenderTooCloseToKickPointValidator()
+            new DefenderTooCloseToKickPointValidator(),
+            new BotKickedBallTooFastValidator()
     );
 
     private List<RuleValidator> activeValidators;

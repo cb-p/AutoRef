@@ -19,10 +19,10 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
     private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
 
     /**
-     * @return the robot that is closest to the ball
+     * @return closest robot to the ball
      */
     private Robot closestRobotToBall(Game game) {
-        // TODO: Move this function somewhere else to use for other rules
+        // TODO: Perhaps move this function somewhere else to use for other rules, if needed
         List<Robot> robots = game.getRobots();
         Robot closestRobot = null;
         float dist = 99999;
@@ -47,6 +47,7 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
         // If its kickoff state, the closest team to the ball (should be?) the attacking team
         // Same can be the case for the other states, depending on the timing of when the state is changed; needs experimenting
         // The if-check is currently redundant (due to the active states) but ill keep it in here as it might need tweaking later
+        // TODO: team color in state
         if (game.getState() == GameState.KICKOFF || game.getState() == GameState.DIRECT_FREE || game.getState() == GameState.INDIRECT_FREE){
             if (closestRobotToBall(game).getTeam().getColor() == TeamColor.YELLOW) {
                 defendingTeamColor = TeamColor.BLUE;
@@ -64,7 +65,8 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
             if (distanceToBall < 500){
                 if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
                     lastViolations.put(robot.getIdentifier(), game.getTime());
-                    // Validator does not work correctly yet, so it's commented out to prevent spamming
+                    //TODO: Validator does not work correctly yet, so it's commented out to prevent spamming
+
 //                        return new Violation(teamColor, robot.getId(), robotPos, distanceToBall);
                 }
             }
