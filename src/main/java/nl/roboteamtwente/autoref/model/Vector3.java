@@ -33,6 +33,13 @@ public class Vector3 {
     }
 
     /**
+     * @return an identical copy of this vector.
+     */
+    public Vector3 copy() {
+        return new Vector3(x, y, z);
+    }
+
+    /**
      *
      * @return X-coordinate of an object
      */

@@ -18,30 +18,16 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
 
     @Override
     public RuleViolation validate(Game game) {
-        // FIXME: This doesn't work for non-straight lines
         for (Robot robot : game.getBall().getRobotsTouching()) {
-            Team team = robot.getTeam();
-            Side oppositeSide = team.getSide().getOpposite();
-            String oppositeSideString = oppositeSide == Side.LEFT ? "Left" : "Right";
-
-            FieldLine penaltyStretch = game.getField().getLineByName(oppositeSideString + "PenaltyStretch");
-            if (robot.getPosition().getX() * oppositeSide.getCardinality() < penaltyStretch.p1().getX() * oppositeSide.getCardinality()) {
-                continue;
-            }
-
-            FieldLine rightPenaltyStretch = game.getField().getLineByName(oppositeSideString + "FieldRightPenaltyStretch");
-            if (robot.getPosition().getY() < rightPenaltyStretch.p1().getY()) {
-                continue;
-            }
-
-            FieldLine leftPenaltyStretch = game.getField().getLineByName(oppositeSideString + "FieldLeftPenaltyStretch");
-            if (robot.getPosition().getY() > leftPenaltyStretch.p1().getY()) {
+            if (!game.getField().isInDefenseArea(robot.getTeam().getSide().getOpposite(), robot.getPosition().xy())) {
                 continue;
             }
 
             if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
                 lastViolations.put(robot.getIdentifier(), game.getTime());
-                return new Violation(team.getColor(), robot.getId(), robot.getPosition().xy(), 0.0f);
+
+                // FIXME: properly set the distance.
+                return new Violation(robot.getIdentifier(), robot.getPosition().xy(), 0.0f);
             }
         }
 
@@ -58,10 +44,10 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
         lastViolations.clear();
     }
 
-    record Violation(TeamColor byTeam, int byBot, Vector2 location, float distance) implements RuleViolation {
+    record Violation(RobotIdentifier robot, Vector2 location, float distance) implements RuleViolation {
         @Override
         public String toString() {
-            return "Attacker touched ball in defense area (by: " + byTeam + " #" + byBot + ", at " + location + ", distance: " + distance + ")";
+            return "Attacker touched ball in defense area (by: " + robot.teamColor() + " #" + robot.id() + ", at " + location + ", distance: " + distance + ")";
         }
 
         @Override
@@ -69,8 +55,8 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
             return SslGcGameEvent.GameEvent.newBuilder()
                     .setType(SslGcGameEvent.GameEvent.Type.ATTACKER_TOUCHED_BALL_IN_DEFENSE_AREA)
                     .setAttackerTouchedBallInDefenseArea(SslGcGameEvent.GameEvent.AttackerTouchedBallInDefenseArea.newBuilder()
-                            .setByTeam(byTeam == TeamColor.BLUE ? SslGcCommon.Team.BLUE : SslGcCommon.Team.YELLOW)
-                            .setByBot(byBot)
+                            .setByTeam(robot.teamColor() == TeamColor.BLUE ? SslGcCommon.Team.BLUE : SslGcCommon.Team.YELLOW)
+                            .setByBot(robot.id())
                             .setLocation(SslGcGeometry.Vector2.newBuilder().setX(location.getX()).setY(location.getY()))
                             .setDistance(distance))
                     .build();

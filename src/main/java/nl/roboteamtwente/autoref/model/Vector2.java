@@ -26,6 +26,13 @@ public class Vector2 {
     }
 
     /**
+     * @return an identical copy of this vector.
+     */
+    public Vector2 copy() {
+        return new Vector2(x, y);
+    }
+
+    /**
      *
      * @return X-coordinate of an object
      */

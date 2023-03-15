@@ -81,6 +81,10 @@ public class GameControllerConnection {
         return reply;
     }
 
+    public boolean isConnected() {
+        return socket != null && socket.isConnected();
+    }
+
     public static void main(String[] args) throws Exception {
         // We test the connection by sending a single game event.
 
