@@ -8,43 +8,64 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
-public class BotKickedBallTooFastValidator implements RuleValidator{
+public class BotKickedBallTooFastValidator implements RuleValidator {
+
+    // Hashmap of previous violations
+    private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
+
+    // Grace period in seconds
+    private static final double GRACE_PERIOD = 2.0;
+
     @Override
     public RuleViolation validate(Game game) {
         TeamColor team;
-        int byBot;
+        Robot robot;
         Vector2 location;
         Ball ball = game.getBall();
 
 //        // Speed in m/s from the previous frame
 //        float prevSpeed = game.getPrevious().getPrevious().getBall().getPosition().xy().distance(game.getPrevious().getBall().getPosition().xy()) * 80;
 
-        // Speed in m/s
+        // Ball speed in m/s
         float speed = game.getPrevious().getBall().getPosition().xy().distance(ball.getPosition().xy()) * 80;
 
         // TODO: Test which implementation works best
-        // If speed in one frame is higher than (6.5m / 80fps) = 0.08125 m / frame, bot kicked it too fast
+        // If speed in one frame is higher than 6.5 m/s, ball was kicked too fast.
+        // Due to inconsistent data, the ball may teleport around and this may be detected
+        // as the ball being kicked too fast. In that case, use the implementation below, uses 2 consecutive frames
         if (speed > 6.5) {
             team = ball.getLastTouchedBy().getTeam().getColor();
-            byBot = ball.getLastTouchedBy().getId();
+            robot = ball.getLastTouchedBy();
             location = ball.getPosition().xy();
-            return new Violation(team, byBot, location, speed);
+
+            // Only if this violation has not been sent in the last 2 seconds, raise it
+            if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
+                lastViolations.put(robot.getIdentifier(), game.getTime());
+                return new Violation(team, robot.getId(), location, speed);
+            }
         }
 
         /*
+
+
         // If ball speed is higher than 6.5m/s for two consecutive frames, send violation.
         // Checking just a single frame may be inconsistent due to the ball potentially teleporting a little between frames
         if (prevSpeed > 6.5 && speed > 6.5) {
             team = ball.getLastTouchedBy().getTeam().getColor();
-            byBot = ball.getLastTouchedBy().getId();
+            robot = ball.getLastTouchedBy();
             location = ball.getPosition().xy();
-            return new Violation(team, byBot, location, speed, chipped);
+
+            // Only if this violation has not been sent in the last 2 seconds, raise it
+            if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
+                lastViolations.put(robot.getIdentifier(), game.getTime());
+                return new Violation(team, robot.getId(), location, speed);
         }
 
 
          */
-
 
 
         return null;
@@ -54,6 +75,11 @@ public class BotKickedBallTooFastValidator implements RuleValidator{
     @Override
     public EnumSet<GameState> activeStates() {
         return EnumSet.of(GameState.KICKOFF, GameState.DIRECT_FREE, GameState.INDIRECT_FREE, GameState.RUNNING);
+    }
+
+    @Override
+    public void reset() {
+        lastViolations.clear();
     }
 
     record Violation(TeamColor byTeam, int byBot, Vector2 location, float speed) implements RuleViolation {

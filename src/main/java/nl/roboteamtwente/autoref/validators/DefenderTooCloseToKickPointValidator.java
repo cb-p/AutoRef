@@ -36,6 +36,7 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
         }
         return closestRobot;
     }
+
     @Override
     public RuleViolation validate(Game game) {
         // Height is not important in this case:
@@ -48,7 +49,7 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
         // Same can be the case for the other states, depending on the timing of when the state is changed; needs experimenting
         // The if-check is currently redundant (due to the active states) but ill keep it in here as it might need tweaking later
         // TODO: team color in state
-        if (game.getState() == GameState.KICKOFF || game.getState() == GameState.DIRECT_FREE || game.getState() == GameState.INDIRECT_FREE){
+        if (game.getState() == GameState.KICKOFF || game.getState() == GameState.DIRECT_FREE || game.getState() == GameState.INDIRECT_FREE) {
             if (closestRobotToBall(game).getTeam().getColor() == TeamColor.YELLOW) {
                 defendingTeamColor = TeamColor.BLUE;
             } else {
@@ -62,7 +63,8 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
 
             // Calculate distance to ball
             float distanceToBall = ball.distance(robotPos);
-            if (distanceToBall < 500){
+            // If robot is within 0.5m of the ball, it is too close
+            if (distanceToBall < 0.5) {
                 if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
                     lastViolations.put(robot.getIdentifier(), game.getTime());
                     //TODO: Validator does not work correctly yet, so it's commented out to prevent spamming
