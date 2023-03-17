@@ -5,6 +5,7 @@ import nl.roboteamtwente.autoref.RuleViolation;
 import nl.roboteamtwente.autoref.model.*;
 import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
+import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.text.DecimalFormat;
 import java.util.EnumSet;
@@ -14,25 +15,10 @@ import java.util.Map;
 public class BotTooFastInStopValidator implements RuleValidator {
     private static final float MAX_SPEED_ALLOWED = 1.5f;
     private static final double GRACE_PERIOD = 2.0;
-    //Map from robotId -> last violation time
-    private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
 
-
-    /**
-     * Check if the violation is still in GRACE_PERIOD
-     * @param bot - identifier of the bot
-     * @param currentTimeStamp - the current time that detect violation again
-     * @return true if bot still under GRACE_PERIOD
-     */
-    private boolean botStillOnCoolDown(RobotIdentifier bot, double currentTimeStamp)
-    {
-        if (lastViolations.containsKey(bot))
-        {
-            Double timestampLastViolation = lastViolations.get(bot);
-            return (currentTimeStamp < timestampLastViolation + GRACE_PERIOD);
-        }
-        return false;
-    }
+    private static double startStop = Float.POSITIVE_INFINITY;
+    //Map from robotId -> speed
+    private final Map<RobotIdentifier, Float> violatorsMap = new HashMap<>();
 
     /**
      * Round float number to 1 decimal place
@@ -47,24 +33,42 @@ public class BotTooFastInStopValidator implements RuleValidator {
 
     @Override
     public RuleViolation validate(Game game) {
-        game.getState();
+        if (game.getState() == GameState.STOP){
+            if (game.getTime() - startStop <= GRACE_PERIOD) {
+                return null;
+            }
+            for (Robot robot : game.getRobots()) {
+                float robotSpeed = robot.getVelocity().xy().magnitude();
+                //Rule state: A robot must not move faster than 1.5 meters per second during stop. A violation of this rule is only counted once per robot and stoppage.
+                if ((robotSpeed > MAX_SPEED_ALLOWED) && (!violatorsMap.keySet().contains(robot.getIdentifier()))) {
+                    violatorsMap.put(robot.getIdentifier(), robotSpeed);
+                    return new BotTooFastInStopValidator.BotTooFastInStopViolation(robot.getId(), robot.getTeam().getColor(), robot.getPosition().xy(), robotSpeed);
+                }
+            }
+        }
         return null;
     }
 
     @Override
-    public void reset() {
-
+    public void reset(Game game) {
+        if (game.getState() == GameState.STOP) {
+            startStop = game.getTime();
+        } else {
+            // clear violation after STOP
+            violatorsMap.clear();
+            startStop = Float.POSITIVE_INFINITY;
+        }
     }
 
     @Override
     public EnumSet<GameState> activeStates() {
-        return EnumSet.of(GameState.RUNNING);
+        return EnumSet.of(GameState.STOP);
     }
 
-    record BotTooFastInStopViolation(int byBot, TeamColor byTeam) implements RuleViolation {
+    record BotTooFastInStopViolation(int byBot, TeamColor byTeam, Vector2 location, Float speed) implements RuleViolation {
         @Override
         public String toString() {
-            return "Bot too fast in stop (by: " + byTeam + ", bot #" + byBot + " )";
+            return "Bot too fast in stop (by: " + byTeam + ", bot #" + byBot + " speed: " + speed + " )";
         }
 
         @Override
@@ -73,7 +77,9 @@ public class BotTooFastInStopValidator implements RuleValidator {
                     .setType(SslGcGameEvent.GameEvent.Type.BOT_TOO_FAST_IN_STOP)
                     .setBotTooFastInStop(SslGcGameEvent.GameEvent.BotTooFastInStop.newBuilder()
                             .setByBot(byBot)
-                            .setByTeam(byTeam == TeamColor.BLUE ? SslGcCommon.Team.BLUE : SslGcCommon.Team.YELLOW))
+                            .setByTeam(byTeam == TeamColor.BLUE ? SslGcCommon.Team.BLUE : SslGcCommon.Team.YELLOW)
+                            .setSpeed(speed)
+                            .setLocation(SslGcGeometry.Vector2.newBuilder().setX(location.getX()).setY(location.getY())))
                     .build();
 
         }

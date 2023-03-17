@@ -42,7 +42,7 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
     }
 
     @Override
-    public void reset() {
+    public void reset(Game game) {
         lastViolations.clear();
     }
 
