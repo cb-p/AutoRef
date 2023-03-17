@@ -8,28 +8,17 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.text.DecimalFormat;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BotTooFastInStopValidator implements RuleValidator {
     private static final float MAX_SPEED_ALLOWED = 1.5f;
+
+    //GRACE PERIOD is 2 second after STOP start for robot to slow down
     private static final double GRACE_PERIOD = 2.0;
 
     private static double startStop = Float.POSITIVE_INFINITY;
-    //Map from robotId -> speed
-    private final Map<RobotIdentifier, Float> violatorsMap = new HashMap<>();
-
-    /**
-     * Round float number to 1 decimal place
-     * @param number
-     * @return rounded float number
-     */
-    public float roundFloatTo1DecimalPlace(float number) {
-        DecimalFormat df = new DecimalFormat("#.#"); // Creates a decimal format object with one decimal place
-        String roundedFloatStr = df.format(number); // Formats the float as a string with one decimal place
-        return Float.parseFloat(roundedFloatStr); // Parses the rounded string back into a float
-    }
+    //Set of violators in STOP state
+    private final Set<RobotIdentifier> violatorsSet = new HashSet<>();
 
     @Override
     public RuleViolation validate(Game game) {
@@ -40,8 +29,8 @@ public class BotTooFastInStopValidator implements RuleValidator {
             for (Robot robot : game.getRobots()) {
                 float robotSpeed = robot.getVelocity().xy().magnitude();
                 //Rule state: A robot must not move faster than 1.5 meters per second during stop. A violation of this rule is only counted once per robot and stoppage.
-                if ((robotSpeed > MAX_SPEED_ALLOWED) && (!violatorsMap.keySet().contains(robot.getIdentifier()))) {
-                    violatorsMap.put(robot.getIdentifier(), robotSpeed);
+                if ((robotSpeed > MAX_SPEED_ALLOWED) && (!violatorsSet.contains(robot.getIdentifier()))) {
+                    violatorsSet.add(robot.getIdentifier());
                     return new BotTooFastInStopValidator.BotTooFastInStopViolation(robot.getId(), robot.getTeam().getColor(), robot.getPosition().xy(), robotSpeed);
                 }
             }
@@ -55,7 +44,7 @@ public class BotTooFastInStopValidator implements RuleValidator {
             startStop = game.getTime();
         } else {
             // clear violation after STOP
-            violatorsMap.clear();
+            violatorsSet.clear();
             startStop = Float.POSITIVE_INFINITY;
         }
     }
