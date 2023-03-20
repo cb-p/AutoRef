@@ -31,6 +31,8 @@ public class Game {
      */
     private final Field field;
 
+    private double timeLastGameStateChange;
+
     private GameState state;
     private double time;
 
@@ -147,4 +149,13 @@ public class Game {
     public Kick getLastKick() {
         return kicks.isEmpty() ? null : kicks.get(kicks.size() - 1);
     }
+
+    public void setTimeLastGameStateChange(double timeLastGameStateChange) {
+        this.timeLastGameStateChange = timeLastGameStateChange;
+    }
+
+    public double getTimeLastGameStateChange() {
+        return timeLastGameStateChange;
+    }
+
 }
