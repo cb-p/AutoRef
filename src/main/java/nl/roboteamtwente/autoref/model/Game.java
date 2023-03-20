@@ -25,6 +25,11 @@ public class Game {
     private final Vector2 designated_position;
 
     /**
+     * The team that has the placement
+     */
+    private TeamColor forTeam;
+    
+    /**
      * The game consists of 2 teams blue and yellow
      */
     private final Team blue;
@@ -49,6 +54,7 @@ public class Game {
         this.field = new Field();
 
         this.designated_position = new Vector2(0,0);
+        this.forTeam = null;
 
         this.blue = new Team(TeamColor.BLUE);
         this.yellow = new Team(TeamColor.YELLOW);
@@ -84,6 +90,14 @@ public class Game {
      */
     public Vector2 getDesignated_position() {
         return designated_position;
+    }
+
+    public TeamColor getForTeam() {
+        return this.forTeam;
+    }
+
+    public void setForTeam(TeamColor forTeam) {
+        this.forTeam = forTeam;
     }
 
     /**

@@ -43,6 +43,19 @@ public class SSLAutoRef {
         game.getDesignated_position().setX(statePacket.getReferee().getDesignatedPositionOrBuilder().getX());
         game.getDesignated_position().setY(statePacket.getReferee().getDesignatedPositionOrBuilder().getY());
 
+
+//        TODO handle ball placement yellow and blue
+        switch (statePacket.getReferee().getCommand()) {
+            case BALL_PLACEMENT_YELLOW:
+                game.setForTeam(TeamColor.YELLOW);
+                break;
+            case BALL_PLACEMENT_BLUE:
+                game.setForTeam(TeamColor.BLUE);
+                break;
+            default:
+                game.setForTeam(null);
+        }
+
         game.setState(switch (statePacket.getReferee().getCommand()) {
             case HALT -> GameState.HALT;
             case STOP -> GameState.STOP;

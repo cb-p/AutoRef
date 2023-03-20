@@ -20,13 +20,14 @@ public class BotInterferedPlacement implements RuleValidator {
             Vector2 designated_position = game.getDesignated_position();
             System.out.println(designated_position.getX());
             System.out.println(designated_position.getY());
+            System.out.println(game.getForTeam());
         }
         return null;
     }
 
     @Override
     public EnumSet<GameState> activeStates() {
-        return null;
+        return EnumSet.of(GameState.BALL_PLACEMENT);
     }
 
     record BotInterferedPlacementViolation(TeamColor byTeam, int byBot, Vector2 location) implements RuleViolation {
