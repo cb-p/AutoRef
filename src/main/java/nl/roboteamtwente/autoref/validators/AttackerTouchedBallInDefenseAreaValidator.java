@@ -14,6 +14,8 @@ import java.util.Map;
 public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator {
     private static final double GRACE_PERIOD = 2.0;
 
+
+    //Map from robotId -> last violation time
     private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
 
     @Override
