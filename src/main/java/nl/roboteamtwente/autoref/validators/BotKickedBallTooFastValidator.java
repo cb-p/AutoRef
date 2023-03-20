@@ -26,11 +26,12 @@ public class BotKickedBallTooFastValidator implements RuleValidator {
         Vector2 location;
         Ball ball = game.getBall();
 
+
 //        // Speed in m/s from the previous frame
-//        float prevSpeed = game.getPrevious().getPrevious().getBall().getPosition().xy().distance(game.getPrevious().getBall().getPosition().xy()) * 80;
+//        float prevSpeed = game.getPrevious().getBall().getPosition().xy().distance(game.getPrevious().getBall().getPosition().xy()) * 80;
 
         // Ball speed in m/s
-        float speed = game.getPrevious().getBall().getPosition().xy().distance(ball.getPosition().xy()) * 80;
+        float speed = ball.getVelocity().xy().magnitude();
 
         // TODO: Test which implementation works best
         // If speed in one frame is higher than 6.5 m/s, ball was kicked too fast.
