@@ -9,7 +9,8 @@ import java.util.List;
 public class Referee {
     private static final List<RuleValidator> RULE_VALIDATORS = List.of(
             new BotCrashingValidator(),
-            new BotTooFastInStopValidator()
+            new BotTooFastInStopValidator(),
+            new BotInterferedPlacement()
 //            new AttackerTouchedBallInDefenseAreaValidator(),
 //            new BallLeftFieldTouchLineValidator(),
 //            new BallLeftFieldGoalLineValidator(),

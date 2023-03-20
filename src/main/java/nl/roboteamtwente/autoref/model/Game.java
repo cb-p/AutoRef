@@ -20,6 +20,11 @@ public class Game {
     private final Ball ball;
 
     /**
+     * The ball placement position when game state is PLACEMENT
+     */
+    private final Vector2 designated_position;
+
+    /**
      * The game consists of 2 teams blue and yellow
      */
     private final Team blue;
@@ -42,6 +47,8 @@ public class Game {
         this.robots = new ArrayList<>();
         this.ball = new Ball();
         this.field = new Field();
+
+        this.designated_position = new Vector2(0,0);
 
         this.blue = new Team(TeamColor.BLUE);
         this.yellow = new Team(TeamColor.YELLOW);
@@ -70,6 +77,13 @@ public class Game {
         } else {
             return yellow;
         }
+    }
+
+    /**
+     * @return the ball placement position
+     */
+    public Vector2 getDesignated_position() {
+        return designated_position;
     }
 
     /**

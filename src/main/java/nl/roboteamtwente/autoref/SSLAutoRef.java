@@ -38,6 +38,11 @@ public class SSLAutoRef {
 
         game.setTime(world.getTime() / 1000000000.0);
 
+
+//        TODO divide by / 1000.0f if the scale is not correct
+        game.getDesignated_position().setX(statePacket.getReferee().getDesignatedPositionOrBuilder().getX());
+        game.getDesignated_position().setY(statePacket.getReferee().getDesignatedPositionOrBuilder().getY());
+
         game.setState(switch (statePacket.getReferee().getCommand()) {
             case HALT -> GameState.HALT;
             case STOP -> GameState.STOP;
