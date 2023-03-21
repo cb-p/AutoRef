@@ -15,28 +15,8 @@ public class BallLeftFieldGoalLineValidator implements RuleValidator {
 
     private static final double GRACE_PERIOD = 2.0;
     //Map from robotId -> last violation time
-    private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
+    private double lastViolations;
 
-    /**
-     * Check if the violation is still in GRACE_PERIOD
-     * @param bot - identifier of the bot
-     * @param currentTimeStamp - the current time that detect violation again
-     * @return true if bot still under GRACE_PERIOD
-     */
-    private boolean botStillOnCoolDown(RobotIdentifier bot, double currentTimeStamp)
-    {
-        if (lastViolations.containsKey(bot))
-        {
-            Double timestampLastViolation = lastViolations.get(bot);
-            if (currentTimeStamp <= timestampLastViolation + GRACE_PERIOD) {
-                return true;
-            } else {
-                lastViolations.remove(bot);
-                return false;
-            }
-        }
-        return false;
-    }
 
     @Override
     public RuleViolation validate(Game game) {
@@ -85,31 +65,20 @@ public class BallLeftFieldGoalLineValidator implements RuleValidator {
 //        }
 
 
-        for (Robot robot : game.getRobots()) {
-//            System.out.println(game.getBall().getRobotsTouching());
-//            if (robot.getId() == 0) {
-//                System.out.println("Robot 0 check" + robot.isTouchingBall());
-//            }
-            if (ballPosition.getX() > rightGoalLine.p1().getX() || game.getBall().getLastTouchedBy() == robot) {
-                if (!botStillOnCoolDown(robot.getIdentifier(), game.getTime())) {
-                    lastViolations.put(robot.getIdentifier(), game.getTime());
-                    byBot = robot;
-                    byTeam = robot.getTeam().getColor();
-                    location = ballPosition.xy();
-                    return new Violation(byTeam, byBot.getId(), location);
-                }
-            }
 
-            if (ballPosition.getX() < leftGoalLine.p1().getX() || game.getBall().getLastTouchedBy() == robot) {
-                if (!botStillOnCoolDown(robot.getIdentifier(), game.getTime())) {
-                    lastViolations.put(robot.getIdentifier(), game.getTime());
-                    byBot = robot;
-                    byTeam = robot.getTeam().getColor();
-                    location = ballPosition.xy();
-                    return new Violation(byTeam, byBot.getId(), location);
-                }
+        if (ballPosition.getX() > rightGoalLine.p1().getX() || ballPosition.getX() < leftGoalLine.p1().getX()) {
+            Robot robot = game.getBall().getLastTouchedBy();
+            if (robot != null && (game.getTime() - lastViolations > GRACE_PERIOD)) {
+                lastViolations = game.getTime();
+                byBot = robot;
+                byTeam = robot.getTeam().getColor();
+                location = ballPosition.xy();
+                return new Violation(byTeam, byBot.getId(), location);
             }
+        } else {
+            lastViolations = Double.NEGATIVE_INFINITY;
         }
+
         return null;
     }
 
