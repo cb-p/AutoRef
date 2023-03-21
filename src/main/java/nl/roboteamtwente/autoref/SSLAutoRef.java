@@ -145,10 +145,11 @@ public class SSLAutoRef {
     }
 
     /**
+     * Setup connections with all other software
      *
-     * @param ip ip where all software is running on
+     * @param ip                 ip where all software is running on
      * @param portGameController port GameContoller
-     * @param portWorld port World
+     * @param portWorld          port World
      */
     public void start(String ip, int portGameController, int portWorld) {
         //setup connection with GameControl
@@ -157,12 +158,18 @@ public class SSLAutoRef {
         gcConnection.setPort(portGameController);
         gcThread = new Thread(gcConnection);
         gcThread.start();
+        //setup connection with World
         worldConnection = new WorldConnection(ip, portWorld, this);
         worldThread = new Thread(worldConnection);
         worldThread.start();
 
     }
 
+    /**
+     * Process received packet and check for violations
+     *
+     * @param packet
+     */
     public void checkViolations(StateOuterClass.State packet) {
         processWorldState(packet);
         //check for any violations

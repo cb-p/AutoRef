@@ -20,7 +20,6 @@ public class GameControllerConnection implements Runnable {
     private List<SslGcGameEvent.GameEvent> queue;
 
 
-
     /**
      * Connect AutoRef to GameControl by:
      * First establish TCP connection
@@ -28,6 +27,8 @@ public class GameControllerConnection implements Runnable {
      * AutoRef identifies itself by sending AutoRefRegistration
      * GameControl verifies
      * GameControl sends reply (OK|REJECT)
+     *
+     * @throws InterruptedException
      */
     public void connect() throws InterruptedException {
         try {
@@ -73,23 +74,26 @@ public class GameControllerConnection implements Runnable {
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             e.printStackTrace();
         } catch (SignatureException e) {
-
+            //empty
         }
     }
 
     /**
      * Check if something is in the queue, if there is, send the first item in the queue to GC.
      * queue follows FIFO principle
+     *
      * @throws InterruptedException
      */
     private void processQueue() throws InterruptedException {
         while (!Thread.currentThread().isInterrupted()) {
             if (isConnected()) {
                 if (!queue.isEmpty()) {
+                    //get first gameEvent from queue
                     SslGcGameEvent.GameEvent gameEvent = queue.remove(0);
                     try {
                         sendGameEvent(gameEvent);
-                    } catch (IOException e ) {
+                    } catch (IOException e) {
+                        //if IOexception in sendGameEvent, add gameEvent back to queue and reconnect
                         queue.add(0, gameEvent);
                         reconnect();
                     } catch (RuntimeException e) {
@@ -99,6 +103,7 @@ public class GameControllerConnection implements Runnable {
             } else {
                 reconnect();
             }
+            //small delay to not always check queue but check in intervals
             Thread.sleep(10); //1 second / 100Hz = 10ms
         }
     }
@@ -106,13 +111,12 @@ public class GameControllerConnection implements Runnable {
     /**
      * close connection
      */
-
     public void disconnect() {
         if (socket != null) {
             try {
                 socket.close();
             } catch (IOException e) {
-
+                //empty
             } finally {
                 socket = null;
             }
@@ -132,13 +136,16 @@ public class GameControllerConnection implements Runnable {
                 this.connect();
             }
         } catch (InterruptedException e) {
-
+            //empty
         }
     }
 
     /**
      * Send Game Event to GameController
+     *
      * @param gameEvent game event with details about the violation
+     * @throws IOException      something is wrong with the connection
+     * @throws RuntimeException GameEvent got rejected. This should be catched by method that calls sendGameEvent
      */
     public void sendGameEvent(SslGcGameEvent.GameEvent gameEvent) throws IOException {
         try {
@@ -155,8 +162,8 @@ public class GameControllerConnection implements Runnable {
             if (reply != null && reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
                 throw new RuntimeException("Game event rejected: " + reply.getReason());
             }
-        } catch (SignatureException e ) {
-
+        } catch (SignatureException e) {
+            //empty
         }
     }
 
@@ -165,13 +172,14 @@ public class GameControllerConnection implements Runnable {
      */
     private SslGcRcon.Signature getSignature() throws SignatureException {
         return SslGcRcon.Signature.newBuilder()
-                    .setToken(this.token)
-                    .setPkcs1V15(ByteString.copyFrom(signature.sign())).build();
+                .setToken(this.token)
+                .setPkcs1V15(ByteString.copyFrom(signature.sign())).build();
     }
 
     /**
      * Receive controller reply
      * If reply has a nextToken, set this.token to nextToken and update signature
+     *
      * @return reply
      */
     private SslGcRcon.ControllerReply receivePacket() {
@@ -185,7 +193,7 @@ public class GameControllerConnection implements Runnable {
         } catch (IOException e) {
             this.reconnect();
         } catch (SignatureException e) {
-
+            //empty
         }
         return null;
     }
@@ -216,7 +224,7 @@ public class GameControllerConnection implements Runnable {
             this.connect();
             this.processQueue();
         } catch (InterruptedException e) {
-
+            //empty
         }
     }
 }
