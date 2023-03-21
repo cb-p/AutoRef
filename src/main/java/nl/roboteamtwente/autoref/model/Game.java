@@ -2,6 +2,7 @@ package nl.roboteamtwente.autoref.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -36,6 +37,11 @@ public class Game {
 
     private Game previous;
 
+    private Touch kickIntoPlay;
+    private final List<Touch> touches;
+
+    private boolean forceStarted;
+
     public Game() {
         this.robots = new ArrayList<>();
         this.ball = new Ball();
@@ -47,6 +53,10 @@ public class Game {
         this.state = GameState.HALT;
         this.time = 0.0;
         this.previous = this;
+
+        this.touches = new ArrayList<>();
+
+        this.forceStarted = false;
     }
 
     /**
@@ -134,5 +144,41 @@ public class Game {
 
     public Game getPrevious() {
         return previous;
+    }
+
+    public List<Touch> getTouches() {
+        return touches;
+    }
+
+    public List<Touch> getCurrentTouches() {
+        return touches.stream().filter((it) -> !it.isFinished()).collect(Collectors.toList());
+    }
+
+    public List<Touch> getFinishedTouches() {
+        return touches.stream().filter(Touch::isFinished).collect(Collectors.toList());
+    }
+
+    public Touch getLastStartedTouch() {
+        return touches.isEmpty() ? null : touches.get(touches.size() - 1);
+    }
+
+    public Touch getLastFinishedTouch() {
+        return touches.stream().filter(Touch::isFinished).reduce((first, second) -> second).orElse(null);
+    }
+
+    public Touch getKickIntoPlay() {
+        return kickIntoPlay;
+    }
+
+    public void setKickIntoPlay(Touch kickIntoPlay) {
+        this.kickIntoPlay = kickIntoPlay;
+    }
+
+    public boolean isForceStarted() {
+        return forceStarted;
+    }
+
+    public void setForceStarted(boolean forceStarted) {
+        this.forceStarted = forceStarted;
     }
 }

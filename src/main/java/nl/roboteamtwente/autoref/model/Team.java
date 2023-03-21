@@ -32,6 +32,8 @@ public class Team {
      */
     private float robotRadius;
 
+    private float robotHeight;
+
     /**
      * This is the constructor of the Team, a team is constructed with a color and also
      * a map with all robots in that are part of this team object.
@@ -119,6 +121,14 @@ public class Team {
         this.robotRadius = robotRadius;
     }
 
+
+    public float getRobotHeight() {
+        return robotHeight;
+    }
+
+    public void setRobotHeight(float robotHeight) {
+        this.robotHeight = robotHeight;
+    }
 
     /**
      * A setter to set the side a Team is on.

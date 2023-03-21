@@ -1,20 +1,20 @@
 package nl.roboteamtwente.autoref;
 
 import nl.roboteamtwente.autoref.model.Game;
-import nl.roboteamtwente.autoref.validators.AttackerTouchedBallInDefenseAreaValidator;
-import nl.roboteamtwente.autoref.validators.BallLeftFieldGoalLineValidator;
-import nl.roboteamtwente.autoref.validators.BallLeftFieldTouchLineValidator;
-import nl.roboteamtwente.autoref.validators.DefenderInDefenseAreaValidator;
+import nl.roboteamtwente.autoref.validators.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Referee {
     private static final List<RuleValidator> RULE_VALIDATORS = List.of(
+            new BotCrashingValidator(),
+            new BotTooFastInStopValidator(),
             new AttackerTouchedBallInDefenseAreaValidator(),
-            new BallLeftFieldTouchLineValidator(),
-            new BallLeftFieldGoalLineValidator(),
-            new DefenderInDefenseAreaValidator()
+//            new BallLeftFieldTouchLineValidator(),
+//            new BallLeftFieldGoalLineValidator(),
+            new DefenderInDefenseAreaValidator(),
+            new AttackerDoubleTouchedBallValidator()
     );
 
     private List<RuleValidator> activeValidators;
@@ -31,8 +31,6 @@ public class Referee {
 
     public List<RuleViolation> validate() {
         if (activeValidators == null || game.getState() != game.getPrevious().getState()) {
-            System.out.println("game state: " + game.getPrevious().getState() + " -> " + game.getState());
-
             List<RuleValidator> validators = RULE_VALIDATORS.stream().filter((validator) -> validator.activeStates().contains(game.getState())).toList();
 
             List<RuleValidator> toReset = new ArrayList<>(validators);
@@ -40,18 +38,18 @@ public class Referee {
                 toReset.removeAll(activeValidators);
             }
 
-            toReset.forEach(RuleValidator::reset);
+            toReset.forEach(validator -> validator.reset(game));
             activeValidators = validators;
         }
 
         List<RuleViolation> violations = new ArrayList<>();
         for (RuleValidator validator : activeValidators) {
             RuleViolation violation = validator.validate(game);
+
             if (violation != null) {
                 violations.add(violation);
             }
         }
-
         return violations;
     }
 }

@@ -12,9 +12,9 @@ import java.util.EnumSet;
 public class BallLeftFieldGoalLineValidator implements RuleValidator {
     @Override
     public RuleViolation validate(Game game) {
-        Vector2 location = null;
-        Robot byBot = null;
-        TeamColor byTeam = null;
+        Vector2 location;
+        Robot byBot;
+        TeamColor byTeam;
         Vector3 ball = game.getBall().getPosition();
         FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
         FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
@@ -27,16 +27,17 @@ public class BallLeftFieldGoalLineValidator implements RuleValidator {
 //            return null;
 //        }
 
-        if (ball.getX() > rightGoalLine.p1().getX()){
-            location = ball.xy();
-            return new Violation(null, 0, location);
-        }
+//        if (ball.getX() > rightGoalLine.p1().getX()){
+//            location = ball.xy();
+//            return new Violation(null, 0, location);
+//        }
+//
+//        if (ball.getX() < leftGoalLine.p1().getX()){
+//            location = ball.xy();
+//            return new Violation(null, 0, location);
+//        }
 
-        if (ball.getX() < leftGoalLine.p1().getX()){
-            location = ball.xy();
-            return new Violation(null, 0, location);
-        }
-
+        //FIXME: This will not work with manual ball placement, if you want to test this manually, comment line 41-57 and uncomment 26-38.
         for (TeamColor teamColor : TeamColor.values()) {
             for (Robot robot : game.getTeam(teamColor.getOpponentColor()).getRobots()) {
                 if (robot.hasJustTouchedBall() && ball.getX() > rightGoalLine.p1().getX()) {

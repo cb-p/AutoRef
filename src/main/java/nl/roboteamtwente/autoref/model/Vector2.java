@@ -26,6 +26,13 @@ public class Vector2 {
     }
 
     /**
+     * @return an identical copy of this vector.
+     */
+    public Vector2 copy() {
+        return new Vector2(x, y);
+    }
+
+    /**
      *
      * @return X-coordinate of an object
      */
@@ -63,6 +70,32 @@ public class Vector2 {
      */
     public Vector2 add(Vector2 other) {
         return new Vector2(this.getX() + other.getX(), this.getY() + other.getY());
+    }
+
+    /**
+     * Subtract the dimensions of another vector to the one in the current object.
+     * @param other the vector to add.
+     * @return the new Vector object.
+     */
+    public Vector2 subtract(Vector2 other) {
+        return new Vector2(this.getX() - other.getX(), this.getY() - other.getY());
+    }
+
+    /**
+     * Calculate the dot product of the current object with other object.
+     * @param other the vector to add.
+     * @return the new Vector object.
+     */
+    public float dotProduct(Vector2 other) {
+        return (this.getX() *other.getX() + this.getY()* other.getY());
+    }
+
+    /**
+     * Calculate the length/magnitude of the current vector.
+     * @return the length of vector.
+     */
+    public float magnitude() {
+        return ((float) Math.sqrt(this.getX()*this.getX() + this.getY()* this.getY()));
     }
 
     /**
