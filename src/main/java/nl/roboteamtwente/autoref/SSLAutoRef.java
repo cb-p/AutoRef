@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public class SSLAutoRef {
-    private static final float BALL_TOUCHING_DISTANCE = 0.125f;
+    private static final float BALL_TOUCHING_DISTANCE = 0.025f;
 
     private final Referee referee;
 
@@ -107,6 +107,8 @@ public class SSLAutoRef {
 
         game.getTeam(TeamColor.BLUE).setRobotRadius(statePacket.getBlueRobotParameters().getParameters().getRadius());
         game.getTeam(TeamColor.YELLOW).setRobotRadius(statePacket.getYellowRobotParameters().getParameters().getRadius());
+        game.getTeam(TeamColor.BLUE).setRobotHeight(statePacket.getBlueRobotParameters().getParameters().getHeight());
+        game.getTeam(TeamColor.YELLOW).setRobotHeight(statePacket.getYellowRobotParameters().getParameters().getHeight());
 
         game.getTeam(TeamColor.BLUE).setGoalkeeperId(statePacket.getReferee().getBlue().getGoalkeeper());
         game.getTeam(TeamColor.YELLOW).setGoalkeeperId(statePacket.getReferee().getYellow().getGoalkeeper());
@@ -170,7 +172,7 @@ public class SSLAutoRef {
 
             // FIXME: is this a good way to detect if a robot is touching the ball?
             float distance = robot.getPosition().xy().distance(ballPosition.xy());
-            if (distance <= BALL_TOUCHING_DISTANCE) {
+            if (distance <= robot.getTeam().getRobotRadius() + BALL_TOUCHING_DISTANCE && ball.getPosition().getZ() <= robot.getTeam().getRobotHeight() + BALL_TOUCHING_DISTANCE) {
                 ball.getRobotsTouching().add(robot);
                 robot.setJustTouchedBall(oldRobot == null || !oldRobot.isTouchingBall());
             } else {

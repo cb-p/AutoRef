@@ -14,8 +14,6 @@ import java.util.Map;
 public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator {
     private static final double GRACE_PERIOD = 2.0;
 
-
-    //Map from robotId -> last violation time
     private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
 
     @Override
@@ -27,9 +25,7 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
 
             if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
                 lastViolations.put(robot.getIdentifier(), game.getTime());
-
-                // FIXME: properly set the distance.
-                return new Violation(robot.getIdentifier(), robot.getPosition().xy(), 0.0f);
+                return new Violation(robot.getIdentifier(), robot.getPosition().xy());
             }
         }
 
@@ -46,10 +42,10 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
         lastViolations.clear();
     }
 
-    record Violation(RobotIdentifier robot, Vector2 location, float distance) implements RuleViolation {
+    record Violation(RobotIdentifier robot, Vector2 location) implements RuleViolation {
         @Override
         public String toString() {
-            return "Attacker touched ball in defense area (by: " + robot.teamColor() + " #" + robot.id() + ", at " + location + ", distance: " + distance + ")";
+            return "Attacker touched ball in defense area (by: " + robot.teamColor() + " #" + robot.id() + ", at " + location + ")";
         }
 
         @Override
@@ -59,8 +55,7 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
                     .setAttackerTouchedBallInDefenseArea(SslGcGameEvent.GameEvent.AttackerTouchedBallInDefenseArea.newBuilder()
                             .setByTeam(robot.teamColor() == TeamColor.BLUE ? SslGcCommon.Team.BLUE : SslGcCommon.Team.YELLOW)
                             .setByBot(robot.id())
-                            .setLocation(SslGcGeometry.Vector2.newBuilder().setX(location.getX()).setY(location.getY()))
-                            .setDistance(distance))
+                            .setLocation(SslGcGeometry.Vector2.newBuilder().setX(location.getX()).setY(location.getY())))
                     .build();
         }
     }
