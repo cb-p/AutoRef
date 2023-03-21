@@ -242,7 +242,15 @@ public class SSLAutoRef {
     }
 
     public void setActive(boolean active) {
-        // FIXME: Disconnect from game controller while not active.
+        if (active && !gcConnection.isConnected()) {
+            try {
+                gcConnection.connect();
+            } catch (InterruptedException e) {
+                //empty
+            }
+        } else if (!active) {
+            gcConnection.disconnect();
+        }
         this.active = active;
     }
 
