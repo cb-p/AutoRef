@@ -11,6 +11,7 @@ import org.zeromq.ZMQ;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class SSLAutoRef {
@@ -23,6 +24,9 @@ public class SSLAutoRef {
 
     private Consumer<RuleViolation> onViolation;
     private boolean active = false;
+
+    private int commands = 0;
+    private int nextTouchId = 0;
 
     public SSLAutoRef() {
         this.referee = new Referee();
@@ -37,20 +41,53 @@ public class SSLAutoRef {
         WorldOuterClass.World world = statePacket.getCommandExtrapolatedWorld();
 
         game.setTime(world.getTime() / 1000000000.0);
+        game.setForceStarted(game.getPrevious().isForceStarted());
 
-        game.setState(switch (statePacket.getReferee().getCommand()) {
-            case HALT -> GameState.HALT;
-            case STOP -> GameState.STOP;
-            //noinspection deprecation
-            case NORMAL_START, FORCE_START, GOAL_YELLOW, GOAL_BLUE -> GameState.RUNNING;
-            case PREPARE_KICKOFF_YELLOW, PREPARE_KICKOFF_BLUE -> GameState.PREPARE_KICKOFF;
-            case PREPARE_PENALTY_YELLOW, PREPARE_PENALTY_BLUE -> GameState.PREPARE_PENALTY;
-            case DIRECT_FREE_YELLOW, DIRECT_FREE_BLUE -> GameState.DIRECT_FREE;
-            //noinspection deprecation
-            case INDIRECT_FREE_YELLOW, INDIRECT_FREE_BLUE -> GameState.INDIRECT_FREE;
-            case TIMEOUT_YELLOW, TIMEOUT_BLUE -> GameState.TIMEOUT;
-            case BALL_PLACEMENT_YELLOW, BALL_PLACEMENT_BLUE -> GameState.BALL_PLACEMENT;
-        });
+        if (game.getState() == null || statePacket.getReferee().getCommandCounter() != commands) {
+            commands = statePacket.getReferee().getCommandCounter();
+
+            switch (statePacket.getReferee().getCommand()) {
+                case HALT -> {
+                    game.setForceStarted(false);
+                    game.setState(GameState.HALT);
+                }
+                case STOP -> {
+                    game.setForceStarted(false);
+                    game.setState(GameState.STOP);
+                }
+                case FORCE_START -> {
+                    game.setForceStarted(true);
+                    game.setState(GameState.RUNNING);
+                }
+                //noinspection deprecation
+                case NORMAL_START, GOAL_YELLOW, GOAL_BLUE -> {
+                    game.setForceStarted(false);
+                    game.setState(GameState.RUNNING);
+                }
+                case PREPARE_KICKOFF_YELLOW, PREPARE_KICKOFF_BLUE -> {
+                    game.setState(GameState.PREPARE_KICKOFF);
+                }
+                case PREPARE_PENALTY_YELLOW, PREPARE_PENALTY_BLUE -> {
+                    game.setState(GameState.PREPARE_PENALTY);
+                }
+                case DIRECT_FREE_YELLOW, DIRECT_FREE_BLUE -> {
+                    game.setState(GameState.DIRECT_FREE);
+                }
+                //noinspection deprecation
+                case INDIRECT_FREE_YELLOW, INDIRECT_FREE_BLUE -> {
+                    game.setState(GameState.INDIRECT_FREE);
+                }
+                case TIMEOUT_YELLOW, TIMEOUT_BLUE -> {
+                    game.setState(GameState.TIMEOUT);
+                }
+                case BALL_PLACEMENT_YELLOW, BALL_PLACEMENT_BLUE -> {
+                    game.setState(GameState.BALL_PLACEMENT);
+                }
+            }
+            ;
+        } else {
+            game.setState(game.getPrevious().getState());
+        }
 
         game.getBall().getPosition().setX(world.getBall().getPos().getX());
         game.getBall().getPosition().setY(world.getBall().getPos().getY());
@@ -91,46 +128,82 @@ public class SSLAutoRef {
         }
 
         deriveWorldState(game);
+
+        if (game.getPrevious().getState() == GameState.RUNNING && game.getState() != GameState.RUNNING) {
+            System.out.println("reset");
+
+            game.getBall().setLastTouchStarted(null);
+            game.setKickIntoPlay(null);
+            game.getTouches().clear();
+
+            for (Robot robot : game.getRobots()) {
+                robot.setTouch(null);
+            }
+        }
+
+        if (game.getState() != game.getPrevious().getState()) {
+            System.out.println("game state: " + game.getPrevious().getState() + " -> " + game.getState());
+        }
+
         referee.setGame(game);
     }
 
     private void deriveWorldState(Game game) {
-        // FIXME: Should it reset at any state change?
-        if (game.getState() != game.getPrevious().getState()) {
-            game.getBall().setLastTouchedAt(null);
-            game.getBall().setLastTouchedBy(null);
-            game.getKicks().clear();
-        }
+        game.getBall().setLastTouchStarted(game.getPrevious().getBall().getLastTouchStarted());
+        game.getTouches().addAll(game.getPrevious().getFinishedTouches());
+
+        game.setKickIntoPlay(game.getPrevious().getKickIntoPlay());
 
         Ball ball = game.getBall();
         Vector3 ballPosition = ball.getPosition();
 
-        game.getBall().getRobotsTouching().clear();
         for (Robot robot : game.getRobots()) {
             Robot oldRobot = game.getPrevious().getRobot(robot.getIdentifier());
+
+            if (oldRobot != null) {
+                robot.setTouch(oldRobot.getTouch());
+                robot.setJustTouchedBall(oldRobot.hasJustTouchedBall());
+            }
+
+            Touch touch = robot.getTouch();
 
             // FIXME: is this a good way to detect if a robot is touching the ball?
             float distance = robot.getPosition().xy().distance(ballPosition.xy());
             if (distance <= BALL_TOUCHING_DISTANCE) {
                 ball.getRobotsTouching().add(robot);
-
                 robot.setJustTouchedBall(oldRobot == null || !oldRobot.isTouchingBall());
-                robot.setTouchingBall(true);
             } else {
                 robot.setJustTouchedBall(false);
-                robot.setTouchingBall(false);
+                robot.setTouch(null);
+
+                if (touch != null) {
+                    touch = new Touch(touch.id(), touch.startLocation(), ballPosition, touch.startTime(), game.getTime(), robot.getIdentifier());
+
+                    if (Objects.equals(touch, game.getKickIntoPlay())) {
+                        game.setKickIntoPlay(touch);
+                    }
+                }
             }
 
             if (robot.hasJustTouchedBall()) {
-                ball.setLastTouchedBy(robot);
-                ball.setLastTouchedAt(ball.getPosition());
-            } else {
-                ball.setLastTouchedBy(game.getPrevious().getBall().getLastTouchedBy());
-                ball.setLastTouchedAt(game.getPrevious().getBall().getLastTouchedAt());
+                touch = new Touch(nextTouchId++, ballPosition, null, game.getTime(), null, robot.getIdentifier());
+                ball.setLastTouchStarted(touch);
+                robot.setTouch(touch);
+
+                System.out.print("touch #" + touch.id() + " by " + robot.getIdentifier());
+
+                if ((game.getState() == GameState.INDIRECT_FREE || game.getState() == GameState.DIRECT_FREE || (game.getState() == GameState.RUNNING && !game.isForceStarted())) && game.getKickIntoPlay() == null) {
+                    game.setKickIntoPlay(touch);
+                    game.setState(GameState.RUNNING);
+
+                    System.out.print(" (kick into play)");
+                }
+
+                System.out.println();
             }
 
-            if (oldRobot != null && oldRobot.isTouchingBall() && !robot.isTouchingBall()) {
-                game.getKicks().add(new Kick(game.getPrevious().getTime(), robot.getIdentifier(), oldRobot.getPosition()));
+            if (touch != null) {
+                game.getTouches().add(touch);
             }
         }
     }

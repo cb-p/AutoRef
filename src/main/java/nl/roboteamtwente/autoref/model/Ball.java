@@ -15,50 +15,14 @@ public class Ball extends Entity {
      */
     private final List<Robot> robotsTouching = new ArrayList<>();
 
-    /**
-     * A Vector3 variable to store the position of where
-     * the ball was last touched.
-     */
-    private Vector3 lastTouchedAt;
+    private Touch lastTouchStarted;
 
-    /**
-     * Variable that stores the robot which last touched the ball
-     */
-    private Robot lastTouchedBy;
-
-
-    /**
-     *
-     * @return lastTouchedAt which is the position of where the ball was last touched at.
-     */
-    public Vector3 getLastTouchedAt() {
-        return lastTouchedAt;
+    public Touch getLastTouchStarted() {
+        return lastTouchStarted;
     }
 
-    /**
-     *
-     * @return lastTouchedby which is the robot who last touched the ball.
-     */
-    public Robot getLastTouchedBy() {
-        return lastTouchedBy;
-    }
-
-    /**
-     * @param lastTouchedAt is the variable to set where the ball was last touched at.
-     * Returns nothing since this method only sets the position of where
-     * the ball was last touched at.
-     */
-    public void setLastTouchedAt(Vector3 lastTouchedAt) {
-        this.lastTouchedAt = lastTouchedAt;
-    }
-
-    /**
-     * @param lastTouchedBy is the Robot to set as the new robot who last touched the ball.
-     * Returns nothing since this method only sets the robot that
-     * the touched the ball last.
-     */
-    public void setLastTouchedBy(Robot lastTouchedBy) {
-        this.lastTouchedBy = lastTouchedBy;
+    public void setLastTouchStarted(Touch lastTouchStarted) {
+        this.lastTouchStarted = lastTouchStarted;
     }
 
     /**
