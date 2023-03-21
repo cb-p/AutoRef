@@ -11,7 +11,9 @@ import java.util.EnumSet;
 
 public class BallLeftFieldTouchLineValidator implements RuleValidator {
 
-    public String leftAt;
+
+    private static final double GRACE_PERIOD = 2.0;
+    private double lastViolations;
     @Override
     public RuleViolation validate(Game game) {
         Vector2 location;
@@ -20,38 +22,17 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
         Vector3 ball = game.getBall().getPosition();
         FieldLine bottomTouchLine = game.getField().getLineByName("BottomTouchLine");
         FieldLine topTouchLine = game.getField().getLineByName("TopTouchLine");
-//        FIXME: LINES 24 TO 34 ARE USED ONLY WHEN THE BALL IS MANUALLY RELOCATED, THIS IS TO BE REMOVED LATER
-//        if (ball.getY() > topTouchLine.p1().getY()) {
-//            leftAt = topTouchLine.name();
-//            location = ball.xy();
-//            return new Violation(null, 0, location);
-//        }
-//
-//        if (ball.getY() < bottomTouchLine.p1().getY()){
-//            leftAt = bottomTouchLine.name();
-//            location = ball.xy();
-//            return new Violation(null, 0, location);
-//        }
 
-        //FIXME: THIS WILL NOT WORK IF A BALL IS LOCATED MANUALLY SINCE byBot.getId() CANNOT BE NULL
-        for (TeamColor teamColor : TeamColor.values()) {
-            for (Robot robot : game.getTeam(teamColor.getOpponentColor()).getRobots()) {
-                if (robot.hasJustTouchedBall() && ball.getY() > topTouchLine.p1().getY()) {
-                    leftAt = topTouchLine.name();
-                    byBot = robot;
-                    byTeam = robot.getTeam().getColor();
-                    location = ball.xy();
-                    return new Violation(byTeam, byBot.getId(), location);
-                }
-
-                if (robot.hasJustTouchedBall() && ball.getY() < bottomTouchLine.p1().getY()){
-                    leftAt = bottomTouchLine.name();
-                    byBot = robot;
-                    byTeam = robot.getTeam().getColor();
-                    location = ball.xy();
-                    return new Violation(byTeam, byBot.getId(), location);
-                }
+        if (ball.getY() > topTouchLine.p1().getY() || ball.getY() < bottomTouchLine.p1().getY()){
+            byBot =  game.getRobot(game.getLastStartedTouch().by());
+            if (byBot != null && (game.getTime() - lastViolations > GRACE_PERIOD)) {
+                lastViolations = game.getTime();
+                byTeam = byBot.getTeam().getColor();
+                location = ball.xy();
+                return new Violation(byTeam, byBot.getId(), location);
             }
+        } else {
+            lastViolations = Double.NEGATIVE_INFINITY;
         }
         return null;
     }
@@ -64,7 +45,7 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
     record Violation(TeamColor byTeam, int byBot, Vector2 location) implements RuleViolation {
         @Override
         public String toString() {
-            return "Ball left the field (by: " + byTeam + ", by bot #" + byBot + ", at " + location + " )";
+            return "Ball left the touch line (by: " + byTeam + ", by bot #" + byBot + ", at " + location + " )";
         }
 
         @Override
