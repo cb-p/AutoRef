@@ -69,6 +69,9 @@ public class GameCanvas extends Canvas {
         g.setFill(Color.GREEN);
         g.fillRect(0, 0, getWidth(), getHeight());
 
+        g.setFill(Color.WHITE);
+        g.fillText(sslAutoRef.getReferee().getGame().getState().toString(), 10.0, 20.0);
+
         for (FieldLine fieldLine : sslAutoRef.getReferee().getGame().getField().getLines()) {
             s.drawLine(fieldLine.p1(), fieldLine.p2(), 2, Color.WHITE);
 
