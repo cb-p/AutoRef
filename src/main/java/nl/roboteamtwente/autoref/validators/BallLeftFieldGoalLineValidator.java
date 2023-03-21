@@ -8,14 +8,42 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BallLeftFieldGoalLineValidator implements RuleValidator {
+
+    private static final double GRACE_PERIOD = 2.0;
+    //Map from robotId -> last violation time
+    private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
+
+    /**
+     * Check if the violation is still in GRACE_PERIOD
+     * @param bot - identifier of the bot
+     * @param currentTimeStamp - the current time that detect violation again
+     * @return true if bot still under GRACE_PERIOD
+     */
+    private boolean botStillOnCoolDown(RobotIdentifier bot, double currentTimeStamp)
+    {
+        if (lastViolations.containsKey(bot))
+        {
+            Double timestampLastViolation = lastViolations.get(bot);
+            if (currentTimeStamp <= timestampLastViolation + GRACE_PERIOD) {
+                return true;
+            } else {
+                lastViolations.remove(bot);
+                return false;
+            }
+        }
+        return false;
+    }
+
     @Override
     public RuleViolation validate(Game game) {
         Vector2 location;
         Robot byBot;
         TeamColor byTeam;
-        Vector3 ball = game.getBall().getPosition();
+        Vector3 ballPosition = game.getBall().getPosition();
         FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
         FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
         FieldLine rightGoalTopLine = game.getField().getLineByName("RightGoalTopLine");
@@ -37,20 +65,47 @@ public class BallLeftFieldGoalLineValidator implements RuleValidator {
 //            return new Violation(null, 0, location);
 //        }
 
-        //FIXME: This will not work with manual ball placement, if you want to test this manually, comment line 41-57 and uncomment 26-38.
-        for (TeamColor teamColor : TeamColor.values()) {
-            for (Robot robot : game.getTeam(teamColor.getOpponentColor()).getRobots()) {
-                if (robot.hasJustTouchedBall() && ball.getX() > rightGoalLine.p1().getX()) {
+//        //FIXME: This will not work with manual ball placement, if you want to test this manually, comment line 41-57 and uncomment 26-38.
+//        for (TeamColor teamColor : TeamColor.values()) {
+//            for (Robot robot : game.getTeam(teamColor).getRobots()) {
+//                if (robot.hasJustTouchedBall() && ball.getX() > rightGoalLine.p1().getX()) {
+//                    byBot = robot;
+//                    byTeam = robot.getTeam().getColor();
+//                    location = ball.xy();
+//                    return new Violation(byTeam, byBot.getId(), location);
+//                }
+//
+//                if (robot.hasJustTouchedBall() && ball.getX() < leftGoalLine.p1().getX()){
+//                    byBot = robot;
+//                    byTeam = robot.getTeam().getColor();
+//                    location = ball.xy();
+//                    return new Violation(byTeam, byBot.getId(), location);
+//                }
+//            }
+//        }
+
+
+        for (Robot robot : game.getRobots()) {
+//            System.out.println(game.getBall().getRobotsTouching());
+//            if (robot.getId() == 0) {
+//                System.out.println("Robot 0 check" + robot.isTouchingBall());
+//            }
+            if (ballPosition.getX() > rightGoalLine.p1().getX() || game.getBall().getLastTouchedBy() == robot) {
+                if (!botStillOnCoolDown(robot.getIdentifier(), game.getTime())) {
+                    lastViolations.put(robot.getIdentifier(), game.getTime());
                     byBot = robot;
                     byTeam = robot.getTeam().getColor();
-                    location = ball.xy();
+                    location = ballPosition.xy();
                     return new Violation(byTeam, byBot.getId(), location);
                 }
+            }
 
-                if (robot.hasJustTouchedBall() && ball.getX() < leftGoalLine.p1().getX()){
+            if (ballPosition.getX() < leftGoalLine.p1().getX() || game.getBall().getLastTouchedBy() == robot) {
+                if (!botStillOnCoolDown(robot.getIdentifier(), game.getTime())) {
+                    lastViolations.put(robot.getIdentifier(), game.getTime());
                     byBot = robot;
                     byTeam = robot.getTeam().getColor();
-                    location = ball.xy();
+                    location = ballPosition.xy();
                     return new Violation(byTeam, byBot.getId(), location);
                 }
             }

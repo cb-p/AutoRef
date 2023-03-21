@@ -10,9 +10,9 @@ public class Referee {
     private static final List<RuleValidator> RULE_VALIDATORS = List.of(
             new BotCrashingValidator(),
             new BotTooFastInStopValidator(),
-//            new AttackerTouchedBallInDefenseAreaValidator(),
-//            new BallLeftFieldTouchLineValidator(),
-//            new BallLeftFieldGoalLineValidator(),
+            new AttackerTouchedBallInDefenseAreaValidator(),
+            new BallLeftFieldTouchLineValidator(),
+            new BallLeftFieldGoalLineValidator(),
             new DefenderInDefenseAreaValidator()
     );
 
