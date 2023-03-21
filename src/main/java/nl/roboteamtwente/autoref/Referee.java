@@ -11,8 +11,8 @@ public class Referee {
             new BotCrashingValidator(),
             new BotTooFastInStopValidator(),
             new AttackerTouchedBallInDefenseAreaValidator(),
-//            new BallLeftFieldTouchLineValidator(),
-//            new BallLeftFieldGoalLineValidator(),
+            new BallLeftFieldTouchLineValidator(),
+            new BallLeftFieldGoalLineValidator(),
             new DefenderInDefenseAreaValidator(),
             new AttackerDoubleTouchedBallValidator()
     );
