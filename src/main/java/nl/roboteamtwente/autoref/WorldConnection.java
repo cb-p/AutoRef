@@ -14,9 +14,6 @@ public class WorldConnection implements Runnable {
     private final int port;
     private ZMQ.Socket worldSocket;
     private final SSLAutoRef ref;
-    private Consumer<RuleViolation> onViolation;
-
-    private GameControllerConnection gameControllerConnection;
 
     /**
      * Establish connection with World
@@ -39,25 +36,10 @@ public class WorldConnection implements Runnable {
             while (!Thread.currentThread().isInterrupted() && worldSocket != null) {
                 byte[] buffer = worldSocket.recv();
                 StateOuterClass.State packet = StateOuterClass.State.parseFrom(buffer);
-                ref.processWorldState(packet);
-                //TODO test what happens if thread is running but world closes (what kind of error, do we need to take action?)
-
-                //check for any violations
-                List<RuleViolation> violations = ref.getReferee().validate();
-                for (RuleViolation violation : violations) {
-                    //violation to ui/AutoRefController.java
-                    if (onViolation != null) {
-                        onViolation.accept(violation);
-                    }
-
-                    if (ref.isActive()) {
-                        gameControllerConnection.addToQueue(violation.toPacket());
-                    }
-                }
+                ref.checkViolations(packet);
             }
         } catch (InvalidProtocolBufferException e) {
-            //FIXME do something useful with exception
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
@@ -74,15 +56,11 @@ public class WorldConnection implements Runnable {
         connect();
     }
 
-    public void setOnViolation(Consumer<RuleViolation> onViolation) {
-        this.onViolation = onViolation;
-    }
 
-    public WorldConnection(String ip, int port, SSLAutoRef ref, GameControllerConnection gcc) {
+    public WorldConnection(String ip, int port, SSLAutoRef ref) {
         this.ip = ip;
         this.port = port;
         this.ref = ref;
         this.worldSocket = null;
-        this.gameControllerConnection = gcc;
     }
 }

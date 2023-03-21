@@ -20,6 +20,7 @@ public class GameControllerConnection implements Runnable {
     private List<SslGcGameEvent.GameEvent> queue;
 
 
+
     /**
      * Connect AutoRef to GameControl by:
      * First establish TCP connection
@@ -27,9 +28,8 @@ public class GameControllerConnection implements Runnable {
      * AutoRef identifies itself by sending AutoRefRegistration
      * GameControl verifies
      * GameControl sends reply (OK|REJECT)
-     * @throws Exception RunTimeExceptions
      */
-    public void connect() throws InterruptedException{
+    public void connect() throws InterruptedException {
         try {
             this.socket = new Socket(ip, port);
 
@@ -48,7 +48,7 @@ public class GameControllerConnection implements Runnable {
                 return;
             }
             if (!reply.hasNextToken()) {
-                throw new RuntimeException("Missing next token");
+                throw new IllegalStateException("Missing next token");
             }
 
             //send registration
@@ -62,17 +62,18 @@ public class GameControllerConnection implements Runnable {
 
             //receive reply
             reply = receivePacket();
-            //FIXME handle reply == null
-            if (reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
-                //FIXME MESSAGE TO UI
+            if (reply != null && reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
+                System.out.println("Failed to connect to GameController: " + reply.getReason());
                 reconnect();
             }
-        } catch (IOException | SignatureException e) {
+        } catch (IOException e) {
             //prevent spamming of trying to reconnect
             Thread.sleep(1000);
             reconnect();
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             e.printStackTrace();
+        } catch (SignatureException e) {
+
         }
     }
 
@@ -86,25 +87,35 @@ public class GameControllerConnection implements Runnable {
             if (isConnected()) {
                 if (!queue.isEmpty()) {
                     SslGcGameEvent.GameEvent gameEvent = queue.remove(0);
-                    sendGameEvent(gameEvent);
+                    try {
+                        sendGameEvent(gameEvent);
+                    } catch (IOException e ) {
+                        queue.add(0, gameEvent);
+                        reconnect();
+                    } catch (RuntimeException e) {
+                        System.out.println(e.getMessage());
+                    }
                 }
             } else {
                 reconnect();
             }
-            Thread.sleep(1000/100); //1 second / 100Hz
+            Thread.sleep(10); //1 second / 100Hz = 10ms
         }
     }
 
     /**
      * close connection
-     * @throws IOException
      */
 
-    public void disconnect() throws IOException {
-        //FIXME remove throws
+    public void disconnect() {
         if (socket != null) {
-            socket.close();
-            socket = null;
+            try {
+                socket.close();
+            } catch (IOException e) {
+
+            } finally {
+                socket = null;
+            }
         }
     }
 
@@ -112,14 +123,16 @@ public class GameControllerConnection implements Runnable {
     /**
      * Reconnect
      */
-    public void reconnect() {
-        //FIXME message to UI (perhaps at place where reconnect is called)
+    public synchronized void reconnect() {
+        System.out.println("Reconnecting");
         try {
-            this.socket = null;
-            this.signature = null;
-            this.connect();
-        } catch (InterruptedException e ) {
-            //FIXME handle exception
+            if (!isConnected()) {
+                this.socket = null;
+                this.signature = null;
+                this.connect();
+            }
+        } catch (InterruptedException e) {
+
         }
     }
 
@@ -127,7 +140,7 @@ public class GameControllerConnection implements Runnable {
      * Send Game Event to GameController
      * @param gameEvent game event with details about the violation
      */
-    public void sendGameEvent(SslGcGameEvent.GameEvent gameEvent) {
+    public void sendGameEvent(SslGcGameEvent.GameEvent gameEvent) throws IOException {
         try {
             //build packet
             SslGcRconAutoref.AutoRefToController.newBuilder()
@@ -137,15 +150,13 @@ public class GameControllerConnection implements Runnable {
                     .writeDelimitedTo(socket.getOutputStream());
             socket.getOutputStream().flush();
 
-            //FIXME make sure we do not get stuck here (how long could it take to get back controller reply?)
+            //FIXME make sure we do not get stuck here
             SslGcRcon.ControllerReply reply = receivePacket();
-            //FIXME handle null
-            if (reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
-                //FIXME rejection is not necessarily a bad thing I think, just log to UI?
+            if (reply != null && reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
                 throw new RuntimeException("Game event rejected: " + reply.getReason());
             }
-        } catch (IOException | SignatureException e) {
-            reconnect();
+        } catch (SignatureException e ) {
+
         }
     }
 
@@ -174,10 +185,8 @@ public class GameControllerConnection implements Runnable {
         } catch (IOException e) {
             this.reconnect();
         } catch (SignatureException e) {
-            //FIXME handle error -> reconnect?
-        }
 
-        //FIXME handle null when calling this method
+        }
         return null;
     }
 
@@ -207,7 +216,7 @@ public class GameControllerConnection implements Runnable {
             this.connect();
             this.processQueue();
         } catch (InterruptedException e) {
-            //FIXME handle exception
+
         }
     }
 }

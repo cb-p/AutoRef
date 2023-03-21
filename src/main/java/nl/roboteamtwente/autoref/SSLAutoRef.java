@@ -22,6 +22,8 @@ public class SSLAutoRef {
     private GameControllerConnection gcConnection;
     private Thread gcThread;
 
+    private WorldConnection worldConnection;
+
     private Consumer<RuleViolation> onViolation;
     private boolean active = false;
 
@@ -155,10 +157,28 @@ public class SSLAutoRef {
         gcConnection.setPort(portGameController);
         gcThread = new Thread(gcConnection);
         gcThread.start();
-        worldThread = new Thread(new WorldConnection(ip, portWorld, this, gcConnection));
+        worldConnection = new WorldConnection(ip, portWorld, this);
+        worldThread = new Thread(worldConnection);
         worldThread.start();
 
     }
+
+    public void checkViolations(StateOuterClass.State packet) {
+        processWorldState(packet);
+        //check for any violations
+        List<RuleViolation> violations = getReferee().validate();
+        for (RuleViolation violation : violations) {
+            //violation to ui/AutoRefController.java
+            if (onViolation != null) {
+                onViolation.accept(violation);
+            }
+
+            if (isActive()) {
+                gcConnection.addToQueue(violation.toPacket());
+            }
+        }
+    }
+
 
     public void start() {
         // FIXME: All still pretty temporary.
@@ -204,14 +224,10 @@ public class SSLAutoRef {
     }
 
     public void stop() {
-        // FIXME: Very dirty way to stop everything.
-        try {
-            gcConnection.disconnect();
-            //FIXME close socket first
-            worldThread.interrupt();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        gcConnection.disconnect();
+        gcThread.interrupt();
+        worldConnection.close();
+        worldThread.interrupt();
     }
 
     public void setOnViolation(Consumer<RuleViolation> onViolation) {
