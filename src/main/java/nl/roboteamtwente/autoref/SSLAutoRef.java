@@ -90,8 +90,8 @@ public class SSLAutoRef {
         }
 
 //        TODO divide by / 1000.0f if the scale is not correct
-        game.getDesignated_position().setX(statePacket.getReferee().getDesignatedPositionOrBuilder().getX());
-        game.getDesignated_position().setY(statePacket.getReferee().getDesignatedPositionOrBuilder().getY());
+        game.getDesignated_position().setX(statePacket.getReferee().getDesignatedPositionOrBuilder().getX()/ 1000.0f);
+        game.getDesignated_position().setY(statePacket.getReferee().getDesignatedPositionOrBuilder().getY()/ 1000.0f);
 
 
 //        TODO handle ball placement yellow and blue

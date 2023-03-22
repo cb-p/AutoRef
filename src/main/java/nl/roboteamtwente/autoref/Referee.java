@@ -9,10 +9,11 @@ import java.util.List;
 public class Referee {
     private static final List<RuleValidator> RULE_VALIDATORS = List.of(
             new BotCrashingValidator(),
+            new BotInterferedPlacementValidator(),
             new BotTooFastInStopValidator(),
             new AttackerTouchedBallInDefenseAreaValidator(),
-            new BallLeftFieldTouchLineValidator(),
-            new BallLeftFieldGoalLineValidator(),
+//            new BallLeftFieldTouchLineValidator(),
+//            new BallLeftFieldGoalLineValidator(),
             new DefenderInDefenseAreaValidator(),
             new AttackerDoubleTouchedBallValidator()
     );
@@ -35,15 +36,15 @@ public class Referee {
 
             game.setTimeLastGameStateChange(game.getTime());
 
-            List<RuleValidator> validators = RULE_VALIDATORS.stream().filter((validator) -> validator.activeStates().contains(game.getState())).toList();
+            List<RuleValidator> allValidators = RULE_VALIDATORS.stream().toList();
 
-            List<RuleValidator> toReset = new ArrayList<>(validators);
-            if (activeValidators != null) {
-                toReset.removeAll(activeValidators);
-            }
+            List<RuleValidator> toReset = new ArrayList<>(allValidators);
+//            if (activeValidators != null) {
+//                toReset.removeAll(activeValidators);
+//            }
 
             toReset.forEach(validator -> validator.reset(game));
-            activeValidators = validators;
+            activeValidators = RULE_VALIDATORS.stream().filter((validator) -> validator.activeStates().contains(game.getState())).toList();
         } else {
             game.setTimeLastGameStateChange(game.getPrevious().getTimeLastGameStateChange());
         }
