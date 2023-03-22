@@ -8,8 +8,35 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DefenderInDefenseAreaValidator implements RuleValidator {
+
+    private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
+
+    private static final double GRACE_PERIOD = 2.0;
+
+    /**
+     * Check if the violation is still in GRACE_PERIOD
+     * @param bot - identifier of the bot
+     * @param currentTimeStamp - the current time that detect violation again
+     * @return true if bot still under GRACE_PERIOD
+     */
+    private boolean botStillOnCoolDown(RobotIdentifier bot, double currentTimeStamp)
+    {
+        if (lastViolations.containsKey(bot))
+        {
+            Double timestampLastViolation = lastViolations.get(bot);
+            if (currentTimeStamp <= timestampLastViolation + GRACE_PERIOD) {
+                return true;
+            } else {
+                lastViolations.remove(bot);
+                return false;
+            }
+        }
+        return false;
+    }
 
     //FIXME: The logic here is implemented correctly and works well, however what should happen if there are 2 robots from each team both in the defense area?
     @Override
@@ -18,24 +45,23 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
             Side side = game.getTeam(teamColor).getSide();
             String sideString = side == Side.LEFT ? "Left" : "Right";
             for (Robot robot : game.getTeam(teamColor).getRobots()) {
+                if (robot.isGoalkeeper()) {
+                    continue;
+                }
+
+                if (!game.getField().isInDefenseArea(robot.getTeam().getSide(), robot.getPosition().xy())) {
+                    continue;
+                }
+
                 FieldLine penaltyStretch = game.getField().getLineByName(sideString + "PenaltyStretch");
-                if (robot.getPosition().getX()  * side.getCardinality() < penaltyStretch.p1().getX()  * side.getCardinality() ) {
-                    continue;
-                }
-
                 FieldLine rightPenaltyStretch = game.getField().getLineByName(sideString + "FieldRightPenaltyStretch");
-                if (robot.getPosition().getY()  * side.getCardinality() > rightPenaltyStretch.p1().getY() * side.getCardinality() ) {
-                    continue;
-                }
-
                 FieldLine leftPenaltyStretch = game.getField().getLineByName(sideString + "FieldLeftPenaltyStretch");
-                if (robot.getPosition().getY() * side.getCardinality() < leftPenaltyStretch.p1().getY() * side.getCardinality()) {
-                    continue;
+                float dist = Math.min(Math.abs(robot.getPosition().getX() - penaltyStretch.p1().getX()), Math.min(Math.abs(robot.getPosition().getY() - rightPenaltyStretch.p1().getY()), Math.abs(robot.getPosition().getY() - leftPenaltyStretch.p1().getY())));
+
+                if (!botStillOnCoolDown(robot.getIdentifier(), game.getTime())) {
+                    lastViolations.put(robot.getIdentifier(), game.getTime());
+                    return new Violation(teamColor, robot.getId(), robot.getPosition().xy(), dist);
                 }
-
-                //FIXME: properly set the distance.
-                return new Violation(teamColor, robot.getId(), robot.getPosition().xy(), 0.0f);
-
             }
         }
         return null;
@@ -44,6 +70,10 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
     @Override
     public EnumSet<GameState> activeStates() {
         return EnumSet.of(GameState.RUNNING);
+    }
+
+    @Override
+    public void reset(Game game) {
     }
 
     record Violation(TeamColor byTeam, int byBot, Vector2 location, float distance) implements RuleViolation {
