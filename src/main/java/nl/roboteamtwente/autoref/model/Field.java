@@ -72,10 +72,7 @@ public class Field {
         FieldLine topPenaltyStretch = rightPenaltyStretch.p1().getY() > leftPenaltyStretch.p1().getY() ? rightPenaltyStretch : leftPenaltyStretch;
         FieldLine bottomPenaltyStretch = topPenaltyStretch == rightPenaltyStretch ? leftPenaltyStretch : rightPenaltyStretch;
 
-        if (location.getY() < bottomPenaltyStretch.p1().getY()) {
-            return false;
-        }
+        return (location.getY() > bottomPenaltyStretch.p1().getY() && location.getY() < topPenaltyStretch.p1().getY());
 
-        return !(location.getY() > topPenaltyStretch.p1().getY());
     }
 }

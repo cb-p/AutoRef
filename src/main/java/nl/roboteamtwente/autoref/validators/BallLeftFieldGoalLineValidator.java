@@ -10,6 +10,21 @@ import org.robocup.ssl.proto.SslGcGeometry;
 import java.util.EnumSet;
 
 public class BallLeftFieldGoalLineValidator implements RuleValidator {
+
+    private static final double GRACE_PERIOD = 2.0;
+    private double lastViolations;
+
+
+    /**
+     * The validate method of this class determines whether an any robot has caused the ball
+     * to exit the right or left goal lines. The X coordinate of the ball is compared against
+     * the X coordinates of the left and/or right goal lines to determine if the ball did indeed cross
+     * those lines. The robot that last touched the ball is the one responsible for the exiting of
+     * the ball and hence the violation.
+     *
+     * @param game the game object being validated
+     * @return a violation when the ball leaves the goal line.
+     */
     @Override
     public RuleViolation validate(Game game) {
         Vector2 location;
@@ -18,42 +33,17 @@ public class BallLeftFieldGoalLineValidator implements RuleValidator {
         Vector3 ball = game.getBall().getPosition();
         FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
         FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
-        FieldLine rightGoalTopLine = game.getField().getLineByName("RightGoalTopLine");
-        FieldLine rightGoalBottomLine = game.getField().getLineByName("RightGoalBottomLine");
 
-
-        //FIXME: If the ball enters the goal itself then this triggers this violation, to prevent that from happening certain dimensions need to be excluded
-//        if (ball.getX() >= rightGoalBottomLine.p1().getX() && ball.getX() <= rightGoalTopLine.p2().getX() &&  ball.getY() <  rightGoalLine.p1().getY() ){
-//            return null;
-//        }
-
-//        if (ball.getX() > rightGoalLine.p1().getX()){
-//            location = ball.xy();
-//            return new Violation(null, 0, location);
-//        }
-//
-//        if (ball.getX() < leftGoalLine.p1().getX()){
-//            location = ball.xy();
-//            return new Violation(null, 0, location);
-//        }
-
-        //FIXME: This will not work with manual ball placement, if you want to test this manually, comment line 41-57 and uncomment 26-38.
-        for (TeamColor teamColor : TeamColor.values()) {
-            for (Robot robot : game.getTeam(teamColor.getOpponentColor()).getRobots()) {
-                if (robot.hasJustTouchedBall() && ball.getX() > rightGoalLine.p1().getX()) {
-                    byBot = robot;
-                    byTeam = robot.getTeam().getColor();
-                    location = ball.xy();
-                    return new Violation(byTeam, byBot.getId(), location);
-                }
-
-                if (robot.hasJustTouchedBall() && ball.getX() < leftGoalLine.p1().getX()){
-                    byBot = robot;
-                    byTeam = robot.getTeam().getColor();
-                    location = ball.xy();
-                    return new Violation(byTeam, byBot.getId(), location);
-                }
+        if (ball.getX() > rightGoalLine.p1().getX() || ball.getX() < leftGoalLine.p1().getX()){
+            byBot =  game.getRobot(game.getLastStartedTouch().by());
+            if (byBot != null && (game.getTime() - lastViolations > GRACE_PERIOD)) {
+                lastViolations = game.getTime();
+                byTeam = byBot.getTeam().getColor();
+                location = ball.xy();
+                return new Violation(byTeam, byBot.getId(), location);
             }
+        } else {
+            lastViolations = Double.NEGATIVE_INFINITY;
         }
         return null;
     }
@@ -69,6 +59,11 @@ public class BallLeftFieldGoalLineValidator implements RuleValidator {
             return "Ball left the Goal line (by: " + byTeam + ", by bot #" + byBot + ", at " + location + " )";
         }
 
+
+        /**
+         * Function that formats the violation into a packet to send to the GameController.
+         * @return a GameEvent packet of type BallLeftFieldGoalLine to be handled by the GameController.
+         */
         @Override
         public SslGcGameEvent.GameEvent toPacket() {
             return SslGcGameEvent.GameEvent.newBuilder()
