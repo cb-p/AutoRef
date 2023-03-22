@@ -146,6 +146,9 @@ public class SSLAutoRef {
 
         if (game.getState() != game.getPrevious().getState()) {
             System.out.println("game state: " + game.getPrevious().getState() + " -> " + game.getState());
+            game.setTimeLastGameStateChange(game.getTime());
+        } else {
+            game.setTimeLastGameStateChange(game.getPrevious().getTimeLastGameStateChange());
         }
 
         referee.setGame(game);
@@ -161,8 +164,10 @@ public class SSLAutoRef {
         Vector3 ballPosition = ball.getPosition();
 
         for (Robot robot : game.getRobots()) {
+            //robot in previous state
             Robot oldRobot = game.getPrevious().getRobot(robot.getIdentifier());
 
+            //copy some values to current state
             if (oldRobot != null) {
                 robot.setTouch(oldRobot.getTouch());
                 robot.setJustTouchedBall(oldRobot.hasJustTouchedBall());
@@ -172,10 +177,13 @@ public class SSLAutoRef {
 
             // FIXME: is this a good way to detect if a robot is touching the ball?
             float distance = robot.getPosition().xy().distance(ballPosition.xy());
+            //detect if there is a touch
+            //FIXME remove working with Z
             if (distance <= robot.getTeam().getRobotRadius() + BALL_TOUCHING_DISTANCE && ball.getPosition().getZ() <= robot.getTeam().getRobotHeight() + BALL_TOUCHING_DISTANCE) {
                 ball.getRobotsTouching().add(robot);
                 robot.setJustTouchedBall(oldRobot == null || !oldRobot.isTouchingBall());
             } else {
+                // robot is not touching ball
                 robot.setJustTouchedBall(false);
                 robot.setTouch(null);
 

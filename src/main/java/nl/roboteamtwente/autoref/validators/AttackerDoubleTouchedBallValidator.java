@@ -36,6 +36,7 @@ public class AttackerDoubleTouchedBallValidator implements RuleValidator {
         // Ball should move 0.05 meters before "in play", then another 0.05 meters before it's a violation.
         float distance = kickIntoPlay.isFinished() ? 0.05f : 0.10f;
 
+        //FIXME explain what if statement does here
         if (!triggered && currentTouch != null && game.getBall().getPosition().distance(kickIntoPlay.startLocation()) >= distance) {
             triggered = true;
             return new Violation(robot.getIdentifier(), game.getKickIntoPlay().startLocation().xy());
