@@ -17,7 +17,8 @@ public class GameControllerConnection implements Runnable {
     private String token;
     private String ip;
     private int port;
-    private List<SslGcGameEvent.GameEvent> queue = new ArrayList<>();;
+    private List<SslGcGameEvent.GameEvent> queue = new ArrayList<>();
+    ;
     private boolean active;
 
 
@@ -97,12 +98,14 @@ public class GameControllerConnection implements Runnable {
                     } catch (IOException e) {
                         //if IOexception in sendGameEvent, add gameEvent back to queue and reconnect
                         queue.add(0, gameEvent);
+                        System.out.println("1");
                         reconnect();
                     } catch (RuntimeException e) {
                         System.out.println(e.getMessage());
                     }
                 }
             } else if (active) {
+                System.out.println("2");
                 reconnect();
             }
             //small delay to not always check queue but check in intervals
@@ -132,14 +135,16 @@ public class GameControllerConnection implements Runnable {
     private synchronized void reconnect() {
         System.out.println("Reconnecting");
         try {
-            if (!isConnected()) {
-                this.socket = null;
-                this.signature = null;
-                if (active) {
-                    this.connect();
-                }
+            if (this.socket != null) {
+                this.socket.close();
             }
-        } catch (InterruptedException e) {
+
+            this.socket = null;
+            this.signature = null;
+            if (active) {
+                this.connect();
+            }
+        } catch (InterruptedException | IOException e) {
             //empty
         }
     }

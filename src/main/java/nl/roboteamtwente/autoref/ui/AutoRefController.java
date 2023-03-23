@@ -6,7 +6,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import nl.roboteamtwente.autoref.SSLAutoRef;
@@ -29,6 +31,12 @@ public class AutoRefController implements Initializable {
 
     @FXML
     public Button clearButton;
+
+    @FXML
+    public Label worldStatus;
+
+    @FXML
+    public Label gcStatus;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -62,6 +70,8 @@ public class AutoRefController implements Initializable {
 
         AnimationTimer anim = new AnimationTimer() {
             public void handle(long now) {
+                worldStatus.setTextFill(sslAutoRef.isWorldConnected() ? Color.GREEN : Color.RED);
+                gcStatus.setTextFill(sslAutoRef.isGCConnected() ? Color.GREEN : Color.RED);
                 canvas.redraw();
             }
         };

@@ -296,4 +296,13 @@ public class SSLAutoRef {
     public Referee getReferee() {
         return referee;
     }
+
+    public boolean isWorldConnected() {
+        // FIXME: There is no way to check a ZMQ socket if its connected.
+        return true;
+    }
+
+    public boolean isGCConnected() {
+        return gcConnection.isConnected();
+    }
 }
