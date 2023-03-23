@@ -68,8 +68,9 @@ public class AutoRefController implements Initializable {
         anim.start();
     }
 
+    //FIXME still hard coded
     public void start() {
-        sslAutoRef.start();
+        sslAutoRef.start("127.0.0.1", 10007, 5558);
     }
 
     public void stop() {

@@ -5,9 +5,7 @@ import nl.roboteamtwente.proto.StateOuterClass;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
-
-import java.util.List;
-import java.util.function.Consumer;
+import org.zeromq.ZMQException;
 
 public class WorldConnection implements Runnable {
     private final String ip;
@@ -23,8 +21,12 @@ public class WorldConnection implements Runnable {
             //Create connection
             worldSocket = context.createSocket(SocketType.SUB);
             worldSocket.subscribe("");
-            worldSocket.connect("tcp:// " + ip + ":" + port);
+            worldSocket.connect("tcp://" + ip + ":" + port);
             listener();
+        } catch (ZMQException e) {
+            if (e.getErrorCode() != 4) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -40,6 +42,10 @@ public class WorldConnection implements Runnable {
             }
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
+        } catch (ZMQException e) {
+            if (e.getErrorCode() != 4) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -47,8 +53,15 @@ public class WorldConnection implements Runnable {
      * Close connection to world
      */
     public void close() {
-        worldSocket.close();
-        worldSocket = null;
+        try {
+            worldSocket.close();
+        } catch (ZMQException e) {
+            if (e.getErrorCode() != 4) {
+                e.printStackTrace();
+            }
+        } finally {
+            worldSocket = null;
+        }
     }
 
     @Override

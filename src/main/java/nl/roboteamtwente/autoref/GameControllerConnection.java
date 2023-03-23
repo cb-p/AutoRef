@@ -17,7 +17,8 @@ public class GameControllerConnection implements Runnable {
     private String token;
     private String ip;
     private int port;
-    private List<SslGcGameEvent.GameEvent> queue;
+    private List<SslGcGameEvent.GameEvent> queue = new ArrayList<>();;
+    private boolean active;
 
 
     /**
@@ -30,7 +31,7 @@ public class GameControllerConnection implements Runnable {
      *
      * @throws InterruptedException
      */
-    public void connect() throws InterruptedException {
+    private void connect() throws InterruptedException {
         try {
             this.socket = new Socket(ip, port);
 
@@ -76,6 +77,7 @@ public class GameControllerConnection implements Runnable {
         } catch (SignatureException e) {
             //empty
         }
+
     }
 
     /**
@@ -100,7 +102,7 @@ public class GameControllerConnection implements Runnable {
                         System.out.println(e.getMessage());
                     }
                 }
-            } else {
+            } else if (active) {
                 reconnect();
             }
             //small delay to not always check queue but check in intervals
@@ -127,13 +129,15 @@ public class GameControllerConnection implements Runnable {
     /**
      * Reconnect
      */
-    public synchronized void reconnect() {
+    private synchronized void reconnect() {
         System.out.println("Reconnecting");
         try {
             if (!isConnected()) {
                 this.socket = null;
                 this.signature = null;
-                this.connect();
+                if (active) {
+                    this.connect();
+                }
             }
         } catch (InterruptedException e) {
             //empty
@@ -174,6 +178,10 @@ public class GameControllerConnection implements Runnable {
         return SslGcRcon.Signature.newBuilder()
                 .setToken(this.token)
                 .setPkcs1V15(ByteString.copyFrom(signature.sign())).build();
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     /**
@@ -219,9 +227,10 @@ public class GameControllerConnection implements Runnable {
 
     @Override
     public void run() {
-        this.queue = new ArrayList<>();
         try {
-            this.connect();
+            if (active) {
+                this.connect();
+            }
             this.processQueue();
         } catch (InterruptedException e) {
             //empty
