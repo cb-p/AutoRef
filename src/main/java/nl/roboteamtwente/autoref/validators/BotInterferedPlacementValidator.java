@@ -62,6 +62,14 @@ public class BotInterferedPlacementValidator implements RuleValidator {
 
     //Map from robotId -> last enter the distance <= MIN_DISTANCE_BETWEEN_ROBOT_AND_PLACEMENT
     private final Map<RobotIdentifier, Double> lastEnterForbiddenArea = new HashMap<>();
+
+    /**
+     * Check if time a robot enter forbidden area is more than 2 seconds
+     * @param bot - identifier of the robot
+     * @param currentTimeStamp - the time robot enter forbidden area
+     * @return true if robot enter more than 2 seconds else update the lastEnterForbidden Area
+     */
+
     public boolean checkViolation(RobotIdentifier bot, double currentTimeStamp) {
         if (lastEnterForbiddenArea.containsKey(bot))
         {
@@ -98,10 +106,8 @@ public class BotInterferedPlacementValidator implements RuleValidator {
                         Vector2 roundRobotPos = new Vector2(roundFloatTo1DecimalPlace(robot.getPosition().getX()), roundFloatTo1DecimalPlace(robot.getPosition().getY()));
                         return new BotInterferedPlacementValidator.BotInterferedPlacementViolation(robot.getTeam().getColor(), robot.getId(), roundRobotPos, ballPos, placementPos);
                     }
-                } else {
-                    if (lastEnterForbiddenArea.containsKey(robot.getIdentifier())) {
+                } else if (lastEnterForbiddenArea.containsKey(robot.getIdentifier())) {
                         lastEnterForbiddenArea.remove(robot.getIdentifier());
-                    }
                 }
             }
         }
