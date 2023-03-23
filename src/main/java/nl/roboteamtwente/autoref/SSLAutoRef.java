@@ -106,20 +106,6 @@ public class SSLAutoRef {
                 game.setForTeam(null);
         }
 
-        game.setState(switch (statePacket.getReferee().getCommand()) {
-            case HALT -> GameState.HALT;
-            case STOP -> GameState.STOP;
-            //noinspection deprecation
-            case NORMAL_START, FORCE_START, GOAL_YELLOW, GOAL_BLUE -> GameState.RUNNING;
-            case PREPARE_KICKOFF_YELLOW, PREPARE_KICKOFF_BLUE -> GameState.PREPARE_KICKOFF;
-            case PREPARE_PENALTY_YELLOW, PREPARE_PENALTY_BLUE -> GameState.PREPARE_PENALTY;
-            case DIRECT_FREE_YELLOW, DIRECT_FREE_BLUE -> GameState.DIRECT_FREE;
-            //noinspection deprecation
-            case INDIRECT_FREE_YELLOW, INDIRECT_FREE_BLUE -> GameState.INDIRECT_FREE;
-            case TIMEOUT_YELLOW, TIMEOUT_BLUE -> GameState.TIMEOUT;
-            case BALL_PLACEMENT_YELLOW, BALL_PLACEMENT_BLUE -> GameState.BALL_PLACEMENT;
-        });
-
         game.getBall().getPosition().setX(world.getBall().getPos().getX());
         game.getBall().getPosition().setY(world.getBall().getPos().getY());
         game.getBall().getPosition().setZ(world.getBall().getZ());
