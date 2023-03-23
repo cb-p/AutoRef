@@ -32,6 +32,8 @@ public class Game {
      */
     private final Field field;
 
+    private double timeLastGameStateChange;
+
     private GameState state;
     private double time;
 
@@ -181,4 +183,13 @@ public class Game {
     public void setForceStarted(boolean forceStarted) {
         this.forceStarted = forceStarted;
     }
+
+    public void setTimeLastGameStateChange(double timeLastGameStateChange) {
+        this.timeLastGameStateChange = timeLastGameStateChange;
+    }
+
+    public double getTimeLastGameStateChange() {
+        return timeLastGameStateChange;
+    }
+
 }

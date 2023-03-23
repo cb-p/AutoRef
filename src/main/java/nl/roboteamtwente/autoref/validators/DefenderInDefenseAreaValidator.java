@@ -38,7 +38,15 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
         return false;
     }
 
-    //FIXME: The logic here is implemented correctly and works well, however what should happen if there are 2 robots from each team both in the defense area?
+
+    /**
+     * The validate method of this class determines whether a defender is in their own
+     * defense area. The location of all bots is checked, if the location of the bot
+     * is between the coordinates of their defense area, the violation is raised.
+     *
+     * @param game the game object being validated
+     * @return a violation when a defender is in the defense area.
+     */
     @Override
     public RuleViolation validate(Game game) {
         for (TeamColor teamColor : TeamColor.values()) {
@@ -56,6 +64,7 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
                 FieldLine penaltyStretch = game.getField().getLineByName(sideString + "PenaltyStretch");
                 FieldLine rightPenaltyStretch = game.getField().getLineByName(sideString + "FieldRightPenaltyStretch");
                 FieldLine leftPenaltyStretch = game.getField().getLineByName(sideString + "FieldLeftPenaltyStretch");
+                //FIXME mention in comment where you measure the distance between
                 float dist = Math.min(Math.abs(robot.getPosition().getX() - penaltyStretch.p1().getX()), Math.min(Math.abs(robot.getPosition().getY() - rightPenaltyStretch.p1().getY()), Math.abs(robot.getPosition().getY() - leftPenaltyStretch.p1().getY())));
 
                 if (!botStillOnCoolDown(robot.getIdentifier(), game.getTime())) {
@@ -76,6 +85,15 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
     public void reset(Game game) {
     }
 
+
+    /**
+     * Violation record which is used to flag who did the violation and where.
+     *
+     * @param byTeam the team the robot is in that performed the violation.
+     * @param byBot the robot that performed the violation.
+     * @param location the location on the field where the violation was made.
+     * @param distance the minimum distance from the lines of the defense area to the bot.
+     */
     record Violation(TeamColor byTeam, int byBot, Vector2 location, float distance) implements RuleViolation {
         @Override
         public String toString() {

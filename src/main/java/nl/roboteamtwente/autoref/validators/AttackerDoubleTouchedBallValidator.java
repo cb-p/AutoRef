@@ -12,6 +12,13 @@ import java.util.EnumSet;
 public class AttackerDoubleTouchedBallValidator implements RuleValidator {
     private boolean triggered = false;
 
+
+    /**
+     * The validate method of this class determines whether an attacker has double touched the ball.
+     *
+     * @param game the game object being validated
+     * @return a violation when an attacker has double touched the ball, else return null.
+     */
     @Override
     public RuleViolation validate(Game game) {
         Touch kickIntoPlay = game.getKickIntoPlay();
@@ -29,6 +36,7 @@ public class AttackerDoubleTouchedBallValidator implements RuleValidator {
         // Ball should move 0.05 meters before "in play", then another 0.05 meters before it's a violation.
         float distance = kickIntoPlay.isFinished() ? 0.05f : 0.10f;
 
+        //FIXME explain what if statement does here
         if (!triggered && currentTouch != null && game.getBall().getPosition().distance(kickIntoPlay.startLocation()) >= distance) {
             triggered = true;
             return new Violation(robot.getIdentifier(), game.getKickIntoPlay().startLocation().xy());
@@ -47,12 +55,25 @@ public class AttackerDoubleTouchedBallValidator implements RuleValidator {
         triggered = false;
     }
 
+    /**
+     * Violation record which is used to flag who did the violation and where.
+     *
+     * @param by the robot that performed the violation.
+     * @param location the location on the field where the violation was made.
+     */
     record Violation(RobotIdentifier by, Vector2 location) implements RuleViolation {
+
+
         @Override
         public String toString() {
             return "Attacker double touched ball (by: " + by.teamColor() + " #" + by.id() + ", at " + location + ")";
         }
 
+
+        /**
+         * Function that formats the violation into a packet to send to the GameController.
+         * @return a GameEvent packet of type AttackerDoubleTouchedBall to be handled by the GameController.
+         */
         @Override
         public SslGcGameEvent.GameEvent toPacket() {
             return SslGcGameEvent.GameEvent.newBuilder()
