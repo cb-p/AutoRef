@@ -65,20 +65,14 @@ public class BotInterferedPlacementValidator implements RuleValidator {
     public boolean checkViolation(RobotIdentifier bot, double currentTimeStamp) {
         if (lastEnterForbiddenArea.containsKey(bot))
         {
-//            if (bot.id() == 8) {
-//                System.out.println("Again " + currentTimeStamp);
-//            }
             Double timestampLastViolation = lastEnterForbiddenArea.get(bot);
             // if enter forbidden area more than 2 second => return fault and reset enter forbidden area time
             if (currentTimeStamp > timestampLastViolation + GRACE_PERIOD) {
-                System.out.println("Last enter is" + timestampLastViolation);
-                System.out.println("Current enter is " + currentTimeStamp);
                 lastEnterForbiddenArea.put(bot, currentTimeStamp);
                 return true;
             }
         } else {
             // if the first time => add into enter forbidden area
-            System.out.println("First enter of " + bot.id()+  " is" + currentTimeStamp);
             lastEnterForbiddenArea.put(bot, currentTimeStamp);
         }
         return false;
@@ -86,29 +80,22 @@ public class BotInterferedPlacementValidator implements RuleValidator {
 
     @Override
     public void reset(Game game) {
-        System.out.println("HERE");
         lastEnterForbiddenArea.clear();
     }
 
     @Override
     public RuleViolation validate(Game game) {
         if (game.getState() == GameState.BALL_PLACEMENT){
-            Vector2 designated_position = game.getDesignated_position();
-//            System.out.println(designated_position.getX());
-//            System.out.println(designated_position.getY());
-//            System.out.println(game.getForTeam());
+
             Team opponentTeam = game.getTeam(game.getForTeam().getOpponentColor());
             for (Robot robot : opponentTeam.getRobots()) {
                 Vector2 robotPos = robot.getPosition().xy();
                 Vector2 placementPos = game.getDesignated_position();
                 Vector2 ballPos = game.getBall().getPosition().xy();
                 float distance = calculateDistancePointToLine(ballPos, placementPos, robotPos);
-//                System.out.println(distance);
                 if (distance < MIN_DISTANCE_BETWEEN_ROBOT_AND_PLACEMENT) {
-//                    System.out.println("Enter forbidden (bot #" + robot.getId() + " location: " + robot.getPosition() + " ballPos" + ballPos+ " placementPos: " + placementPos + " time:" + game.getTime() + " )");
                     if (checkViolation(robot.getIdentifier(), game.getTime())) {
                         Vector2 roundRobotPos = new Vector2(roundFloatTo1DecimalPlace(robot.getPosition().getX()), roundFloatTo1DecimalPlace(robot.getPosition().getY()));
-                        System.out.println("Distance is" + distance);
                         return new BotInterferedPlacementValidator.BotInterferedPlacementViolation(robot.getTeam().getColor(), robot.getId(), roundRobotPos, ballPos, placementPos);
                     }
                 } else {
