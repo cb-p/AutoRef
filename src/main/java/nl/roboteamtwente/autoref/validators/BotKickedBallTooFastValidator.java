@@ -22,7 +22,7 @@ public class BotKickedBallTooFastValidator implements RuleValidator {
     @Override
     public RuleViolation validate(Game game) {
         TeamColor team;
-        Robot robot;
+        RobotIdentifier robotID;
         Vector2 location;
         Ball ball = game.getBall();
 
@@ -38,14 +38,18 @@ public class BotKickedBallTooFastValidator implements RuleValidator {
         // Due to inconsistent data, the ball may teleport around and this may be detected
         // as the ball being kicked too fast. In that case, use the implementation below, uses 2 consecutive frames
         if (speed > 6.5) {
-            team = ball.getLastTouchedBy().getTeam().getColor();
-            robot = ball.getLastTouchedBy();
+            team = game.getLastStartedTouch().by().teamColor();
+            robotID = game.getLastStartedTouch().by();
+
+//            robot = ball.getLastTouchedBy();
+
+
             location = ball.getPosition().xy();
 
             // Only if this violation has not been sent in the last 2 seconds, raise it
-            if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
-                lastViolations.put(robot.getIdentifier(), game.getTime());
-                return new Violation(team, robot.getId(), location, speed);
+            if (!lastViolations.containsKey(robotID) || lastViolations.get(robotID) + GRACE_PERIOD < game.getTime()) {
+                lastViolations.put(robotID, game.getTime());
+                return new Violation(team, robotID.id(), location, speed);
             }
         }
 
@@ -75,11 +79,12 @@ public class BotKickedBallTooFastValidator implements RuleValidator {
     // Rule should only be checked when the ball is in play. Might include other game states as well?
     @Override
     public EnumSet<GameState> activeStates() {
-        return EnumSet.of(GameState.KICKOFF, GameState.DIRECT_FREE, GameState.INDIRECT_FREE, GameState.RUNNING);
+//        return EnumSet.of(GameState.KICKOFF, GameState.DIRECT_FREE, GameState.INDIRECT_FREE, GameState.RUNNING);
+        return EnumSet.of(GameState.DIRECT_FREE, GameState.INDIRECT_FREE, GameState.RUNNING);
     }
 
     @Override
-    public void reset() {
+    public void reset(Game game) {
         lastViolations.clear();
     }
 
