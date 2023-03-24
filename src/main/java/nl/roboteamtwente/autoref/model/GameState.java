@@ -9,7 +9,6 @@ public enum GameState {
     BALL_PLACEMENT,
 
     PREPARE_KICKOFF,
-    KICKOFF,
 
     PREPARE_PENALTY,
     DIRECT_FREE,

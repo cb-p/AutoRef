@@ -8,11 +8,13 @@ import java.util.List;
 
 public class Referee {
     private static final List<RuleValidator> RULE_VALIDATORS = List.of(
-            new BotCrashingValidator()
-//            new AttackerTouchedBallInDefenseAreaValidator(),
-//            new BallLeftFieldTouchLineValidator(),
-//            new BallLeftFieldGoalLineValidator(),
-//            new DefenderInDefenseAreaValidator()
+            new BotCrashingValidator(),
+            new BotTooFastInStopValidator(),
+            new AttackerTouchedBallInDefenseAreaValidator(),
+            new BallLeftFieldTouchLineValidator(),
+            new BallLeftFieldGoalLineValidator(),
+            new DefenderInDefenseAreaValidator(),
+            new AttackerDoubleTouchedBallValidator()
     );
 
     private List<RuleValidator> activeValidators;
@@ -29,8 +31,6 @@ public class Referee {
 
     public List<RuleViolation> validate() {
         if (activeValidators == null || game.getState() != game.getPrevious().getState()) {
-            System.out.println("game state: " + game.getPrevious().getState() + " -> " + game.getState());
-
             List<RuleValidator> validators = RULE_VALIDATORS.stream().filter((validator) -> validator.activeStates().contains(game.getState())).toList();
 
             List<RuleValidator> toReset = new ArrayList<>(validators);
@@ -38,7 +38,7 @@ public class Referee {
                 toReset.removeAll(activeValidators);
             }
 
-            toReset.forEach(RuleValidator::reset);
+            toReset.forEach(validator -> validator.reset(game));
             activeValidators = validators;
         }
 

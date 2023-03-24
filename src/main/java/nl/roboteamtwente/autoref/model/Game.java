@@ -2,6 +2,7 @@ package nl.roboteamtwente.autoref.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -31,12 +32,17 @@ public class Game {
      */
     private final Field field;
 
+    private double timeLastGameStateChange;
+
     private GameState state;
     private double time;
 
     private Game previous;
 
-    private List<Kick> kicks;
+    private Touch kickIntoPlay;
+    private final List<Touch> touches;
+
+    private boolean forceStarted;
 
     public Game() {
         this.robots = new ArrayList<>();
@@ -50,7 +56,9 @@ public class Game {
         this.time = 0.0;
         this.previous = this;
 
-        this.kicks = new ArrayList<>();
+        this.touches = new ArrayList<>();
+
+        this.forceStarted = false;
     }
 
     /**
@@ -140,11 +148,48 @@ public class Game {
         return previous;
     }
 
-    public List<Kick> getKicks() {
-        return kicks;
+    public List<Touch> getTouches() {
+        return touches;
     }
 
-    public Kick getLastKick() {
-        return kicks.isEmpty() ? null : kicks.get(kicks.size() - 1);
+    public List<Touch> getCurrentTouches() {
+        return touches.stream().filter((it) -> !it.isFinished()).collect(Collectors.toList());
     }
+
+    public List<Touch> getFinishedTouches() {
+        return touches.stream().filter(Touch::isFinished).collect(Collectors.toList());
+    }
+
+    public Touch getLastStartedTouch() {
+        return touches.isEmpty() ? null : touches.get(touches.size() - 1);
+    }
+
+    public Touch getLastFinishedTouch() {
+        return touches.stream().filter(Touch::isFinished).reduce((first, second) -> second).orElse(null);
+    }
+
+    public Touch getKickIntoPlay() {
+        return kickIntoPlay;
+    }
+
+    public void setKickIntoPlay(Touch kickIntoPlay) {
+        this.kickIntoPlay = kickIntoPlay;
+    }
+
+    public boolean isForceStarted() {
+        return forceStarted;
+    }
+
+    public void setForceStarted(boolean forceStarted) {
+        this.forceStarted = forceStarted;
+    }
+
+    public void setTimeLastGameStateChange(double timeLastGameStateChange) {
+        this.timeLastGameStateChange = timeLastGameStateChange;
+    }
+
+    public double getTimeLastGameStateChange() {
+        return timeLastGameStateChange;
+    }
+
 }

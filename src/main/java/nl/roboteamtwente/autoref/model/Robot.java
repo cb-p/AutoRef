@@ -21,10 +21,7 @@ public class Robot extends Entity {
      */
     private Team team;
 
-    /**
-     * This variable keeps track of whether a robot is currently touching the ball
-     */
-    private boolean touchingBall = false;
+    private Touch touch;
 
     /**
      * This variable keeps track of whether a robot has touched the ball in the previous frame.
@@ -95,18 +92,16 @@ public class Robot extends Entity {
      * @return a boolean if the robot is touching the ball.
      */
     public boolean isTouchingBall() {
-        return touchingBall;
+        return touch != null;
     }
 
-
-    /**
-     *
-     * @param touchingBall sets the current robot object to whether it has currently touched the ball or not.
-     */
-    public void setTouchingBall(boolean touchingBall) {
-        this.touchingBall = touchingBall;
+    public Touch getTouch() {
+        return touch;
     }
 
+    public void setTouch(Touch touch) {
+        this.touch = touch;
+    }
 
     /**
      *

@@ -73,7 +73,12 @@ public class BotCrashingValidator implements RuleValidator {
         if (lastViolations.containsKey(bot))
         {
             Double timestampLastViolation = lastViolations.get(bot);
-            return (currentTimeStamp < timestampLastViolation + GRACE_PERIOD);
+            if (currentTimeStamp <= timestampLastViolation + GRACE_PERIOD) {
+                return true;
+            } else {
+                lastViolations.remove(bot);
+                return false;
+            }
         }
         return false;
     }

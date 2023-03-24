@@ -10,6 +10,6 @@ public interface RuleValidator {
 
     EnumSet<GameState> activeStates();
 
-    default void reset() {
+    default void reset(Game game) {
     }
 }

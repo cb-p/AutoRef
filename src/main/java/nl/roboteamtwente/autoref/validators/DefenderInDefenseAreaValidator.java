@@ -8,34 +8,69 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DefenderInDefenseAreaValidator implements RuleValidator {
 
-    //FIXME: The logic here is implemented correctly and works well, however what should happen if there are 2 robots from each team both in the defense area?
+    private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
+
+    private static final double GRACE_PERIOD = 2.0;
+
+    /**
+     * Check if the violation is still in GRACE_PERIOD
+     * @param bot - identifier of the bot
+     * @param currentTimeStamp - the current time that detect violation again
+     * @return true if bot still under GRACE_PERIOD
+     */
+    private boolean botStillOnCoolDown(RobotIdentifier bot, double currentTimeStamp)
+    {
+        if (lastViolations.containsKey(bot))
+        {
+            Double timestampLastViolation = lastViolations.get(bot);
+            if (currentTimeStamp <= timestampLastViolation + GRACE_PERIOD) {
+                return true;
+            } else {
+                lastViolations.remove(bot);
+                return false;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * The validate method of this class determines whether a defender is in their own
+     * defense area. The location of all bots is checked, if the location of the bot
+     * is between the coordinates of their defense area, the violation is raised.
+     *
+     * @param game the game object being validated
+     * @return a violation when a defender is in the defense area.
+     */
     @Override
     public RuleViolation validate(Game game) {
         for (TeamColor teamColor : TeamColor.values()) {
             Side side = game.getTeam(teamColor).getSide();
             String sideString = side == Side.LEFT ? "Left" : "Right";
             for (Robot robot : game.getTeam(teamColor).getRobots()) {
+                if (robot.isGoalkeeper()) {
+                    continue;
+                }
+
+                if (!game.getField().isInDefenseArea(robot.getTeam().getSide(), robot.getPosition().xy())) {
+                    continue;
+                }
+
                 FieldLine penaltyStretch = game.getField().getLineByName(sideString + "PenaltyStretch");
-                if (robot.getPosition().getX()  * side.getCardinality() < penaltyStretch.p1().getX()  * side.getCardinality() ) {
-                    continue;
-                }
-
                 FieldLine rightPenaltyStretch = game.getField().getLineByName(sideString + "FieldRightPenaltyStretch");
-                if (robot.getPosition().getY()  * side.getCardinality() > rightPenaltyStretch.p1().getY() * side.getCardinality() ) {
-                    continue;
-                }
-
                 FieldLine leftPenaltyStretch = game.getField().getLineByName(sideString + "FieldLeftPenaltyStretch");
-                if (robot.getPosition().getY() * side.getCardinality() < leftPenaltyStretch.p1().getY() * side.getCardinality()) {
-                    continue;
+                //FIXME mention in comment where you measure the distance between
+                float dist = Math.min(Math.abs(robot.getPosition().getX() - penaltyStretch.p1().getX()), Math.min(Math.abs(robot.getPosition().getY() - rightPenaltyStretch.p1().getY()), Math.abs(robot.getPosition().getY() - leftPenaltyStretch.p1().getY())));
+
+                if (!botStillOnCoolDown(robot.getIdentifier(), game.getTime())) {
+                    lastViolations.put(robot.getIdentifier(), game.getTime());
+                    return new Violation(teamColor, robot.getId(), robot.getPosition().xy(), dist);
                 }
-
-                //FIXME: properly set the distance.
-                return new Violation(teamColor, robot.getId(), robot.getPosition().xy(), 0.0f);
-
             }
         }
         return null;
@@ -46,6 +81,19 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
         return EnumSet.of(GameState.RUNNING);
     }
 
+    @Override
+    public void reset(Game game) {
+    }
+
+
+    /**
+     * Violation record which is used to flag who did the violation and where.
+     *
+     * @param byTeam the team the robot is in that performed the violation.
+     * @param byBot the robot that performed the violation.
+     * @param location the location on the field where the violation was made.
+     * @param distance the minimum distance from the lines of the defense area to the bot.
+     */
     record Violation(TeamColor byTeam, int byBot, Vector2 location, float distance) implements RuleViolation {
         @Override
         public String toString() {

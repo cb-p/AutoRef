@@ -96,6 +96,15 @@ public class Vector3 {
         return new Vector2(getX(), getY());
     }
 
+    /**
+     * Method used to detect the distance between two vectors.
+     * @param other, the other vector to find the distance to.
+     * @return the distance between two vectors.
+     */
+    public float distance(Vector3 other) {
+        return (float) Math.sqrt(Math.pow(x - other.x, 2) + Math.pow(y - other.y, 2) + Math.pow(z - other.z, 2));
+    }
+
 
     /**
      * @return the string value of the Vector3 object.
