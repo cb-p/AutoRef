@@ -84,4 +84,13 @@ public class Field {
 
         return side == Side.LEFT && location.getX() < halfway.p1().getX() || side == Side.RIGHT && location.getX() > halfway.p1().getX();
     }
+
+    public String getDivision(Game game){
+        FieldLine left = getLineByName("LeftGoalLine");
+        FieldLine right = getLineByName("RightGoalLine");
+        if (right.p1().getX() - left.p1().getX() >= 8.1 && right.p1().getX() - left.p1().getX() <= 9.9 && game.getRobots().size() == 12){
+            return "B";
+        }
+        return "A";
+    }
 }

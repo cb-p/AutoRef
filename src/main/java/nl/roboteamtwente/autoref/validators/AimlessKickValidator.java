@@ -8,6 +8,7 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.util.EnumSet;
+import java.util.Objects;
 
 
 public class AimlessKickValidator implements RuleValidator {
@@ -24,14 +25,18 @@ public class AimlessKickValidator implements RuleValidator {
         FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
         FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
 
+        if (Objects.equals(game.getField().getDivision(game), "A")){
+            return null;
+        }
+
         if (game.getBall().getPosition().getX() > rightGoalLine.p1().getX() || game.getBall().getPosition().getX() < leftGoalLine.p1().getX()){
             byBot =  game.getRobot(game.getLastStartedTouch().by());
-
-            if (byBot != null && game.getField().isInOwnHalf(byBot.getTeam().getSide(), byBot.getPosition().xy()) && (game.getTime() - lastViolations > GRACE_PERIOD)) {
+            Vector2 finalTouchLocation = byBot.getPosition().xy();
+            if (game.getField().isInOwnHalf(byBot.getTeam().getSide(), byBot.getPosition().xy()) && (game.getTime() - lastViolations > GRACE_PERIOD)) {
                 lastViolations = game.getTime();
                 byTeam = byBot.getTeam().getColor();
                 location = game.getBall().getPosition().xy();
-                return new Violation(byTeam, byBot.getId(), location, byBot.getPosition().xy());
+                return new Violation(byTeam, byBot.getId(), location, finalTouchLocation);
             }
         } else {
             lastViolations = Double.NEGATIVE_INFINITY;
