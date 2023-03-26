@@ -75,4 +75,13 @@ public class Field {
         return (location.getY() > bottomPenaltyStretch.p1().getY() && location.getY() < topPenaltyStretch.p1().getY());
 
     }
+
+    public boolean isInOwnHalf(Side side, Vector2 location){
+        FieldLine halfway = getLineByName("HalfwayLine");
+//        if (location.getX()  * side.getCardinality() > halfway.p1().getX() * side.getCardinality()){
+//            return true;
+//        }
+
+        return side == Side.LEFT && location.getX() < halfway.p1().getX() || side == Side.RIGHT && location.getX() > halfway.p1().getX();
+    }
 }
