@@ -64,6 +64,7 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
                 FieldLine penaltyStretch = game.getField().getLineByName(sideString + "PenaltyStretch");
                 FieldLine rightPenaltyStretch = game.getField().getLineByName(sideString + "FieldRightPenaltyStretch");
                 FieldLine leftPenaltyStretch = game.getField().getLineByName(sideString + "FieldLeftPenaltyStretch");
+                //FIXME mention in comment where you measure the distance between
                 float dist = Math.min(Math.abs(robot.getPosition().getX() - penaltyStretch.p1().getX()), Math.min(Math.abs(robot.getPosition().getY() - rightPenaltyStretch.p1().getY()), Math.abs(robot.getPosition().getY() - leftPenaltyStretch.p1().getY())));
 
                 if (!botStillOnCoolDown(robot.getIdentifier(), game.getTime())) {

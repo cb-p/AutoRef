@@ -5,11 +5,6 @@ import nl.roboteamtwente.proto.StateOuterClass;
 import nl.roboteamtwente.proto.WorldOuterClass;
 import nl.roboteamtwente.proto.WorldRobotOuterClass;
 import org.robocup.ssl.proto.SslVisionGeometry;
-import org.zeromq.SocketType;
-import org.zeromq.ZContext;
-import org.zeromq.ZMQ;
-
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -21,6 +16,9 @@ public class SSLAutoRef {
 
     private Thread worldThread;
     private GameControllerConnection gcConnection;
+    private Thread gcThread;
+
+    private WorldConnection worldConnection;
 
     private Consumer<RuleViolation> onViolation;
     private boolean active = false;
@@ -40,7 +38,7 @@ public class SSLAutoRef {
 
         WorldOuterClass.World world = statePacket.getCommandExtrapolatedWorld();
 
-        game.setTime(world.getTime() / 1000000000.0);
+        game.setTime(world.getTime() / 1_000_000_000.0);
         game.setForceStarted(game.getPrevious().isForceStarted());
 
         if (game.getState() == null || statePacket.getReferee().getCommandCounter() != commands) {
@@ -162,6 +160,9 @@ public class SSLAutoRef {
 
         if (game.getState() != game.getPrevious().getState()) {
             System.out.println("game state: " + game.getPrevious().getState() + " -> " + game.getState());
+            game.setTimeLastGameStateChange(game.getTime());
+        } else {
+            game.setTimeLastGameStateChange(game.getPrevious().getTimeLastGameStateChange());
         }
 
         referee.setGame(game);
@@ -177,8 +178,10 @@ public class SSLAutoRef {
         Vector3 ballPosition = ball.getPosition();
 
         for (Robot robot : game.getRobots()) {
+            //robot in previous state
             Robot oldRobot = game.getPrevious().getRobot(robot.getIdentifier());
 
+            //copy some values to current state
             if (oldRobot != null) {
                 robot.setTouch(oldRobot.getTouch());
                 robot.setJustTouchedBall(oldRobot.hasJustTouchedBall());
@@ -188,10 +191,13 @@ public class SSLAutoRef {
 
             // FIXME: is this a good way to detect if a robot is touching the ball?
             float distance = robot.getPosition().xy().distance(ballPosition.xy());
+            //detect if there is a touch
+            //FIXME remove working with Z
             if (distance <= robot.getTeam().getRobotRadius() + BALL_TOUCHING_DISTANCE && ball.getPosition().getZ() <= robot.getTeam().getRobotHeight() + BALL_TOUCHING_DISTANCE) {
                 ball.getRobotsTouching().add(robot);
                 robot.setJustTouchedBall(oldRobot == null || !oldRobot.isTouchingBall());
             } else {
+                // robot is not touching ball
                 robot.setJustTouchedBall(false);
                 robot.setTouch(null);
 
@@ -242,56 +248,52 @@ public class SSLAutoRef {
         robot.setAngle(worldRobot.getAngle());
     }
 
-    public void start() {
-        // FIXME: All still pretty temporary.
-        try {
-            gcConnection = new GameControllerConnection();
-            gcConnection.connect("localhost", 10007);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        worldThread = new Thread(() -> {
-            try (ZContext context = new ZContext()) {
-                ZMQ.Socket worldSocket = context.createSocket(SocketType.SUB);
-
-                worldSocket.subscribe("");
-                worldSocket.connect("tcp://127.0.0.1:5558");
-
-                while (!Thread.currentThread().isInterrupted()) {
-                    try {
-                        byte[] buffer = worldSocket.recv();
-                        StateOuterClass.State packet = StateOuterClass.State.parseFrom(buffer);
-                        processWorldState(packet);
-
-                        List<RuleViolation> violations = referee.validate();
-                        for (RuleViolation violation : violations) {
-                            if (onViolation != null) {
-                                onViolation.accept(violation);
-                            }
-
-                            if (active && gcConnection.isConnected()) {
-                                gcConnection.sendGameEvent(violation.toPacket());
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }, "World Connection");
+    /**
+     * Setup connections with all other software
+     *
+     * @param ip                 ip where all software is running on
+     * @param portGameController port GameContoller
+     * @param portWorld          port World
+     */
+    public void start(String ip, int portGameController, int portWorld) {
+        //setup connection with GameControl
+        gcConnection = new GameControllerConnection();
+        gcConnection.setIp(ip);
+        gcConnection.setPort(portGameController);
+        gcThread = new Thread(gcConnection);
+        gcThread.start();
+        //setup connection with World
+        worldConnection = new WorldConnection(ip, portWorld, this);
+        worldThread = new Thread(worldConnection);
         worldThread.start();
     }
 
-    public void stop() {
-        // FIXME: Very dirty way to stop everything.
+    /**
+     * Process received packet and check for violations
+     *
+     * @param packet
+     */
+    public void checkViolations(StateOuterClass.State packet) {
+        processWorldState(packet);
+        //check for any violations
+        List<RuleViolation> violations = getReferee().validate();
+        for (RuleViolation violation : violations) {
+            //violation to ui/AutoRefController.java
+            if (onViolation != null) {
+                onViolation.accept(violation);
+            }
 
-        try {
-            gcConnection.disconnect();
-            worldThread.stop();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            if (isActive()) {
+                gcConnection.addToQueue(violation.toPacket());
+            }
         }
+    }
+
+    public void stop() {
+        gcConnection.disconnect();
+        gcThread.interrupt();
+        worldConnection.close();
+        worldThread.interrupt();
     }
 
     public void setOnViolation(Consumer<RuleViolation> onViolation) {
@@ -299,11 +301,24 @@ public class SSLAutoRef {
     }
 
     public void setActive(boolean active) {
-        // FIXME: Disconnect from game controller while not active.
+        gcConnection.setActive(active);
         this.active = active;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     public Referee getReferee() {
         return referee;
+    }
+
+    public boolean isWorldConnected() {
+        // FIXME: There is no way to check a ZMQ socket if its connected.
+        return true;
+    }
+
+    public boolean isGCConnected() {
+        return gcConnection.isConnected();
     }
 }
