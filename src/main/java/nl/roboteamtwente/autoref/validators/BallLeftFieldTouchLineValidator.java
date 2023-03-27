@@ -27,20 +27,20 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
      */
     @Override
     public RuleViolation validate(Game game) {
-        Vector2 location;
-        Robot byBot;
-        TeamColor byTeam;
         Vector3 ball = game.getBall().getPosition();
         FieldLine bottomTouchLine = game.getField().getLineByName("BottomTouchLine");
         FieldLine topTouchLine = game.getField().getLineByName("TopTouchLine");
 
+        // Lines are sometimes not present for some reason
+        if (bottomTouchLine == null || topTouchLine == null) {
+            return null;
+        }
+
         if (ball.getY() > topTouchLine.p1().getY() || ball.getY() < bottomTouchLine.p1().getY()){
-            byBot =  game.getRobot(game.getLastStartedTouch().by());
+            RobotIdentifier byBot = game.getLastStartedTouch().by();
             if (byBot != null && (game.getTime() - lastViolations > GRACE_PERIOD)) {
                 lastViolations = game.getTime();
-                byTeam = byBot.getTeam().getColor();
-                location = ball.xy();
-                return new Violation(byTeam, byBot.getId(), location);
+                return new Violation(byBot.teamColor(), byBot.id(), ball.xy());
             }
         } else {
             lastViolations = Double.NEGATIVE_INFINITY;
