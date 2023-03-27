@@ -66,7 +66,7 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
             FieldLine rightPenaltyStretch = game.getField().getLineByName(sideString + "FieldRightPenaltyStretch");
             FieldLine leftPenaltyStretch = game.getField().getLineByName(sideString + "FieldLeftPenaltyStretch");
             float dist = Math.min(Math.abs(robot.getPosition().getX() - penaltyStretch.p1().getX()), Math.min(Math.abs(robot.getPosition().getY() - rightPenaltyStretch.p1().getY()), Math.abs(robot.getPosition().getY() - leftPenaltyStretch.p1().getY())));
-            //FIXME: The distance where the ball was last touched in the defense area must be retrieved instead of the position of the robot.
+            //FIXME: The distance where the ball was last touched in the defense area must be retrieved instead of the position of the robot
 //            float dist = Math.min(Math.abs(game.getLastFinishedTouch().endLocation().getX() - penaltyStretch.p1().getX()), Math.min(Math.abs( game.getLastFinishedTouch().endLocation().getY() - rightPenaltyStretch.p1().getY()), Math.abs(game.getLastFinishedTouch().endLocation().getY() - leftPenaltyStretch.p1().getY())));
             if (!botStillOnCoolDown(robot.getIdentifier(), game.getTime())) {
                 lastViolations.put(robot.getIdentifier(), game.getTime());
