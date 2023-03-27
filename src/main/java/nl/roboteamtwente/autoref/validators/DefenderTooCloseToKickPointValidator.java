@@ -39,23 +39,18 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
 
     @Override
     public RuleViolation validate(Game game) {
+
+        // Check if team color is not null
+        if (game.getStateForTeam() == null) {
+            return null;
+        }
+
         // Height is not important in this case:
-        // ball will always remain on the ground during this game state
+        // ball will always remain on the ground during these game states
         Vector2 ball = game.getBall().getPosition().xy();
 
-        TeamColor defendingTeamColor = null;
-
-        // If its kickoff state, the closest team to the ball (should be?) the attacking team
-        // Same can be the case for the other states, depending on the timing of when the state is changed; needs experimenting
-        // The if-check is currently redundant (due to the active states) but ill keep it in here as it might need tweaking later
-        // TODO: team color in state
-        if (game.getState() == GameState.DIRECT_FREE || game.getState() == GameState.INDIRECT_FREE) {
-            if (closestRobotToBall(game).getTeam().getColor() == TeamColor.YELLOW) {
-                defendingTeamColor = TeamColor.BLUE;
-            } else {
-                defendingTeamColor = TeamColor.YELLOW;
-            }
-        }
+        // Get defending teamcolor from the game state
+        TeamColor defendingTeamColor = game.getStateForTeam() == TeamColor.YELLOW ? TeamColor.BLUE : TeamColor.YELLOW;
 
         // Check if defender robots are too close to the ball (within 0.5m)
         for (Robot robot : game.getTeam(defendingTeamColor).getRobots()) {
@@ -80,7 +75,7 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
 
     @Override
     public EnumSet<GameState> activeStates() {
-//        return EnumSet.of(GameState.KICKOFF, GameState.DIRECT_FREE, GameState.INDIRECT_FREE);
+        // TODO: Also include KICKOFF
         return EnumSet.of(GameState.DIRECT_FREE, GameState.INDIRECT_FREE);
     }
 
