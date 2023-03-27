@@ -33,6 +33,7 @@ public class SSLAutoRef {
     public void processWorldState(StateOuterClass.State statePacket) {
         Game game = new Game();
         if (referee.getGame() != null) {
+            referee.getGame().setPrevious(null);
             game.setPrevious(referee.getGame());
         }
 
