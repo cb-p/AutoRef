@@ -18,25 +18,6 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
 
     private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
 
-    /**
-     * @return closest robot to the ball
-     */
-    private Robot closestRobotToBall(Game game) {
-        // TODO: Perhaps move this function somewhere else to use for other rules, if needed
-        List<Robot> robots = game.getRobots();
-        Robot closestRobot = null;
-        float dist = 99999;
-        for (Robot robot : robots) {
-            // Calculate distance to the ball for each robot
-            float distToBall = game.getBall().getPosition().xy().distance(robot.getPosition().xy());
-            if (distToBall < dist) {
-                dist = distToBall;
-                closestRobot = robot;
-            }
-        }
-        return closestRobot;
-    }
-
     @Override
     public RuleViolation validate(Game game) {
 
