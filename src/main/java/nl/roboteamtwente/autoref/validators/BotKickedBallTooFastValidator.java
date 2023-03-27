@@ -27,20 +27,15 @@ public class BotKickedBallTooFastValidator implements RuleValidator {
      */
     @Override
     public RuleViolation validate(Game game) {
-        // Necessary variables
-        TeamColor team;
-        RobotIdentifier robotID;
-        Vector2 location;
-        Ball ball = game.getBall();
-
         // Ball speed in m/s
+        Ball ball = game.getBall();
         float speed = ball.getVelocity().xy().magnitude();
 
         // If speed in one frame is higher than 6.5 m/s, ball was kicked too fast by the bot.
         if (speed > 6.5) {
-            team = game.getLastStartedTouch().by().teamColor();
-            robotID = game.getLastStartedTouch().by();
-            location = ball.getPosition().xy();
+            RobotIdentifier robotID = game.getLastStartedTouch().by();
+            TeamColor team = robotID.teamColor();
+            Vector2 location = ball.getPosition().xy();
 
             // Only if this violation has not been sent in the last 2 seconds, raise it
             if (!lastViolations.containsKey(robotID) || lastViolations.get(robotID) + GRACE_PERIOD < game.getTime()) {
