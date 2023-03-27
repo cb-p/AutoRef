@@ -72,7 +72,7 @@ public class SSLAutoRef {
                 case DIRECT_FREE_YELLOW, DIRECT_FREE_BLUE -> {
                     game.setState(GameState.DIRECT_FREE);
                 }
-                //noinspection deprecation
+
                 case INDIRECT_FREE_YELLOW, INDIRECT_FREE_BLUE -> {
                     game.setState(GameState.INDIRECT_FREE);
                 }
@@ -83,10 +83,23 @@ public class SSLAutoRef {
                     game.setState(GameState.BALL_PLACEMENT);
                 }
             }
-            ;
         } else {
             game.setState(game.getPrevious().getState());
         }
+
+//        TODO divide by / 1000.0f if the scale is not correct
+        game.getDesignatedPosition().setX(statePacket.getReferee().getDesignatedPositionOrBuilder().getX()/ 1000.0f);
+        game.getDesignatedPosition().setY(statePacket.getReferee().getDesignatedPositionOrBuilder().getY()/ 1000.0f);
+
+
+        game.setStateForTeam(switch (statePacket.getReferee().getCommand()) {
+            //noinspection deprecation
+            case GOAL_YELLOW, PREPARE_KICKOFF_YELLOW, PREPARE_PENALTY_YELLOW, INDIRECT_FREE_YELLOW, TIMEOUT_YELLOW, BALL_PLACEMENT_YELLOW, DIRECT_FREE_YELLOW -> TeamColor.YELLOW;
+            //noinspection deprecation
+            case GOAL_BLUE, PREPARE_KICKOFF_BLUE, PREPARE_PENALTY_BLUE, INDIRECT_FREE_BLUE, TIMEOUT_BLUE, BALL_PLACEMENT_BLUE, DIRECT_FREE_BLUE -> TeamColor.BLUE;
+            default -> null;
+        });
+
 
         game.getBall().getPosition().setX(world.getBall().getPos().getX());
         game.getBall().getPosition().setY(world.getBall().getPos().getY());
