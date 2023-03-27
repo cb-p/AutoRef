@@ -8,15 +8,12 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class DefenderTooCloseToKickPointValidator implements RuleValidator {
 
     private static final double GRACE_PERIOD = 2.0;
 
-    private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
+    private double lastViolation = Double.NEGATIVE_INFINITY;
 
     @Override
     public RuleViolation validate(Game game) {
@@ -30,7 +27,7 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
         // ball will always remain on the ground during these game states
         Vector2 ball = game.getBall().getPosition().xy();
 
-        // Get defending teamcolor from the game state
+        // Get defending teamColor from the game state
         TeamColor defendingTeamColor = game.getStateForTeam() == TeamColor.YELLOW ? TeamColor.BLUE : TeamColor.YELLOW;
 
         // Check if defender robots are too close to the ball (within 0.5m)
@@ -39,13 +36,12 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
 
             // Calculate distance to ball
             float distanceToBall = ball.distance(robotPos);
+
             // If robot is within 0.5m of the ball, it is too close
             if (distanceToBall < 0.5) {
-                if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
-                    lastViolations.put(robot.getIdentifier(), game.getTime());
-                    //TODO: Validator does not work correctly yet, so it's commented out to prevent spamming
-
-//                        return new Violation(teamColor, robot.getId(), robotPos, distanceToBall);
+                if (lastViolation + GRACE_PERIOD < game.getTime()) {
+                    lastViolation = game.getTime();
+                    return new Violation(robot.getTeam().getColor(), robot.getId(), robotPos, distanceToBall);
                 }
             }
 
@@ -62,7 +58,7 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
 
     @Override
     public void reset(Game game) {
-        lastViolations.clear();
+        lastViolation = Double.NEGATIVE_INFINITY;
     }
 
     record Violation(TeamColor byTeam, int byBot, Vector2 location, float distance) implements RuleViolation {
