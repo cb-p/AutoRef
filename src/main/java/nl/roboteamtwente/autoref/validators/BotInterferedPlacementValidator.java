@@ -95,10 +95,10 @@ public class BotInterferedPlacementValidator implements RuleValidator {
     public RuleViolation validate(Game game) {
         if (game.getState() == GameState.BALL_PLACEMENT){
 
-            Team opponentTeam = game.getTeam(game.getForTeam().getOpponentColor());
+            Team opponentTeam = game.getTeam(game.getStateForTeam().getOpponentColor());
             for (Robot robot : opponentTeam.getRobots()) {
                 Vector2 robotPos = robot.getPosition().xy();
-                Vector2 placementPos = game.getDesignated_position();
+                Vector2 placementPos = game.getDesignatedPosition();
                 Vector2 ballPos = game.getBall().getPosition().xy();
                 float distance = calculateDistancePointToLine(ballPos, placementPos, robotPos);
                 if (distance < MIN_DISTANCE_BETWEEN_ROBOT_AND_PLACEMENT) {
