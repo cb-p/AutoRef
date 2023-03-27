@@ -5,6 +5,7 @@ import nl.roboteamtwente.proto.StateOuterClass;
 import nl.roboteamtwente.proto.WorldOuterClass;
 import nl.roboteamtwente.proto.WorldRobotOuterClass;
 import org.robocup.ssl.proto.SslVisionGeometry;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -30,7 +31,13 @@ public class SSLAutoRef {
         this.referee = new Referee();
     }
 
+    /**
+     * Process packet AutoRef received from World
+     *
+     * @param statePacket packet AutoRef got from World
+     */
     public void processWorldState(StateOuterClass.State statePacket) {
+        //build game
         Game game = new Game();
         if (referee.getGame() != null) {
             referee.getGame().setPrevious(null);
@@ -42,6 +49,33 @@ public class SSLAutoRef {
         game.setTime(world.getTime() / 1_000_000_000.0);
         game.setForceStarted(game.getPrevious().isForceStarted());
 
+        //derive World packet
+        deriveRefereeMessage(game, statePacket);
+        deriveBall(game, world);
+        for (WorldRobotOuterClass.WorldRobot robot : world.getBlueList()) {
+            deriveRobot(game, TeamColor.BLUE, robot);
+        }
+
+        for (WorldRobotOuterClass.WorldRobot robot : world.getYellowList()) {
+            deriveRobot(game, TeamColor.YELLOW, robot);
+        }
+        deriveTeamData(game, statePacket);
+        deriveField(game, statePacket);
+        deriveTouch(game);
+
+        gameStateChanges(game);
+
+        referee.setGame(game);
+    }
+
+    /**
+     * From the RefereeMessage, derive the command and the designated position
+     *
+     * @param game        game
+     * @param statePacket packet AutoRef got from World
+     */
+    private void deriveRefereeMessage(Game game, StateOuterClass.State statePacket) {
+        //FIXME more closely represent GameState in AutoRef to GameState in World
         if (game.getState() == null || statePacket.getReferee().getCommandCounter() != commands) {
             commands = statePacket.getReferee().getCommandCounter();
 
@@ -87,35 +121,67 @@ public class SSLAutoRef {
             game.setState(game.getPrevious().getState());
         }
 
-//        TODO divide by / 1000.0f if the scale is not correct
-        game.getDesignatedPosition().setX(statePacket.getReferee().getDesignatedPositionOrBuilder().getX()/ 1000.0f);
-        game.getDesignatedPosition().setY(statePacket.getReferee().getDesignatedPositionOrBuilder().getY()/ 1000.0f);
-
-
         game.setStateForTeam(switch (statePacket.getReferee().getCommand()) {
             //noinspection deprecation
-            case GOAL_YELLOW, PREPARE_KICKOFF_YELLOW, PREPARE_PENALTY_YELLOW, INDIRECT_FREE_YELLOW, TIMEOUT_YELLOW, BALL_PLACEMENT_YELLOW, DIRECT_FREE_YELLOW -> TeamColor.YELLOW;
+            case GOAL_YELLOW, PREPARE_KICKOFF_YELLOW, PREPARE_PENALTY_YELLOW, INDIRECT_FREE_YELLOW, TIMEOUT_YELLOW, BALL_PLACEMENT_YELLOW, DIRECT_FREE_YELLOW ->
+                    TeamColor.YELLOW;
             //noinspection deprecation
-            case GOAL_BLUE, PREPARE_KICKOFF_BLUE, PREPARE_PENALTY_BLUE, INDIRECT_FREE_BLUE, TIMEOUT_BLUE, BALL_PLACEMENT_BLUE, DIRECT_FREE_BLUE -> TeamColor.BLUE;
+            case GOAL_BLUE, PREPARE_KICKOFF_BLUE, PREPARE_PENALTY_BLUE, INDIRECT_FREE_BLUE, TIMEOUT_BLUE, BALL_PLACEMENT_BLUE, DIRECT_FREE_BLUE ->
+                    TeamColor.BLUE;
             default -> null;
         });
 
+        //TODO divide by / 1000.0f if the scale is not correct
+        game.getDesignatedPosition().setX(statePacket.getReferee().getDesignatedPositionOrBuilder().getX() / 1000.0f);
+        game.getDesignatedPosition().setY(statePacket.getReferee().getDesignatedPositionOrBuilder().getY() / 1000.0f);
 
+    }
+
+    /**
+     * Set all values for the ball
+     *
+     * @param game  game
+     * @param world filtered data from World
+     */
+    private void deriveBall(Game game, WorldOuterClass.World world) {
         game.getBall().getPosition().setX(world.getBall().getPos().getX());
         game.getBall().getPosition().setY(world.getBall().getPos().getY());
         game.getBall().getPosition().setZ(world.getBall().getZ());
         game.getBall().getVelocity().setX(world.getBall().getVel().getX());
         game.getBall().getVelocity().setY(world.getBall().getVel().getY());
         game.getBall().getVelocity().setZ(world.getBall().getZVel());
+    }
 
-        for (WorldRobotOuterClass.WorldRobot robot : world.getBlueList()) {
-            processRobotState(game, TeamColor.BLUE, robot);
+    /**
+     * If robot does not exist in Game, add robot to Game.
+     * Derive robot data
+     *
+     * @param game       game
+     * @param teamColor  team color
+     * @param worldRobot robot
+     */
+    private void deriveRobot(Game game, TeamColor teamColor, WorldRobotOuterClass.WorldRobot worldRobot) {
+        Robot robot = game.getTeam(teamColor).getRobotById(worldRobot.getId());
+        if (robot == null) {
+            robot = new Robot(worldRobot.getId());
+            game.addRobot(robot);
+            game.getTeam(teamColor).addRobot(robot);
         }
 
-        for (WorldRobotOuterClass.WorldRobot robot : world.getYellowList()) {
-            processRobotState(game, TeamColor.YELLOW, robot);
-        }
+        robot.getPosition().setX(worldRobot.getPos().getX());
+        robot.getPosition().setY(worldRobot.getPos().getY());
+        robot.getVelocity().setX(worldRobot.getVel().getX());
+        robot.getVelocity().setY(worldRobot.getVel().getY());
+        robot.setAngle(worldRobot.getAngle());
+    }
 
+    /**
+     * Derive data for the Team class
+     *
+     * @param game        game
+     * @param statePacket packet AutoRef got from World
+     */
+    private void deriveTeamData(Game game, StateOuterClass.State statePacket) {
         game.getTeam(TeamColor.BLUE).setRobotRadius(statePacket.getBlueRobotParameters().getParameters().getRadius());
         game.getTeam(TeamColor.YELLOW).setRobotRadius(statePacket.getYellowRobotParameters().getParameters().getRadius());
         game.getTeam(TeamColor.BLUE).setRobotHeight(statePacket.getBlueRobotParameters().getParameters().getHeight());
@@ -126,7 +192,15 @@ public class SSLAutoRef {
 
         game.getTeam(TeamColor.BLUE).setSide(statePacket.getReferee().getBlueTeamOnPositiveHalf() ? Side.RIGHT : Side.LEFT);
         game.getTeam(TeamColor.YELLOW).setSide(statePacket.getReferee().getBlueTeamOnPositiveHalf() ? Side.LEFT : Side.RIGHT);
+    }
 
+    /**
+     * Derive all lines on the field
+     *
+     * @param game        game
+     * @param statePacket packet AutoRef got from World
+     */
+    private void deriveField(Game game, StateOuterClass.State statePacket) {
         game.getField().setBoundaryWidth(statePacket.getField().getField().getBoundaryWidth() / 1000.0f);
         game.getField().getSize().setX(statePacket.getField().getField().getFieldLength() / 1000.0f);
         game.getField().getSize().setY(statePacket.getField().getField().getFieldWidth() / 1000.0f);
@@ -140,36 +214,20 @@ public class SSLAutoRef {
 
             game.getField().addLine(fieldLine);
         }
-
-        deriveWorldState(game);
-
-        if (game.getPrevious().getState() == GameState.RUNNING && game.getState() != GameState.RUNNING) {
-            System.out.println("reset");
-
-            game.getBall().setLastTouchStarted(null);
-            game.setKickIntoPlay(null);
-            game.getTouches().clear();
-
-            for (Robot robot : game.getRobots()) {
-                robot.setTouch(null);
-            }
-        }
-
-        if (game.getState() != game.getPrevious().getState()) {
-            System.out.println("game state: " + game.getPrevious().getState() + " -> " + game.getState());
-            game.setTimeLastGameStateChange(game.getTime());
-        } else {
-            game.setTimeLastGameStateChange(game.getPrevious().getTimeLastGameStateChange());
-        }
-
-        referee.setGame(game);
     }
 
-    private void deriveWorldState(Game game) {
+    /**
+     * Check if robots are touching the ball
+     *
+     * @param game game
+     */
+    private void deriveTouch(Game game) {
+        //copy variables from previous game
         game.getBall().setLastTouchStarted(game.getPrevious().getBall().getLastTouchStarted());
         game.getTouches().addAll(game.getPrevious().getFinishedTouches());
 
         game.setKickIntoPlay(game.getPrevious().getKickIntoPlay());
+
 
         Ball ball = game.getBall();
         Vector3 ballPosition = ball.getPosition();
@@ -192,9 +250,11 @@ public class SSLAutoRef {
             //FIXME remove working with Z
             if (distance <= robot.getTeam().getRobotRadius() + BALL_TOUCHING_DISTANCE && ball.getPosition().getZ() <= robot.getTeam().getRobotHeight() + BALL_TOUCHING_DISTANCE) {
                 ball.getRobotsTouching().add(robot);
+                //FIXME comment
                 robot.setJustTouchedBall(oldRobot == null || !oldRobot.isTouchingBall());
             } else {
                 // robot is not touching ball
+                //FIXME comments in this section
                 robot.setJustTouchedBall(false);
                 robot.setTouch(null);
 
@@ -207,6 +267,7 @@ public class SSLAutoRef {
                 }
             }
 
+            //FIXME comments in this section
             if (robot.hasJustTouchedBall()) {
                 touch = new Touch(nextTouchId++, ballPosition, null, game.getTime(), null, robot.getIdentifier());
                 ball.setLastTouchStarted(touch);
@@ -230,20 +291,34 @@ public class SSLAutoRef {
         }
     }
 
-    private void processRobotState(Game game, TeamColor teamColor, WorldRobotOuterClass.WorldRobot worldRobot) {
-        Robot robot = game.getTeam(teamColor).getRobotById(worldRobot.getId());
-        if (robot == null) {
-            robot = new Robot(worldRobot.getId());
-            game.addRobot(robot);
-            game.getTeam(teamColor).addRobot(robot);
+    /**
+     * Check for any GameState changes and take.
+     * If there is a change, store the time of the change (current time).
+     * If previous was RUNNING and current is not, reset touches
+     *
+     * @param game game
+     */
+    private void gameStateChanges(Game game) {
+        if (game.getState() != game.getPrevious().getState()) {
+            System.out.println("game state: " + game.getPrevious().getState() + " -> " + game.getState());
+            game.setTimeLastGameStateChange(game.getTime());
+        } else {
+            game.setTimeLastGameStateChange(game.getPrevious().getTimeLastGameStateChange());
         }
 
-        robot.getPosition().setX(worldRobot.getPos().getX());
-        robot.getPosition().setY(worldRobot.getPos().getY());
-        robot.getVelocity().setX(worldRobot.getVel().getX());
-        robot.getVelocity().setY(worldRobot.getVel().getY());
-        robot.setAngle(worldRobot.getAngle());
+        if (game.getPrevious().getState() == GameState.RUNNING && game.getState() != GameState.RUNNING) {
+            System.out.println("reset");
+
+            game.getBall().setLastTouchStarted(null);
+            game.setKickIntoPlay(null);
+            game.getTouches().clear();
+
+            for (Robot robot : game.getRobots()) {
+                robot.setTouch(null);
+            }
+        }
     }
+
 
     /**
      * Setup connections with all other software
