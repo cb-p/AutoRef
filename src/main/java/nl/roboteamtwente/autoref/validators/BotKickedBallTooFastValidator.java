@@ -19,31 +19,27 @@ public class BotKickedBallTooFastValidator implements RuleValidator {
     // Grace period in seconds
     private static final double GRACE_PERIOD = 2.0;
 
+    /**
+     * The validate method of this class determines whether the ball was kicked too fast.
+     *
+     * @param game the game object being validated
+     * @return a violation for when the ball was kicked too fast by a bot.
+     */
     @Override
     public RuleViolation validate(Game game) {
+        // Necessary variables
         TeamColor team;
         RobotIdentifier robotID;
         Vector2 location;
         Ball ball = game.getBall();
 
-
-//        // Speed in m/s from the previous frame
-//        float prevSpeed = game.getPrevious().getBall().getPosition().xy().distance(game.getPrevious().getBall().getPosition().xy()) * 80;
-
         // Ball speed in m/s
         float speed = ball.getVelocity().xy().magnitude();
 
-        // TODO: Test which implementation works best
-        // If speed in one frame is higher than 6.5 m/s, ball was kicked too fast.
-        // Due to inconsistent data, the ball may teleport around and this may be detected
-        // as the ball being kicked too fast. In that case, use the implementation below, uses 2 consecutive frames
+        // If speed in one frame is higher than 6.5 m/s, ball was kicked too fast by the bot.
         if (speed > 6.5) {
             team = game.getLastStartedTouch().by().teamColor();
             robotID = game.getLastStartedTouch().by();
-
-//            robot = ball.getLastTouchedBy();
-
-
             location = ball.getPosition().xy();
 
             // Only if this violation has not been sent in the last 2 seconds, raise it
@@ -52,34 +48,12 @@ public class BotKickedBallTooFastValidator implements RuleValidator {
                 return new Violation(team, robotID.id(), location, speed);
             }
         }
-
-        /*
-
-
-        // If ball speed is higher than 6.5m/s for two consecutive frames, send violation.
-        // Checking just a single frame may be inconsistent due to the ball potentially teleporting a little between frames
-        if (prevSpeed > 6.5 && speed > 6.5) {
-            team = ball.getLastTouchedBy().getTeam().getColor();
-            robot = ball.getLastTouchedBy();
-            location = ball.getPosition().xy();
-
-            // Only if this violation has not been sent in the last 2 seconds, raise it
-            if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
-                lastViolations.put(robot.getIdentifier(), game.getTime());
-                return new Violation(team, robot.getId(), location, speed);
-        }
-
-
-         */
-
-
         return null;
     }
 
     // Rule should only be checked when the ball is in play. Might include other game states as well?
     @Override
     public EnumSet<GameState> activeStates() {
-//        return EnumSet.of(GameState.KICKOFF, GameState.DIRECT_FREE, GameState.INDIRECT_FREE, GameState.RUNNING);
         return EnumSet.of(GameState.DIRECT_FREE, GameState.INDIRECT_FREE, GameState.RUNNING);
     }
 
