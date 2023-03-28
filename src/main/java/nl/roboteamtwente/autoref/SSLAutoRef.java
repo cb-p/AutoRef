@@ -367,6 +367,11 @@ public class SSLAutoRef {
     }
 
     public void stop() {
+        gcConnection.setActive(false);
+        try {
+            //make sure sleep is longer than any sleep in GameControllerConnection.java
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {}
         gcConnection.disconnect();
         gcThread.interrupt();
         worldConnection.close();
