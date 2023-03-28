@@ -20,9 +20,16 @@
         <GameCanvas fx:id="canvas" VBox.vgrow="ALWAYS"/>
     </VBox>
     <VBox prefHeight="200.0" prefWidth="100.0">
-        <HBox alignment="CENTER_LEFT">
-            <Label text="AutoRef mode: "/>
-            <ComboBox fx:id="modeBox" prefWidth="150.0"/>
+        <HBox>
+            <HBox alignment="CENTER_LEFT">
+                <Label text="AutoRef mode: "/>
+                <ComboBox fx:id="modeBox" prefWidth="150.0"/>
+            </HBox>
+            <Region HBox.hgrow="ALWAYS" />
+            <HBox alignment="CENTER_RIGHT">
+                <Label text="Division: "/>
+                <ComboBox fx:id="divisionBox" prefWidth="100.0"/>
+            </HBox>
             <padding>
                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
             </padding>

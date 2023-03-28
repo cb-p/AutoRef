@@ -1,6 +1,7 @@
 package nl.roboteamtwente.autoref.model;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public class Game {
      * The team which is mentioned in GameState
      */
     private TeamColor stateForTeam;
-    
+
     /**
      * The game consists of 2 teams blue and yellow
      */
@@ -54,12 +55,14 @@ public class Game {
 
     private boolean forceStarted;
 
+    private Division division;
+
     public Game() {
         this.robots = new ArrayList<>();
         this.ball = new Ball();
         this.field = new Field();
 
-        this.designatedPosition = new Vector2(0,0);
+        this.designatedPosition = new Vector2(0, 0);
         this.stateForTeam = null;
 
         this.blue = new Team(TeamColor.BLUE);
@@ -72,6 +75,7 @@ public class Game {
         this.touches = new ArrayList<>();
 
         this.forceStarted = false;
+        this.division = Division.B;
     }
 
     /**
@@ -220,4 +224,16 @@ public class Game {
         return timeLastGameStateChange;
     }
 
+    public boolean isBallInPlay() {
+        // FIXME: THIS IS NOT ACCURATE.
+        return getState() == GameState.RUNNING || (EnumSet.of(GameState.DIRECT_FREE, GameState.INDIRECT_FREE).contains(getState()) && getKickIntoPlay() != null);
+    }
+
+    public Division getDivision() {
+        return division;
+    }
+
+    public void setDivision(Division division) {
+        this.division = division;
+    }
 }

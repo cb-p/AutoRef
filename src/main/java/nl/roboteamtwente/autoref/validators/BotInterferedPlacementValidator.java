@@ -8,16 +8,17 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.text.DecimalFormat;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 public class BotInterferedPlacementValidator implements RuleValidator {
-
-
     private static final double GRACE_PERIOD = 2.0;
 
     private static final float MIN_DISTANCE_BETWEEN_ROBOT_AND_PLACEMENT = 0.5f;
+
+    //Map from robotId -> last enter the distance <= MIN_DISTANCE_BETWEEN_ROBOT_AND_PLACEMENT
+    private final Map<RobotIdentifier, Double> lastEnterForbiddenArea = new HashMap<>();
+
     /**
      * Calculate the distance between point 3 to the line defined by point 1 and point 2
      * @param p1 - first point of the line
@@ -59,9 +60,6 @@ public class BotInterferedPlacementValidator implements RuleValidator {
         String roundedFloatStr = df.format(number); // Formats the float as a string with one decimal place
         return Float.parseFloat(roundedFloatStr); // Parses the rounded string back into a float
     }
-
-    //Map from robotId -> last enter the distance <= MIN_DISTANCE_BETWEEN_ROBOT_AND_PLACEMENT
-    private final Map<RobotIdentifier, Double> lastEnterForbiddenArea = new HashMap<>();
 
     /**
      * Check if time a robot enter forbidden area is more than 2 seconds
@@ -115,8 +113,8 @@ public class BotInterferedPlacementValidator implements RuleValidator {
     }
 
     @Override
-    public EnumSet<GameState> activeStates() {
-        return EnumSet.of(GameState.BALL_PLACEMENT);
+    public boolean isActive(Game game) {
+        return game.getState() == GameState.BALL_PLACEMENT;
     }
 
     record BotInterferedPlacementViolation(TeamColor byTeam, int byBot, Vector2 location, Vector2 ballPos, Vector2 placementPos) implements RuleViolation {

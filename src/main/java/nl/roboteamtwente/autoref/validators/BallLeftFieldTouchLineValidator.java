@@ -7,13 +7,11 @@ import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
-import java.util.EnumSet;
-
 public class BallLeftFieldTouchLineValidator implements RuleValidator {
 
 
     private static final double GRACE_PERIOD = 2.0;
-    private double lastViolations;
+    private double lastViolations = Double.NEGATIVE_INFINITY;
 
     /**
      * The validate method of this class determines whether any robot has caused the ball
@@ -37,8 +35,12 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
         }
 
         if (ball.getY() > topTouchLine.p1().getY() || ball.getY() < bottomTouchLine.p1().getY()){
+            if (game.getLastStartedTouch() == null) {
+                return null;
+            }
+
             RobotIdentifier byBot = game.getLastStartedTouch().by();
-            if (byBot != null && (game.getTime() - lastViolations > GRACE_PERIOD)) {
+            if (game.getTime() - lastViolations > GRACE_PERIOD) {
                 lastViolations = game.getTime();
                 return new Violation(byBot.teamColor(), byBot.id(), ball.xy());
             }
@@ -49,8 +51,13 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
     }
 
     @Override
-    public EnumSet<GameState> activeStates() {
-        return EnumSet.of(GameState.RUNNING);
+    public void reset(Game game) {
+        lastViolations = Double.NEGATIVE_INFINITY;
+    }
+
+    @Override
+    public boolean isActive(Game game) {
+        return game.isBallInPlay();
     }
 
 

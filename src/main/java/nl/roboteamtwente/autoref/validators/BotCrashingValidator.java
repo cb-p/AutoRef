@@ -8,7 +8,6 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.text.DecimalFormat;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -157,15 +156,20 @@ public class BotCrashingValidator implements RuleValidator {
     }
 
     @Override
-    public EnumSet<GameState> activeStates() {
-        return EnumSet.of(GameState.RUNNING);
+    public void reset(Game game) {
+        lastViolations.clear();
+    }
+
+    @Override
+    public boolean isActive(Game game) {
+        return game.getState() != GameState.HALT;
     }
 
     record CrashDrawnViolation(int botBlue, int botYellow, Vector2 location, float crash_speed, float speed_diff, float crash_angle) implements RuleViolation {
         @Override
         public String toString() {
-            return "Bot crash drawn (bot blue #" + botBlue + " , bot yellow #" + botYellow + ", at " + location + " crash speed :" + crash_speed
-                    + " speed diff: " + speed_diff +  " angle:" + crash_angle + " )";
+            return "Bot crash drawn (bot blue #" + botBlue + " , bot yellow #" + botYellow + ", at " + location + ", crash speed :" + crash_speed
+                    + ", speed diff: " + speed_diff +  ", angle:" + crash_angle + " )";
         }
 
         @Override
@@ -187,8 +191,8 @@ public class BotCrashingValidator implements RuleValidator {
     record CrashUniqueViolation(float distance, TeamColor byTeam, int violator, int victim, Vector2 location, float crash_speed, float speed_diff, float crash_angle) implements RuleViolation {
         @Override
         public String toString() {
-            return "Bot crash unique (by: " + byTeam + ", main violator #" + violator + " , victim #" + victim + "distance: " + distance + ", at " + location + " crash speed :" + crash_speed
-                    + " speed diff: " + speed_diff + " angle:" + crash_angle + " )";
+            return "Bot crash unique (by: " + byTeam + ", main violator #" + violator + " , victim #" + victim + ", distance: " + distance + ", at " + location + ", crash speed :" + crash_speed
+                    + ", speed diff: " + speed_diff + ", angle:" + crash_angle + " )";
         }
 
         @Override

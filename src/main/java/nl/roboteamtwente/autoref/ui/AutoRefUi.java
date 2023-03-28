@@ -22,7 +22,7 @@ public class AutoRefUi extends Application {
         primaryStage.setScene(new Scene(root, 640, 480));
         primaryStage.show();
 
-        controller.start();
+        controller.start(getParameters());
     }
 
     @Override
