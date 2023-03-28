@@ -17,19 +17,28 @@ public class AimlessKickValidator implements RuleValidator {
         FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
         FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
 
-        if (game.getBall().getPosition().getX() > rightGoalLine.p1().getX() || game.getBall().getPosition().getX() < leftGoalLine.p1().getX()) {
+        if (game.getBall().getPosition().getX() > rightGoalLine.p1().getX()){
             Touch touch = game.getLastFinishedTouch();
-            if (touch == null) {
-                return null;
-            }
-
             Robot byBot = game.getRobot(touch.by());
-            if (game.getField().isInOwnHalf(byBot.getTeam().getSide(), byBot.getPosition().xy()) && (game.getTime() - lastViolation > GRACE_PERIOD)) {
+            if (byBot.getTeam().getSide() == Side.LEFT
+                    && game.getField().isInOwnHalf(byBot.getTeam().getSide(), byBot.getPosition().xy())
+                    && (game.getTime() - lastViolation > GRACE_PERIOD)){
                 lastViolation = game.getTime();
                 return new Violation(byBot.getTeam().getColor(), byBot.getId(), game.getBall().getPosition().xy(), touch.endLocation().xy());
             }
-        } else {
-            lastViolation = Double.NEGATIVE_INFINITY;
+
+        }
+
+        if (game.getBall().getPosition().getX() < leftGoalLine.p1().getX()){
+            Touch touch = game.getLastFinishedTouch();
+            Robot byBot = game.getRobot(touch.by());
+            if (byBot.getTeam().getSide() == Side.RIGHT
+                    && game.getField().isInOwnHalf(byBot.getTeam().getSide(), byBot.getPosition().xy())
+                    && (game.getTime() - lastViolation > GRACE_PERIOD)){
+                lastViolation = game.getTime();
+                return new Violation(byBot.getTeam().getColor(), byBot.getId(), game.getBall().getPosition().xy(), touch.endLocation().xy());
+            }
+
         }
 
         return null;
