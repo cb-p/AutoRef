@@ -33,7 +33,7 @@ public class Referee {
 
     public List<RuleViolation> validate() {
         if (activeValidators == null || game.getState() != game.getPrevious().getState()) {
-            List<RuleValidator> validators = RULE_VALIDATORS.stream().filter((validator) -> validator.activeStates().contains(game.getState())).toList();
+            List<RuleValidator> validators = RULE_VALIDATORS.stream().filter((validator) -> validator.isActive(game)).toList();
 
             List<RuleValidator> toReset = new ArrayList<>(validators);
             if (activeValidators != null) {

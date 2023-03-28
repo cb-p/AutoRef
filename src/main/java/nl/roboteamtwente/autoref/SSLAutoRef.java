@@ -14,6 +14,7 @@ public class SSLAutoRef {
     private static final float BALL_TOUCHING_DISTANCE = 0.025f;
 
     private final Referee referee;
+    private Division division = Division.B;
 
     private Thread worldThread;
     private GameControllerConnection gcConnection;
@@ -43,6 +44,8 @@ public class SSLAutoRef {
             referee.getGame().setPrevious(null);
             game.setPrevious(referee.getGame());
         }
+
+        game.setDivision(division);
 
         WorldOuterClass.World world = statePacket.getCommandExtrapolatedWorld();
 
@@ -392,5 +395,13 @@ public class SSLAutoRef {
 
     public boolean isGCConnected() {
         return gcConnection.isConnected();
+    }
+
+    public Division getDivision() {
+        return division;
+    }
+
+    public void setDivision(Division division) {
+        this.division = division;
     }
 }

@@ -8,7 +8,6 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.text.DecimalFormat;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -162,8 +161,8 @@ public class BotCrashingValidator implements RuleValidator {
     }
 
     @Override
-    public EnumSet<GameState> activeStates() {
-        return EnumSet.complementOf(EnumSet.of(GameState.HALT));
+    public boolean isActive(Game game) {
+        return game.getState() != GameState.HALT;
     }
 
     record CrashDrawnViolation(int botBlue, int botYellow, Vector2 location, float crash_speed, float speed_diff, float crash_angle) implements RuleViolation {

@@ -7,7 +7,6 @@ import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,15 +45,15 @@ public class BotTooFastInStopValidator implements RuleValidator {
     }
 
     @Override
-    public EnumSet<GameState> activeStates() {
-        return EnumSet.of(GameState.STOP);
+    public boolean isActive(Game game) {
+        return game.getState() == GameState.STOP;
     }
 
     record BotTooFastInStopViolation(int byBot, TeamColor byTeam, Vector2 location,
                                      Float speed) implements RuleViolation {
         @Override
         public String toString() {
-            return "Bot too fast in stop (by: " + byTeam + ", bot #" + byBot + " speed: " + speed + " )";
+            return "Bot too fast in stop (by: " + byTeam + ", bot #" + byBot + ", speed: " + speed + ")";
         }
 
         @Override

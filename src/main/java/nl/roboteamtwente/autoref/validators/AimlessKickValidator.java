@@ -7,8 +7,6 @@ import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
-import java.util.EnumSet;
-
 
 public class AimlessKickValidator implements RuleValidator {
     private static final double GRACE_PERIOD = 2.0;
@@ -18,10 +16,6 @@ public class AimlessKickValidator implements RuleValidator {
     public RuleViolation validate(Game game) {
         FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
         FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
-
-//        if (Objects.equals(game.getField().getDivision(game), "A")){
-//            return null;
-//        }
 
         if (game.getBall().getPosition().getX() > rightGoalLine.p1().getX() || game.getBall().getPosition().getX() < leftGoalLine.p1().getX()) {
             Touch touch = game.getLastFinishedTouch();
@@ -47,8 +41,8 @@ public class AimlessKickValidator implements RuleValidator {
     }
 
     @Override
-    public EnumSet<GameState> activeStates() {
-        return EnumSet.of(GameState.RUNNING);
+    public boolean isActive(Game game) {
+        return game.isBallInPlay() && game.getDivision() == Division.B;
     }
 
     record Violation(TeamColor byTeam, int byBot, Vector2 ballLocation, Vector2 kickLocation) implements RuleViolation {

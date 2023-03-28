@@ -7,8 +7,6 @@ import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
-import java.util.EnumSet;
-
 public class BallLeftFieldTouchLineValidator implements RuleValidator {
 
 
@@ -58,8 +56,8 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
     }
 
     @Override
-    public EnumSet<GameState> activeStates() {
-        return EnumSet.of(GameState.RUNNING);
+    public boolean isActive(Game game) {
+        return game.isBallInPlay();
     }
 
 
