@@ -98,14 +98,12 @@ public class GameControllerConnection implements Runnable {
                     } catch (IOException e) {
                         //if IOexception in sendGameEvent, add gameEvent back to queue and reconnect
                         queue.add(0, gameEvent);
-                        System.out.println("1");
                         reconnect();
                     } catch (RuntimeException e) {
                         System.out.println(e.getMessage());
                     }
                 }
             } else if (active) {
-                System.out.println("2");
                 reconnect();
             }
             //small delay to not always check queue but check in intervals

@@ -110,6 +110,7 @@ public class SSLAutoRef {
                     game.setState(GameState.DIRECT_FREE);
                 }
 
+                //noinspection deprecation
                 case INDIRECT_FREE_YELLOW, INDIRECT_FREE_BLUE -> {
                     game.setState(GameState.INDIRECT_FREE);
                 }
@@ -326,19 +327,20 @@ public class SSLAutoRef {
     /**
      * Setup connections with all other software
      *
-     * @param ip                 ip where all software is running on
      * @param portGameController port GameContoller
      * @param portWorld          port World
      */
-    public void start(String ip, int portGameController, int portWorld) {
+    public void start(String ipWorld, String ipGameController, int portWorld, int portGameController) {
         //setup connection with GameControl
         gcConnection = new GameControllerConnection();
-        gcConnection.setIp(ip);
+        gcConnection.setIp(ipGameController);
         gcConnection.setPort(portGameController);
+        gcConnection.setActive(active);
         gcThread = new Thread(gcConnection);
         gcThread.start();
+
         //setup connection with World
-        worldConnection = new WorldConnection(ip, portWorld, this);
+        worldConnection = new WorldConnection(ipWorld, portWorld, this);
         worldThread = new Thread(worldConnection);
         worldThread.start();
     }
@@ -376,7 +378,10 @@ public class SSLAutoRef {
     }
 
     public void setActive(boolean active) {
-        gcConnection.setActive(active);
+        if (gcConnection != null) {
+            gcConnection.setActive(active);
+        }
+
         this.active = active;
     }
 
