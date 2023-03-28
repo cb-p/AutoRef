@@ -13,7 +13,7 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
 
 
     private static final double GRACE_PERIOD = 2.0;
-    private double lastViolations;
+    private double lastViolations = Double.NEGATIVE_INFINITY;
 
     /**
      * The validate method of this class determines whether any robot has caused the ball
@@ -46,6 +46,11 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
             lastViolations = Double.NEGATIVE_INFINITY;
         }
         return null;
+    }
+
+    @Override
+    public void reset(Game game) {
+        lastViolations = Double.NEGATIVE_INFINITY;
     }
 
     @Override

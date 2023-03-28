@@ -157,6 +157,11 @@ public class BotCrashingValidator implements RuleValidator {
     }
 
     @Override
+    public void reset(Game game) {
+        lastViolations.clear();
+    }
+
+    @Override
     public EnumSet<GameState> activeStates() {
         return EnumSet.of(GameState.RUNNING);
     }

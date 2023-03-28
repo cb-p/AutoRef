@@ -14,7 +14,7 @@ import java.util.Objects;
 public class AimlessKickValidator implements RuleValidator {
 
     private static final double GRACE_PERIOD = 2.0;
-    private double lastViolations;
+    private double lastViolations = Double.NEGATIVE_INFINITY;
 
 
     @Override
@@ -42,6 +42,11 @@ public class AimlessKickValidator implements RuleValidator {
             lastViolations = Double.NEGATIVE_INFINITY;
         }
         return null;
+    }
+
+    @Override
+    public void reset(Game game) {
+        lastViolations = Double.NEGATIVE_INFINITY;
     }
 
     @Override
