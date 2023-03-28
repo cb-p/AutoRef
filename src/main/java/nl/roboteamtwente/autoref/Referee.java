@@ -46,10 +46,18 @@ public class Referee {
 
         List<RuleViolation> violations = new ArrayList<>();
         for (RuleValidator validator : activeValidators) {
-            RuleViolation violation = validator.validate(game);
+            try {
+                RuleViolation violation = validator.validate(game);
 
-            if (violation != null) {
-                violations.add(violation);
+                if (violation != null) {
+                    violations.add(violation);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                System.err.println("!! " + validator.getClass().getSimpleName() + " will now be deactivated.");
+                activeValidators = new ArrayList<>(activeValidators);
+                activeValidators.remove(validator);
             }
         }
         return violations;
