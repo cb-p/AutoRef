@@ -51,9 +51,9 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
     }
 
     @Override
-    public EnumSet<GameState> activeStates() {
-        // TODO: Also include KICKOFF
-        return EnumSet.of(GameState.DIRECT_FREE, GameState.INDIRECT_FREE);
+    public boolean isActive(Game game) {
+        // FIXME: Change later
+        return game.isBallInPlay();
     }
 
     @Override

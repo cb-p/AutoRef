@@ -46,10 +46,10 @@ public class BotKickedBallTooFastValidator implements RuleValidator {
         return null;
     }
 
-    // Rule should only be checked when the ball is in play. Might include other game states as well?
+    // Rule should only be checked when the ball is in play
     @Override
-    public EnumSet<GameState> activeStates() {
-        return EnumSet.of(GameState.DIRECT_FREE, GameState.INDIRECT_FREE, GameState.RUNNING);
+    public boolean isActive(Game game) {
+        return game.isBallInPlay();
     }
 
     @Override
