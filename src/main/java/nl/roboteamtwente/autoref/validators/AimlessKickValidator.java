@@ -8,20 +8,14 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 import java.util.EnumSet;
-import java.util.Objects;
 
 
 public class AimlessKickValidator implements RuleValidator {
-
     private static final double GRACE_PERIOD = 2.0;
-    private double lastViolations = Double.NEGATIVE_INFINITY;
-
+    private double lastViolation = Double.NEGATIVE_INFINITY;
 
     @Override
     public RuleViolation validate(Game game) {
-        Robot byBot;
-        TeamColor byTeam;
-        Vector2 location;
         FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
         FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
 
@@ -29,24 +23,27 @@ public class AimlessKickValidator implements RuleValidator {
 //            return null;
 //        }
 
-        if (game.getBall().getPosition().getX() > rightGoalLine.p1().getX() || game.getBall().getPosition().getX() < leftGoalLine.p1().getX()){
-            byBot =  game.getRobot(game.getLastStartedTouch().by());
-            Vector2 finalTouchLocation = byBot.getPosition().xy();
-            if (game.getField().isInOwnHalf(byBot.getTeam().getSide(), byBot.getPosition().xy()) && (game.getTime() - lastViolations > GRACE_PERIOD)) {
-                lastViolations = game.getTime();
-                byTeam = byBot.getTeam().getColor();
-                location = game.getBall().getPosition().xy();
-                return new Violation(byTeam, byBot.getId(), location, finalTouchLocation);
+        if (game.getBall().getPosition().getX() > rightGoalLine.p1().getX() || game.getBall().getPosition().getX() < leftGoalLine.p1().getX()) {
+            Touch touch = game.getLastFinishedTouch();
+            if (touch == null) {
+                return null;
+            }
+
+            Robot byBot = game.getRobot(touch.by());
+            if (game.getField().isInOwnHalf(byBot.getTeam().getSide(), byBot.getPosition().xy()) && (game.getTime() - lastViolation > GRACE_PERIOD)) {
+                lastViolation = game.getTime();
+                return new Violation(byBot.getTeam().getColor(), byBot.getId(), game.getBall().getPosition().xy(), touch.endLocation().xy());
             }
         } else {
-            lastViolations = Double.NEGATIVE_INFINITY;
+            lastViolation = Double.NEGATIVE_INFINITY;
         }
+
         return null;
     }
 
     @Override
     public void reset(Game game) {
-        lastViolations = Double.NEGATIVE_INFINITY;
+        lastViolation = Double.NEGATIVE_INFINITY;
     }
 
     @Override
@@ -54,16 +51,15 @@ public class AimlessKickValidator implements RuleValidator {
         return EnumSet.of(GameState.RUNNING);
     }
 
-
     record Violation(TeamColor byTeam, int byBot, Vector2 ballLocation, Vector2 kickLocation) implements RuleViolation {
         @Override
         public String toString() {
-            return "Aimless kick (by: " + byTeam + ", by bot #" + byBot + ", at kick location: " + kickLocation +  ", ball left at " + ballLocation + " )";
+            return "Aimless kick (by: " + byTeam + ", by bot #" + byBot + ", at kick location: " + kickLocation + ", ball left at " + ballLocation + " )";
         }
-
 
         /**
          * Function that formats the violation into a packet to send to the GameController.
+         *
          * @return a GameEvent packet of type BallLeftFieldGoalLine to be handled by the GameController.
          */
         @Override
@@ -77,7 +73,6 @@ public class AimlessKickValidator implements RuleValidator {
                             .setKickLocation(SslGcGeometry.Vector2.newBuilder().setX(kickLocation.getX()).setY(kickLocation.getY()))
                     )
                     .build();
-
         }
     }
 }
