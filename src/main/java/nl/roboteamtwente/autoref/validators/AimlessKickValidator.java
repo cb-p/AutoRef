@@ -19,6 +19,9 @@ public class AimlessKickValidator implements RuleValidator {
 
         if (game.getBall().getPosition().getX() > rightGoalLine.p1().getX()){
             Touch touch = game.getLastFinishedTouch();
+            if (touch == null){
+                return null;
+            }
             Robot byBot = game.getRobot(touch.by());
             if (byBot.getTeam().getSide() == Side.LEFT
                     && game.getField().isInOwnHalf(byBot.getTeam().getSide(), byBot.getPosition().xy())
@@ -31,6 +34,9 @@ public class AimlessKickValidator implements RuleValidator {
 
         if (game.getBall().getPosition().getX() < leftGoalLine.p1().getX()){
             Touch touch = game.getLastFinishedTouch();
+            if (touch == null){
+                return null;
+            }
             Robot byBot = game.getRobot(touch.by());
             if (byBot.getTeam().getSide() == Side.RIGHT
                     && game.getField().isInOwnHalf(byBot.getTeam().getSide(), byBot.getPosition().xy())
