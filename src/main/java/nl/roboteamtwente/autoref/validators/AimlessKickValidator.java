@@ -25,9 +25,9 @@ public class AimlessKickValidator implements RuleValidator {
         FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
         FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
 
-        if (Objects.equals(game.getField().getDivision(game), "A")){
-            return null;
-        }
+//        if (Objects.equals(game.getField().getDivision(game), "A")){
+//            return null;
+//        }
 
         if (game.getBall().getPosition().getX() > rightGoalLine.p1().getX() || game.getBall().getPosition().getX() < leftGoalLine.p1().getX()){
             byBot =  game.getRobot(game.getLastStartedTouch().by());
