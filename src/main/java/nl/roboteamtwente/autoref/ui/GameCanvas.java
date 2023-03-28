@@ -90,7 +90,7 @@ public class GameCanvas extends Canvas {
             g.setFill(Color.WHITE);
             float x = s.translateX(robot.getPosition().getX());
             float y = s.translateY(robot.getPosition().getY());
-            g.fillText(robot.isTouchingBall() + ", " + robot.hasJustTouchedBall(), x, y - 20f);
+            g.fillText(robot.getTeam().getColor() + " " + robot.getId(), x, y - 20f);
         }
 
         s.drawCircle(sslAutoRef.getReferee().getGame().getBall().getPosition().xy(), 0.15f, Color.RED);
