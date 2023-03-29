@@ -31,7 +31,11 @@ public class BotDribbledBallTooFarValidator implements RuleValidator {
             Robot robot = game.getRobot(touch.by());
             float dist = startLocation.distance(endLocation);
 
-            if (dist > 1 && (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime())) {
+            if (dist <= 1) {
+                continue;
+            }
+
+            if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
                 lastViolations.put(robot.getIdentifier(), game.getTime());
                 return new Violation(robot.getTeam().getColor(), robot.getId(), startLocation, endLocation);
             }
