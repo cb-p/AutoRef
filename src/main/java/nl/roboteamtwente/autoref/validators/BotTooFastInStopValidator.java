@@ -22,16 +22,14 @@ public class BotTooFastInStopValidator implements RuleValidator {
 
     @Override
     public RuleViolation validate(Game game) {
-        if (game.getTime() - startStop <= GRACE_PERIOD) {
-            return null;
-        }
-
-        for (Robot robot : game.getRobots()) {
-            float robotSpeed = robot.getVelocity().xy().magnitude();
-            //Rule state: A robot must not move faster than 1.5 meters per second during stop. A violation of this rule is only counted once per robot and stoppage.
-            if (robotSpeed > MAX_SPEED_ALLOWED && !violatorsSet.contains(robot.getIdentifier())) {
-                violatorsSet.add(robot.getIdentifier());
-                return new BotTooFastInStopValidator.BotTooFastInStopViolation(robot.getId(), robot.getTeam().getColor(), robot.getPosition().xy(), robotSpeed);
+        if (game.getTime() - startStop > GRACE_PERIOD) {
+            for (Robot robot : game.getRobots()) {
+                float robotSpeed = robot.getVelocity().xy().magnitude();
+                //Rule state: A robot must not move faster than 1.5 meters per second during stop. A violation of this rule is only counted once per robot and stoppage.
+                if (robotSpeed > MAX_SPEED_ALLOWED && !violatorsSet.contains(robot.getIdentifier())) {
+                    violatorsSet.add(robot.getIdentifier());
+                    return new BotTooFastInStopValidator.BotTooFastInStopViolation(robot.getId(), robot.getTeam().getColor(), robot.getPosition().xy(), robotSpeed);
+                }
             }
         }
 
