@@ -125,6 +125,9 @@ public class SSLAutoRef {
             game.setState(game.getPrevious().getState());
         }
 
+        game.setCommand(statePacket.getReferee().getCommand());
+        game.setNextCommand(statePacket.getReferee().getNextCommand());
+
         game.setStateForTeam(switch (statePacket.getReferee().getCommand()) {
             //noinspection deprecation
             case GOAL_YELLOW, PREPARE_KICKOFF_YELLOW, PREPARE_PENALTY_YELLOW, INDIRECT_FREE_YELLOW, TIMEOUT_YELLOW, BALL_PLACEMENT_YELLOW, DIRECT_FREE_YELLOW ->
