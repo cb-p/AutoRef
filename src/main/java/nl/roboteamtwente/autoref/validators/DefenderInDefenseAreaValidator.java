@@ -18,14 +18,13 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
 
     /**
      * Check if the violation is still in GRACE_PERIOD
-     * @param bot - identifier of the bot
+     *
+     * @param bot              - identifier of the bot
      * @param currentTimeStamp - the current time that detect violation again
      * @return true if bot still under GRACE_PERIOD
      */
-    private boolean botStillOnCoolDown(RobotIdentifier bot, double currentTimeStamp)
-    {
-        if (lastViolations.containsKey(bot))
-        {
+    private boolean botStillOnCoolDown(RobotIdentifier bot, double currentTimeStamp) {
+        if (lastViolations.containsKey(bot)) {
             Double timestampLastViolation = lastViolations.get(bot);
             if (currentTimeStamp <= timestampLastViolation + GRACE_PERIOD) {
                 return true;
@@ -48,16 +47,11 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
      */
     @Override
     public RuleViolation validate(Game game) {
-
         for (Robot robot : game.getBall().getRobotsTouching()) {
             Side side = game.getTeam(robot.getTeam().getColor()).getSide();
             String sideString = side == Side.LEFT ? "Left" : "Right";
 
-            if (robot.isGoalkeeper()) {
-                continue;
-            }
-
-            if (!game.getField().isInDefenseArea(robot.getTeam().getSide(), robot.getPosition().xy())) {
+            if (robot.isGoalkeeper() || !game.getField().isInDefenseArea(robot.getTeam().getSide(), robot.getPosition().xy())) {
                 continue;
             }
 
@@ -87,12 +81,11 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
     }
 
 
-
     /**
      * Violation record which is used to flag who did the violation and where.
      *
-     * @param byTeam the team the robot is in that performed the violation.
-     * @param byBot the robot that performed the violation.
+     * @param byTeam   the team the robot is in that performed the violation.
+     * @param byBot    the robot that performed the violation.
      * @param location the location on the field where the violation was made.
      * @param distance the minimum distance from the lines of the defense area to the bot.
      */
