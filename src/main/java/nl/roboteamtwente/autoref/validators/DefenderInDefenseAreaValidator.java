@@ -77,7 +77,6 @@ public class DefenderInDefenseAreaValidator implements RuleValidator {
         lastViolations.clear();
     }
 
-
     /**
      * Violation record which is used to flag who did the violation and where.
      *

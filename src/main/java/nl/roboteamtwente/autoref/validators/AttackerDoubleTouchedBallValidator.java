@@ -49,7 +49,7 @@ public class AttackerDoubleTouchedBallValidator implements RuleValidator {
     /**
      * Violation record which is used to flag who did the violation and where.
      *
-     * @param by the robot that performed the violation.
+     * @param by       the robot that performed the violation.
      * @param location the location on the field where the violation was made.
      */
     record Violation(RobotIdentifier by, Vector2 location) implements RuleViolation {
@@ -63,6 +63,7 @@ public class AttackerDoubleTouchedBallValidator implements RuleValidator {
 
         /**
          * Function that formats the violation into a packet to send to the GameController.
+         *
          * @return a GameEvent packet of type AttackerDoubleTouchedBall to be handled by the GameController.
          */
         @Override
