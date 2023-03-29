@@ -14,24 +14,36 @@ public class AimlessKickValidator implements RuleValidator {
 
     @Override
     public RuleViolation validate(Game game) {
+        //Get the last touch made before the ball exited the field.
         Touch touch = game.getLastFinishedTouch();
         if (touch == null) {
             return null;
         }
 
+        //Get the left and right goal lines to see if they were crossed
         FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
         FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
+
+        //Sometimes getting the lines returns null, this is an error handling statement.
+        if (rightGoalLine == null || leftGoalLine == null) {
+            return null;
+        }
+
+        //Get the last robot who made the last touch
         Robot byBot = game.getRobot(touch.by());
 
+        //Check if the bot retrieved was in their own half before the ball went out.
         if (game.getField().isInOwnHalf(byBot.getTeam().getSide(), byBot.getPosition().xy())
                 && game.getTime() - lastViolation > GRACE_PERIOD) {
 
+            //If the ball left the right goal line and the side of the bot was left then an aimless kick happened.
             if (game.getBall().getPosition().getX() > rightGoalLine.p1().getX()
                     && byBot.getTeam().getSide() == Side.LEFT) {
                 lastViolation = game.getTime();
                 return new Violation(byBot.getTeam().getColor(), byBot.getId(), game.getBall().getPosition().xy(), touch.endLocation().xy());
             }
 
+            //If the ball left the left goal line and the side of the bot was right then an aimless kick happened.
             if (game.getBall().getPosition().getX() < leftGoalLine.p1().getX()
                     && byBot.getTeam().getSide() == Side.RIGHT) {
                 lastViolation = game.getTime();
@@ -52,6 +64,15 @@ public class AimlessKickValidator implements RuleValidator {
         return game.isBallInPlay() && game.getDivision() == Division.B;
     }
 
+
+    /**
+     * Violation record which is used to flag who did the violation and where.
+     *
+     * @param byTeam   the team the robot is in that performed the violation.
+     * @param byBot    the robot that performed the violation.
+     * @param ballLocation the location on the field where the ball left the goal line.
+     * @param kickLocation the location on the field where the aimless kick was made.
+     */
     record Violation(TeamColor byTeam, int byBot, Vector2 ballLocation, Vector2 kickLocation) implements RuleViolation {
         @Override
         public String toString() {
@@ -61,7 +82,7 @@ public class AimlessKickValidator implements RuleValidator {
         /**
          * Function that formats the violation into a packet to send to the GameController.
          *
-         * @return a GameEvent packet of type BallLeftFieldGoalLine to be handled by the GameController.
+         * @return a GameEvent packet of type AimlessKick to be handled by the GameController.
          */
         @Override
         public SslGcGameEvent.GameEvent toPacket() {
