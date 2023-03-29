@@ -21,6 +21,7 @@ public class BotInterferedPlacementValidator implements RuleValidator {
 
     /**
      * Calculate the distance between point 3 to the line defined by point 1 and point 2
+     *
      * @param p1 - first point of the line
      * @param p2 - second point of the line
      * @param p3 - the point to calculate distance to the line
@@ -38,13 +39,13 @@ public class BotInterferedPlacementValidator implements RuleValidator {
         // defines the line passing through points p1 and p2
         double a = y2 - y1;
         double b = x1 - x2;
-        double c = x2*y1 - x1*y2;
+        double c = x2 * y1 - x1 * y2;
 
         // Calculate the distance between point p3 and the line defined by the equation ax + by + c = 0 using the formula:
         // |ax3 + by3 + c| / sqrt(a^2 + b^2)
-        double numerator = Math.abs(a*x3 + b*y3 + c);
-        double denominator = Math.sqrt(a*a + b*b);
-        double distance = numerator/denominator;
+        double numerator = Math.abs(a * x3 + b * y3 + c);
+        double denominator = Math.sqrt(a * a + b * b);
+        double distance = numerator / denominator;
 
 
         return (float) distance;
@@ -52,6 +53,7 @@ public class BotInterferedPlacementValidator implements RuleValidator {
 
     /**
      * Round float number to 1 decimal place
+     *
      * @param number
      * @return rounded float number
      */
@@ -63,14 +65,14 @@ public class BotInterferedPlacementValidator implements RuleValidator {
 
     /**
      * Check if time a robot enter forbidden area is more than 2 seconds
-     * @param bot - identifier of the robot
+     *
+     * @param bot              - identifier of the robot
      * @param currentTimeStamp - the time robot enter forbidden area
      * @return true if robot enter more than 2 seconds else update the lastEnterForbidden Area
      */
 
     public boolean checkViolation(RobotIdentifier bot, double currentTimeStamp) {
-        if (lastEnterForbiddenArea.containsKey(bot))
-        {
+        if (lastEnterForbiddenArea.containsKey(bot)) {
             Double timestampLastViolation = lastEnterForbiddenArea.get(bot);
             // if enter forbidden area more than 2 second => return fault and reset enter forbidden area time
             if (currentTimeStamp > timestampLastViolation + GRACE_PERIOD) {
@@ -91,7 +93,7 @@ public class BotInterferedPlacementValidator implements RuleValidator {
 
     @Override
     public RuleViolation validate(Game game) {
-        if (game.getState() == GameState.BALL_PLACEMENT){
+        if (game.getState() == GameState.BALL_PLACEMENT) {
 
             Team opponentTeam = game.getTeam(game.getStateForTeam().getOpponentColor());
             for (Robot robot : opponentTeam.getRobots()) {
@@ -105,7 +107,7 @@ public class BotInterferedPlacementValidator implements RuleValidator {
                         return new BotInterferedPlacementValidator.BotInterferedPlacementViolation(robot.getTeam().getColor(), robot.getId(), roundRobotPos, ballPos, placementPos);
                     }
                 } else if (lastEnterForbiddenArea.containsKey(robot.getIdentifier())) {
-                        lastEnterForbiddenArea.remove(robot.getIdentifier());
+                    lastEnterForbiddenArea.remove(robot.getIdentifier());
                 }
             }
         }
@@ -120,7 +122,7 @@ public class BotInterferedPlacementValidator implements RuleValidator {
     record BotInterferedPlacementViolation(TeamColor byTeam, int byBot, Vector2 location, Vector2 ballPos, Vector2 placementPos) implements RuleViolation {
         @Override
         public String toString() {
-            return "Bot interfered placement (by: " + byTeam + ", bot #" + byBot + " location: " + location + " ballPos" + ballPos+ " placementPos: " + placementPos + " )";
+            return "Bot interfered placement (by: " + byTeam + ", bot #" + byBot + " location: " + location + " ballPos" + ballPos + " placementPos: " + placementPos + " )";
         }
 
         @Override

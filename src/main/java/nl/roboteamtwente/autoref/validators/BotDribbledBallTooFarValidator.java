@@ -18,13 +18,14 @@ public class BotDribbledBallTooFarValidator implements RuleValidator {
      * Violations map to determine who did the violation and when.
      */
     private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
+
     @Override
     public RuleViolation validate(Game game) {
-        if (game.getFinishedTouches().isEmpty()){
+        if (game.getFinishedTouches().isEmpty()) {
             return null;
         }
 
-        for (Touch touch: game.getFinishedTouches()){
+        for (Touch touch : game.getFinishedTouches()) {
             Vector2 startLocation = touch.startLocation().xy();
             Vector2 endLocation = touch.endLocation().xy();
             Robot robot = game.getRobot(touch.by());
@@ -47,7 +48,6 @@ public class BotDribbledBallTooFarValidator implements RuleValidator {
     public void reset(Game game) {
         lastViolations.clear();
     }
-
 
 
     record Violation(TeamColor byTeam, int byBot, Vector2 start, Vector2 end) implements RuleViolation {
