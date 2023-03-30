@@ -20,11 +20,7 @@ public class AttackerDoubleTouchedBallValidator implements RuleValidator {
     @Override
     public RuleViolation validate(Game game) {
         Touch kickIntoPlay = game.getKickIntoPlay();
-        if (kickIntoPlay == null) {
-            return null;
-        }
-
-        if (!kickIntoPlay.equals(game.getLastStartedTouch())) {
+        if (kickIntoPlay == null || !kickIntoPlay.equals(game.getLastStartedTouch())) {
             return null;
         }
 
@@ -56,7 +52,7 @@ public class AttackerDoubleTouchedBallValidator implements RuleValidator {
     /**
      * Violation record which is used to flag who did the violation and where.
      *
-     * @param by the robot that performed the violation.
+     * @param by       the robot that performed the violation.
      * @param location the location on the field where the violation was made.
      */
     record Violation(RobotIdentifier by, Vector2 location) implements RuleViolation {
@@ -70,6 +66,7 @@ public class AttackerDoubleTouchedBallValidator implements RuleValidator {
 
         /**
          * Function that formats the violation into a packet to send to the GameController.
+         *
          * @return a GameEvent packet of type AttackerDoubleTouchedBall to be handled by the GameController.
          */
         @Override

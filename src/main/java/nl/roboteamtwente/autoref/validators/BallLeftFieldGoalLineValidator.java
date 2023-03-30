@@ -34,7 +34,7 @@ public class BallLeftFieldGoalLineValidator implements RuleValidator {
             return null;
         }
 
-        if (ball.getX() > rightGoalLine.p1().getX() || ball.getX() < leftGoalLine.p1().getX()){
+        if (ball.getX() > rightGoalLine.p1().getX() || ball.getX() < leftGoalLine.p1().getX()) {
             if (game.getLastStartedTouch() == null) {
                 return null;
             }
@@ -69,6 +69,7 @@ public class BallLeftFieldGoalLineValidator implements RuleValidator {
 
         /**
          * Function that formats the violation into a packet to send to the GameController.
+         *
          * @return a GameEvent packet of type BallLeftFieldGoalLine to be handled by the GameController.
          */
         @Override

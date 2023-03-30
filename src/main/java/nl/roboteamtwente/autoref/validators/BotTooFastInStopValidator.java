@@ -17,6 +17,7 @@ public class BotTooFastInStopValidator implements RuleValidator {
     private static final double GRACE_PERIOD = 2.0;
 
     private static double startStop = Float.POSITIVE_INFINITY;
+
     //Set of violators in STOP state
     private final Set<RobotIdentifier> violatorsSet = new HashSet<>();
 

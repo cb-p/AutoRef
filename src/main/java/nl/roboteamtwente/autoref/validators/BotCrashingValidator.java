@@ -22,6 +22,7 @@ public class BotCrashingValidator implements RuleValidator {
 
     /**
      * Calculate the angle between 2 vectors
+     *
      * @param velocity1 - speed vector of bot 1
      * @param velocity2 - speed vector of bot 2
      * @return the angle in rad
@@ -38,6 +39,7 @@ public class BotCrashingValidator implements RuleValidator {
 
     /**
      * The difference of the speed vectors of both robots is taken and projected onto the line that is defined by the position of both robots
+     *
      * @param position1 - position of bot 1
      * @param velocity1 - velocity vector of bot 1
      * @param position2 - position of bot 2
@@ -63,14 +65,13 @@ public class BotCrashingValidator implements RuleValidator {
 
     /**
      * Check if the violation is still in GRACE_PERIOD
-     * @param bot - identifier of the bot
+     *
+     * @param bot              - identifier of the bot
      * @param currentTimeStamp - the current time that detect violation again
      * @return true if bot still under GRACE_PERIOD
      */
-    private boolean botStillOnCoolDown(RobotIdentifier bot, double currentTimeStamp)
-    {
-        if (lastViolations.containsKey(bot))
-        {
+    private boolean botStillOnCoolDown(RobotIdentifier bot, double currentTimeStamp) {
+        if (lastViolations.containsKey(bot)) {
             Double timestampLastViolation = lastViolations.get(bot);
             if (currentTimeStamp <= timestampLastViolation + GRACE_PERIOD) {
                 return true;
@@ -84,6 +85,7 @@ public class BotCrashingValidator implements RuleValidator {
 
     /**
      * Round float number to 1 decimal place
+     *
      * @param number
      * @return rounded float number
      */
@@ -168,8 +170,7 @@ public class BotCrashingValidator implements RuleValidator {
     record CrashDrawnViolation(int botBlue, int botYellow, Vector2 location, float crash_speed, float speed_diff, float crash_angle) implements RuleViolation {
         @Override
         public String toString() {
-            return "Bot crash drawn (bot blue #" + botBlue + " , bot yellow #" + botYellow + ", at " + location + ", crash speed :" + crash_speed
-                    + ", speed diff: " + speed_diff +  ", angle:" + crash_angle + " )";
+            return "Bot crash drawn (bot blue #" + botBlue + " , bot yellow #" + botYellow + ", at " + location + ", crash speed :" + crash_speed + ", speed diff: " + speed_diff + ", angle:" + crash_angle + " )";
         }
 
         @Override
@@ -191,8 +192,7 @@ public class BotCrashingValidator implements RuleValidator {
     record CrashUniqueViolation(float distance, TeamColor byTeam, int violator, int victim, Vector2 location, float crash_speed, float speed_diff, float crash_angle) implements RuleViolation {
         @Override
         public String toString() {
-            return "Bot crash unique (by: " + byTeam + ", main violator #" + violator + " , victim #" + victim + ", distance: " + distance + ", at " + location + ", crash speed :" + crash_speed
-                    + ", speed diff: " + speed_diff + ", angle:" + crash_angle + " )";
+            return "Bot crash unique (by: " + byTeam + ", main violator #" + violator + " , victim #" + victim + ", distance: " + distance + ", at " + location + ", crash speed :" + crash_speed + ", speed diff: " + speed_diff + ", angle:" + crash_angle + " )";
         }
 
         @Override

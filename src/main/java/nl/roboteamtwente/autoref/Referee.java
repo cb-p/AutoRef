@@ -14,11 +14,11 @@ public class Referee {
             new AttackerTouchedBallInDefenseAreaValidator(),
             new BallLeftFieldTouchLineValidator(),
             new BallLeftFieldGoalLineValidator(),
+            new BotKickedBallTooFastValidator(),
             new DefenderInDefenseAreaValidator(),
             new AttackerDoubleTouchedBallValidator(),
-            new BotKickedBallTooFastValidator(),
-            new DefenderTooCloseToKickPointValidator(),
-            new AimlessKickValidator()
+            new AimlessKickValidator(),
+            new BotDribbledBallTooFarValidator()
     );
 
     private List<RuleValidator> activeValidators;

@@ -34,7 +34,7 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
             return null;
         }
 
-        if (ball.getY() > topTouchLine.p1().getY() || ball.getY() < bottomTouchLine.p1().getY()){
+        if (ball.getY() > topTouchLine.p1().getY() || ball.getY() < bottomTouchLine.p1().getY()) {
             if (game.getLastStartedTouch() == null) {
                 return null;
             }
@@ -64,8 +64,8 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
     /**
      * Violation record which is used to flag who did the violation and where.
      *
-     * @param byTeam the team the robot is on that made the violation.
-     * @param byBot the robot that did the violation.
+     * @param byTeam   the team the robot is on that made the violation.
+     * @param byBot    the robot that did the violation.
      * @param location the location on the field where the violation was made.
      */
     record Violation(TeamColor byTeam, int byBot, Vector2 location) implements RuleViolation {
@@ -76,6 +76,7 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
 
         /**
          * Function that formats the violation into a packet to send to the GameController.
+         *
          * @return a GameEvent packet of type BallLeftFieldTouchLine to be handled by the GameController.
          */
         @Override

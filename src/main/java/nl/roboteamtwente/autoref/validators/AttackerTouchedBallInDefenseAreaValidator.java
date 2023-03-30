@@ -61,7 +61,7 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
     /**
      * Violation record which is used to flag who did the violation and where.
      *
-     * @param robot the robot that performed the violation.
+     * @param robot    the robot that performed the violation.
      * @param location the location on the field where the violation was made.
      */
     record Violation(RobotIdentifier robot, Vector2 location) implements RuleViolation {
@@ -73,6 +73,7 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
 
         /**
          * Function that formats the violation into a packet to send to the GameController.
+         *
          * @return a GameEvent packet of type AttackerTouchedBallInDefenseArea to be handled by the GameController.
          */
         @Override
