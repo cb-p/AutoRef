@@ -8,12 +8,13 @@ import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 public class BoundaryCrossingValidator implements RuleValidator {
-
     private boolean triggered = false;
-
 
     @Override
     public RuleViolation validate(Game game) {
+        if (triggered) {
+            return null;
+        }
 
         Vector2 location;
         Vector3 ball = game.getBall().getPosition();
@@ -26,20 +27,21 @@ public class BoundaryCrossingValidator implements RuleValidator {
             Touch touch = game.getLastFinishedTouch();
             location = ball.xy();
 
-            if (!triggered && touch != null) {
-                triggered = true;
+            triggered = true;
+            if (touch != null) {
                 Robot byBot = game.getRobot(touch.by());
                 return new Violation(byBot.getTeam().getColor(), location);
+            } else {
+                return new Violation(null, location);
             }
-            return new Violation(null, location);
-
         }
+
         return null;
     }
 
     @Override
     public boolean isActive(Game game) {
-        return true;
+        return game.isBallInPlay();
     }
 
 
