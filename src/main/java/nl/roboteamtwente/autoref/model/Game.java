@@ -1,5 +1,7 @@
 package nl.roboteamtwente.autoref.model;
 
+import org.robocup.ssl.proto.SslGcRefereeMessage;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +31,16 @@ public class Game {
      * The team which is mentioned in GameState
      */
     private TeamColor stateForTeam;
+
+    /**
+     * The received next command from referee packet
+     */
+    private SslGcRefereeMessage.SSL_Referee.Command nextCommand;
+
+    /**
+     * The received command from referee packet
+     */
+    private SslGcRefereeMessage.SSL_Referee.Command command;
 
     /**
      * The game consists of 2 teams blue and yellow
@@ -146,6 +158,22 @@ public class Game {
                 ", blue=" + blue +
                 ", yellow=" + yellow +
                 '}';
+    }
+
+    public SslGcRefereeMessage.SSL_Referee.Command getCommand() {
+        return this.command;
+    }
+
+    public SslGcRefereeMessage.SSL_Referee.Command getNextCommand() {
+        return this.nextCommand;
+    }
+
+    public void setCommand(SslGcRefereeMessage.SSL_Referee.Command command) {
+        this.command = command;
+    }
+
+    public void setNextCommand(SslGcRefereeMessage.SSL_Referee.Command command) {
+        this.nextCommand = command;
     }
 
     /**

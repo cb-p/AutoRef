@@ -18,7 +18,8 @@ public class Referee {
             new DefenderInDefenseAreaValidator(),
             new AttackerDoubleTouchedBallValidator(),
             new AimlessKickValidator(),
-            new BotDribbledBallTooFarValidator()
+            new BotDribbledBallTooFarValidator(),
+            new PlacementSucceededValidator()
     );
 
     private List<RuleValidator> activeValidators;
