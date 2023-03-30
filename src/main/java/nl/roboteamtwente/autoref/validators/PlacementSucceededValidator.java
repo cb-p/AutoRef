@@ -21,27 +21,29 @@ public class PlacementSucceededValidator implements RuleValidator {
 
     private static Vector3 initialBallPosition;
 
-//    Rule states: validator only raised 1 per ball placement
+    //Rule states: validator only raised 1 per ball placement
     private static boolean issueValidator = false;
 
     /**
      * Check if the ball is stationary with its velocity
      * Check the distance constraint for robot
+     *
      * @param game
      * @return true if it meets 2 requirements
      */
     public boolean isConsideredPlacedSuccessfully(Game game) {
-//        Ball must be stationary during placement
-//        TODO to discuss this
+        // Ball must be stationary during placement
+        //TODO to discuss this
         if (game.getBall().getVelocity().xy().magnitude() > 0.01) {
             return false;
         }
 
-//        All robot must keep distance to ball during the placement
+        //All robot must keep distance to ball during the placement
         double minDistance = isNextCommandForPlacingTeam(game) ? FREE_KICK_PLACEMENT_DISTANCE : FORCE_START_PLACEMENT_DISTANCE;
+        Vector2 ballPosition = game.getBall().getPosition().xy();
 
         for (Robot robot : game.getRobots()) {
-            if (robot.getPosition().xy().distance(game.getBall().getPosition().xy()) < minDistance) {
+            if (robot.getPosition().xy().distance(ballPosition) < minDistance) {
                 return false;
             }
         }
@@ -51,22 +53,21 @@ public class PlacementSucceededValidator implements RuleValidator {
 
     /**
      * Based on the game command and next command to check if the next command is for the placing team
+     *
      * @param game - Game command and next command
      * @return true if the next command is for the placing team
      */
-    private boolean isNextCommandForPlacingTeam(Game game)
-    {
-        if (game.getCommand() == SslGcRefereeMessage.SSL_Referee.Command.BALL_PLACEMENT_BLUE)
-        {
+    private boolean isNextCommandForPlacingTeam(Game game) {
+        if (game.getCommand() == SslGcRefereeMessage.SSL_Referee.Command.BALL_PLACEMENT_BLUE) {
             return game.getNextCommand() == SslGcRefereeMessage.SSL_Referee.Command.DIRECT_FREE_BLUE
                     || game.getNextCommand() == SslGcRefereeMessage.SSL_Referee.Command.INDIRECT_FREE_BLUE;
-        } else if (game.getCommand() == SslGcRefereeMessage.SSL_Referee.Command.BALL_PLACEMENT_YELLOW)
-        {
+        } else if (game.getCommand() == SslGcRefereeMessage.SSL_Referee.Command.BALL_PLACEMENT_YELLOW) {
             return game.getNextCommand() == SslGcRefereeMessage.SSL_Referee.Command.DIRECT_FREE_YELLOW
                     || game.getNextCommand() == SslGcRefereeMessage.SSL_Referee.Command.INDIRECT_FREE_YELLOW;
         }
         return false;
     }
+
     @Override
     public RuleViolation validate(Game game) {
 
@@ -79,13 +80,13 @@ public class PlacementSucceededValidator implements RuleValidator {
         float precision = game.getDesignatedPosition().distance(currentBallPos.xy());
         double timeTaken = game.getTime() - startPlacement;
 
-//        Check the constraint for distance between ball and designated position and the ball placement cannot perform earlier than 2 seconds after the ball placement command has been issued
+        //Check the constraint for distance between ball and designated position and the ball placement cannot perform earlier than 2 seconds after the ball placement command has been issued
         if (precision <= MAXIMUM_PLACEMENT_DISTANCE_BETWEEN_BALL_AND_DESIGNATED_POS && timeTaken >= MIN_PLACEMENT_TIME) {
             if (isConsideredPlacedSuccessfully(game)) {
                 issueValidator = true;
                 float distance = initialBallPosition.xy().distance(currentBallPos.xy());
 
-                return new PlacementSucceededValidator.PlacementSucceededViolation(forTeam, (float) timeTaken, precision,distance);
+                return new PlacementSucceededValidator.PlacementSucceededViolation(forTeam, (float) timeTaken, precision, distance);
             }
         }
 
@@ -102,7 +103,7 @@ public class PlacementSucceededValidator implements RuleValidator {
     record PlacementSucceededViolation(TeamColor byTeam, float time_taken, float precision, float distance) implements RuleViolation {
         @Override
         public String toString() {
-            return "Placement succeeded (by: "+ byTeam + " time taken: " + time_taken + ", precision: " + precision + ", distance: "+ distance   + " )";
+            return "Placement succeeded (by: " + byTeam + " time taken: " + time_taken + ", precision: " + precision + ", distance: " + distance + " )";
         }
 
         @Override
@@ -123,7 +124,7 @@ public class PlacementSucceededValidator implements RuleValidator {
     record PlacementFailedViolation(TeamColor byTeam, float distance) implements RuleViolation {
         @Override
         public String toString() {
-            return "Placement failed (by: "+ byTeam +", remaining distance: "+ distance + " )";
+            return "Placement failed (by: " + byTeam + ", remaining distance: " + distance + " )";
         }
 
         @Override
