@@ -1,16 +1,17 @@
 package nl.roboteamtwente.autoref.model;
 
 public enum GameState {
-    RUNNING,
     HALT,
-    STOP,
-
     TIMEOUT,
+
+    STOP,
+    PREPARE_KICKOFF,
+    PREPARE_PENALTY,
     BALL_PLACEMENT,
 
-    PREPARE_KICKOFF,
+    KICKOFF,
+    PENALTY,
+    FREE_KICK,
 
-    PREPARE_PENALTY,
-    DIRECT_FREE,
-    INDIRECT_FREE;
+    RUN
 }

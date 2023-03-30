@@ -1,7 +1,6 @@
 package nl.roboteamtwente.autoref.model;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -225,8 +224,8 @@ public class Game {
     }
 
     public boolean isBallInPlay() {
-        // FIXME: THIS IS NOT ACCURATE.
-        return getState() == GameState.RUNNING || (EnumSet.of(GameState.DIRECT_FREE, GameState.INDIRECT_FREE).contains(getState()) && getKickIntoPlay() != null);
+        // FIXME: Is this accurate?
+        return getState() == GameState.RUN;
     }
 
     public Division getDivision() {

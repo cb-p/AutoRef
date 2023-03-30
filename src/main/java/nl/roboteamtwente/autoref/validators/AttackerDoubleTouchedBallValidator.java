@@ -20,7 +20,7 @@ public class AttackerDoubleTouchedBallValidator implements RuleValidator {
     @Override
     public RuleViolation validate(Game game) {
         Touch kickIntoPlay = game.getKickIntoPlay();
-        if (kickIntoPlay == null || !kickIntoPlay.equals(game.getLastStartedTouch())) {
+        if (kickIntoPlay == null) {
             return null;
         }
 

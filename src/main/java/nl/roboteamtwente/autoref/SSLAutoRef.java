@@ -47,7 +47,7 @@ public class SSLAutoRef {
 
         game.setDivision(division);
 
-        WorldOuterClass.World world = statePacket.getCommandExtrapolatedWorld();
+        WorldOuterClass.World world = statePacket.getLastSeenWorld();
 
         game.setTime(world.getTime() / 1_000_000_000.0);
         game.setForceStarted(game.getPrevious().isForceStarted());
@@ -80,49 +80,72 @@ public class SSLAutoRef {
     private void deriveRefereeMessage(Game game, StateOuterClass.State statePacket) {
         //FIXME more closely represent GameState in AutoRef to GameState in World
         if (game.getState() == null || statePacket.getReferee().getCommandCounter() != commands) {
+            game.setState(game.getPrevious().getState());
+
             commands = statePacket.getReferee().getCommandCounter();
 
             switch (statePacket.getReferee().getCommand()) {
                 case HALT -> {
-                    game.setForceStarted(false);
+                    // Any state can lead to halt
                     game.setState(GameState.HALT);
                 }
                 case STOP -> {
-                    game.setForceStarted(false);
+                    // Stop command always stops the game
+                    // FIXME: Is this accurate?
                     game.setState(GameState.STOP);
                 }
+                case BALL_PLACEMENT_BLUE, BALL_PLACEMENT_YELLOW -> {
+                    // Ball placement is always triggered.
+                    game.setState(GameState.BALL_PLACEMENT);
+                }
                 case FORCE_START -> {
-                    game.setForceStarted(true);
-                    game.setState(GameState.RUNNING);
+                    // Force starts makes the game jump to start.
+                    game.setState(GameState.RUN);
+                }
+                case NORMAL_START -> {
+                    // Normal start starts the current stage of the game.
+                    // FIXME: Is this complete?
+                    if (game.getPrevious().getState() == GameState.PREPARE_KICKOFF) {
+                        game.setState(GameState.KICKOFF);
+                    } else if (game.getPrevious().getState() == GameState.PREPARE_PENALTY) {
+                        game.setState(GameState.PENALTY);
+                    }
                 }
                 //noinspection deprecation
-                case NORMAL_START, GOAL_YELLOW, GOAL_BLUE -> {
-                    game.setForceStarted(false);
-                    game.setState(GameState.RUNNING);
+                case INDIRECT_FREE_YELLOW, INDIRECT_FREE_BLUE, DIRECT_FREE_YELLOW, DIRECT_FREE_BLUE -> {
+                    // Free kick is always triggered.
+                    game.setState(GameState.FREE_KICK);
                 }
                 case PREPARE_KICKOFF_YELLOW, PREPARE_KICKOFF_BLUE -> {
+                    // Prepare kickoff is always triggered.
                     game.setState(GameState.PREPARE_KICKOFF);
                 }
                 case PREPARE_PENALTY_YELLOW, PREPARE_PENALTY_BLUE -> {
+                    // Prepare penalty is always triggered.
                     game.setState(GameState.PREPARE_PENALTY);
                 }
-                case DIRECT_FREE_YELLOW, DIRECT_FREE_BLUE -> {
-                    game.setState(GameState.DIRECT_FREE);
-                }
-
-                //noinspection deprecation
-                case INDIRECT_FREE_YELLOW, INDIRECT_FREE_BLUE -> {
-                    game.setState(GameState.INDIRECT_FREE);
-                }
                 case TIMEOUT_YELLOW, TIMEOUT_BLUE -> {
+                    // Timeouts are always triggered.
                     game.setState(GameState.TIMEOUT);
-                }
-                case BALL_PLACEMENT_YELLOW, BALL_PLACEMENT_BLUE -> {
-                    game.setState(GameState.BALL_PLACEMENT);
                 }
             }
         } else {
             game.setState(game.getPrevious().getState());
+        }
+
+        // FIXME: Will this be reset if the action succeeds?
+        //        This might get stuck in penalty.
+        if (statePacket.getReferee().hasCurrentActionTimeRemaining()) {
+            int timeRemaining = statePacket.getReferee().getCurrentActionTimeRemaining();
+            if (timeRemaining < 0) {
+                if (game.getState() == GameState.KICKOFF || game.getState() == GameState.FREE_KICK) {
+                    game.setState(GameState.RUN);
+                }
+
+                if (game.getState() == GameState.PENALTY) {
+                    game.setState(GameState.STOP);
+                }
+            }
         }
 
         game.setStateForTeam(switch (statePacket.getReferee().getCommand()) {
@@ -232,7 +255,6 @@ public class SSLAutoRef {
 
         game.setKickIntoPlay(game.getPrevious().getKickIntoPlay());
 
-
         Ball ball = game.getBall();
         Vector3 ballPosition = ball.getPosition();
 
@@ -279,9 +301,9 @@ public class SSLAutoRef {
 
                 System.out.print("touch #" + touch.id() + " by " + robot.getIdentifier());
 
-                if ((game.getState() == GameState.INDIRECT_FREE || game.getState() == GameState.DIRECT_FREE || (game.getState() == GameState.RUNNING && !game.isForceStarted())) && game.getKickIntoPlay() == null) {
+                if (game.getState() == GameState.KICKOFF || game.getState() == GameState.FREE_KICK) {
                     game.setKickIntoPlay(touch);
-                    game.setState(GameState.RUNNING);
+                    game.setState(GameState.RUN);
 
                     System.out.print(" (kick into play)");
                 }
@@ -310,7 +332,7 @@ public class SSLAutoRef {
             game.setTimeLastGameStateChange(game.getPrevious().getTimeLastGameStateChange());
         }
 
-        if (game.getPrevious().getState() == GameState.RUNNING && game.getState() != GameState.RUNNING) {
+        if (game.getPrevious().isBallInPlay() && !game.isBallInPlay()) {
             System.out.println("reset");
 
             game.getBall().setLastTouchStarted(null);
