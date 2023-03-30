@@ -87,7 +87,6 @@ public class AutoRefController implements Initializable {
         anim.start();
     }
 
-    //FIXME still hard coded
     public void start(Application.Parameters parameters) {
         try {
             String ipWorld = parameters.getNamed().getOrDefault("world-ip", "127.0.0.1");
