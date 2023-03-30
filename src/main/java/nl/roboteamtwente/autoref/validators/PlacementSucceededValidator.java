@@ -5,7 +5,6 @@ import nl.roboteamtwente.autoref.RuleViolation;
 import nl.roboteamtwente.autoref.model.*;
 import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
-import org.robocup.ssl.proto.SslGcGeometry;
 import org.robocup.ssl.proto.SslGcRefereeMessage;
 
 public class PlacementSucceededValidator implements RuleValidator {
@@ -22,10 +21,21 @@ public class PlacementSucceededValidator implements RuleValidator {
 
     private static Vector3 initialBallPosition;
 
+//    Rule states: validator only raised 1 per ball placement
     private static boolean issueValidator = false;
 
+    /**
+     * Check if the ball is stationary with its velocity
+     * Check the distance constraint for robot
+     * @param game
+     * @return true if it meets 2 requirements
+     */
     public boolean isConsideredPlacedSuccessfully(Game game) {
-
+//        Ball must be stationary during placement
+//        TODO to discuss this
+        if (game.getBall().getVelocity().xy().magnitude() > 0.01) {
+            return false;
+        }
 
 //        All robot must keep distance to ball during the placement
         double minDistance = isNextCommandForPlacingTeam(game) ? FREE_KICK_PLACEMENT_DISTANCE : FORCE_START_PLACEMENT_DISTANCE;
@@ -39,7 +49,11 @@ public class PlacementSucceededValidator implements RuleValidator {
         return true;
     }
 
-
+    /**
+     * Based on the game command and next command to check if the next command is for the placing team
+     * @param game - Game command and next command
+     * @return true if the next command is for the placing team
+     */
     private boolean isNextCommandForPlacingTeam(Game game)
     {
         if (game.getCommand() == SslGcRefereeMessage.SSL_Referee.Command.BALL_PLACEMENT_BLUE)
@@ -65,11 +79,14 @@ public class PlacementSucceededValidator implements RuleValidator {
         float precision = game.getDesignatedPosition().distance(currentBallPos.xy());
         double timeTaken = game.getTime() - startPlacement;
 
+//        Check the constraint for distance between ball and designated position and the ball placement cannot perform earlier than 2 seconds after the ball placement command has been issued
         if (precision <= MAXIMUM_PLACEMENT_DISTANCE_BETWEEN_BALL_AND_DESIGNATED_POS && timeTaken >= MIN_PLACEMENT_TIME) {
-            issueValidator = true;
-            float distance = initialBallPosition.xy().distance(currentBallPos.xy());
+            if (isConsideredPlacedSuccessfully(game)) {
+                issueValidator = true;
+                float distance = initialBallPosition.xy().distance(currentBallPos.xy());
 
-            return new PlacementSucceededValidator.PlacementSucceededViolation(forTeam, (float) timeTaken, precision,distance);
+                return new PlacementSucceededValidator.PlacementSucceededViolation(forTeam, (float) timeTaken, precision,distance);
+            }
         }
 
         return null;
