@@ -95,6 +95,7 @@ public class PlacementSucceededValidator implements RuleValidator {
 
     @Override
     public void reset(Game game) {
+        // at the start of the PLACEMENT get the startPlacement to calculate the timeTaken and initialPosition to get the distance
         startPlacement = game.getTime();
         initialBallPosition = game.getBall().getPosition();
         issueValidator = false;
