@@ -7,7 +7,6 @@ import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
-import java.util.EnumSet;
 
 public class DefenderTooCloseToKickPointValidator implements RuleValidator {
 

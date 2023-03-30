@@ -19,7 +19,7 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
     private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
 
     /**
-     * The distance from the field line that the violation will begin to trigger
+     * The distance from the defender area lines that the violation will begin to trigger
      */
     private static final double MAX_DISTANCE = 0.2;
 
@@ -32,7 +32,6 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
         }
 
         // Initialize variables
-        float distance = 0; // TODO: Use distance variable
         Field field = game.getField();
         TeamColor attackingTeam = game.getStateForTeam();
         Side side = game.getTeam(attackingTeam).getSide();
@@ -44,31 +43,53 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
         FieldLine PenaltyStretch = side == Side.LEFT ? field.getLineByName(sideString + "FieldRightPenaltyStretch") : field.getLineByName(sideString + "FieldLeftPenaltyStretch");
 
         for (Robot robot : game.getTeam(attackingTeam).getRobots()) {
+            // Distance from the defender area (returns 0 if robot is inside)
+            float distance = 0;
+
+            // Easier to read
+            float robotX = robot.getPosition().getX() * side.getCardinality();
+            float robotY = robot.getPosition().getY();
+            float lineX = PenaltyStretch.p1().getX() * side.getCardinality();
+            float lineY = PenaltyStretch.p1().getY();
+
+            // Check if robot is within defender area
+            if (field.isInDefenseArea(side.getOpposite(), robot.getPosition().xy())){
+                if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
+                    lastViolations.put(robot.getIdentifier(), game.getTime());
+                    return new Violation(robot.getIdentifier(), robot.getPosition().xy(), distance);
+                }
+            }
+
             // Check if robot's X is within 0.2 m of the defender area
-            if (robot.getPosition().getX() * side.getCardinality() < PenaltyStretch.p1().getX() * side.getCardinality() + MAX_DISTANCE) {
+            if (robotX > lineX - MAX_DISTANCE) {
 
                 // Check if robot's Y is also within 0.2m of the defender area
-                // TODO: Check if true: Can use the absolute value of the Y position as it is mirrored from the middle line of the field
-                if (abs(robot.getPosition().getY()) < abs(PenaltyStretch.p1().getY()) + MAX_DISTANCE) {
+                // TODO: Check if true: Can use the absolute value of the Y position as the Y coordinate is mirrored from the middle line of the field
+                if (abs(robotY) < abs(lineY) + MAX_DISTANCE) {
 
-                    // If so, check if it is within one of the corners and calculate distance to the corner
-                    if (robot.getPosition().getX() * side.getCardinality() > PenaltyStretch.p1().getX() * side.getCardinality()
-                            && abs(robot.getPosition().getY()) > abs(PenaltyStretch.p1().getY())) {
-                        float robotX = robot.getPosition().getX();
-                        float robotY = robot.getPosition().getY();
-                        float lineX = PenaltyStretch.p1().getX();
-                        float lineY = PenaltyStretch.p1().getY();
+                    if (abs(robotY) < abs(lineY)) {
+                        // Robot is in front of the line
+                        distance = lineX - robotX;
+                    } else if (robotX > lineX) {
+                        // Robot is above or below the defender area, within 0.2m
+                        distance = lineY - robotY;
+                    }
 
-                        if (Math.sqrt(Math.pow(lineX - robotX, 2) + Math.pow(abs(lineY) - abs(robotY), 2)) > MAX_DISTANCE) {
+                    // Check if robot is within one of the corners and calculate distance to the corner
+                    // TODO: Check: Can get either p1 or p2, they should have the same coordinates when taken the absolute Y value
+                    if (robotX < lineX && abs(robotY) > abs(lineY)) {
+                        // Robot is in one of the corners, use pythagorean theorem to get distance to that corner
+                        distance = (float) Math.sqrt(Math.pow(lineX - robotX, 2) + Math.pow(abs(lineY) - abs(robotY), 2));
+                        if (distance > MAX_DISTANCE) {
                             // Robot is not within 0.2m of the defender area
                             continue;
                         }
-
                     }
 
                     // Finally check if the violation has not been triggered for this robot yet in the past 2 seconds
                     if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
                         lastViolations.put(robot.getIdentifier(), game.getTime());
+                        // If this returns 0 and the robot is not in the defender area, something's wrong
                         return new Violation(robot.getIdentifier(), robot.getPosition().xy(), distance);
                     }
                 }
