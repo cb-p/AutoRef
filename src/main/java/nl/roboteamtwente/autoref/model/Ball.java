@@ -17,6 +17,8 @@ public class Ball extends Entity {
 
     private Touch lastTouchStarted;
 
+    private boolean visible;
+
     public Touch getLastTouchStarted() {
         return lastTouchStarted;
     }
@@ -31,6 +33,14 @@ public class Ball extends Entity {
      */
     public List<Robot> getRobotsTouching() {
         return robotsTouching;
+    }
+
+    public boolean isVisible(){
+        return visible;
+    }
+
+    public void setVisible(boolean vis){
+        this.visible = vis;
     }
 
 

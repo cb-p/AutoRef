@@ -157,6 +157,7 @@ public class SSLAutoRef {
         game.getBall().getVelocity().setX(world.getBall().getVel().getX());
         game.getBall().getVelocity().setY(world.getBall().getVel().getY());
         game.getBall().getVelocity().setZ(world.getBall().getZVel());
+        game.getBall().setVisible(world.getBall().getVisible());
     }
 
     /**
