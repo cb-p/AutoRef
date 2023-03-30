@@ -19,6 +19,8 @@ public class PlacementSucceededValidator implements RuleValidator {
 
     private static double startPlacement = Float.POSITIVE_INFINITY;
 
+    private static final float STATIONARY_THRESHOLD = 0.005f;
+
     private static Vector3 initialBallPosition;
 
     //Rule states: validator only raised 1 per ball placement
@@ -34,7 +36,7 @@ public class PlacementSucceededValidator implements RuleValidator {
     public boolean isConsideredPlacedSuccessfully(Game game) {
         // Ball must be stationary during placement
         //TODO to discuss this
-        if (game.getBall().getVelocity().xy().magnitude() > 0.01) {
+        if (game.getBall().getVelocity().xy().magnitude() > STATIONARY_THRESHOLD) {
             return false;
         }
 
