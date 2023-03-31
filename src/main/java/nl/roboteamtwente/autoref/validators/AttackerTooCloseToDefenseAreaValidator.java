@@ -27,33 +27,36 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
     @Override
     public RuleViolation validate(Game game) {
         // Check if team color is not null
-        if (game.getStateForTeam() == null) {
+        if (game.getState() != GameState.STOP && game.getStateForTeam() == null) {
             return null;
         }
 
-        // Initialize variables
         Field field = game.getField();
-        TeamColor attackingTeam = game.getStateForTeam();
-        Side side = game.getTeam(attackingTeam).getSide();
 
-        // Should check the defending team's side, so invert the result
-        String sideString = side == Side.LEFT ? "Right" : "Left";
+        // Loop through all robots and check if they are in the other team's defender area
+        for (Robot robot : game.getRobots()) {
 
-        // Get FieldLine for the defending side
-        FieldLine PenaltyStretch = side == Side.LEFT ? field.getLineByName(sideString + "FieldRightPenaltyStretch") : field.getLineByName(sideString + "FieldLeftPenaltyStretch");
+            TeamColor teamColor = robot.getTeam().getColor();
 
-        for (Robot robot : game.getTeam(attackingTeam).getRobots()) {
+            // Opponent's side
+            Side opponentSide = game.getTeam(teamColor).getSide().getOpposite();
+            String sideString = opponentSide == Side.LEFT ? "Left" : "Right";
+
+            // Get FieldLine for the defending side
+            FieldLine penaltyStretch = opponentSide == Side.LEFT ? field.getLineByName(sideString + "FieldLeftPenaltyStretch") : field.getLineByName(sideString + "FieldRightPenaltyStretch");
+
             // Distance from the defender area (returns 0 if robot is inside)
             float distance = 0;
 
             // Easier to read
-            float robotX = robot.getPosition().getX() * side.getCardinality();
+            // TODO: Is the cardinality on the opponent side 1 or -1? Important for the if-checks for X coordinate, might need to be inverted
+            float robotX = robot.getPosition().getX() * opponentSide.getCardinality();
             float robotY = robot.getPosition().getY();
-            float lineX = PenaltyStretch.p1().getX() * side.getCardinality();
-            float lineY = PenaltyStretch.p1().getY();
+            float lineX = penaltyStretch.p1().getX() * opponentSide.getCardinality();
+            float lineY = penaltyStretch.p1().getY();
 
             // Check if robot is within defender area
-            if (field.isInDefenseArea(side.getOpposite(), robot.getPosition().xy())){
+            if (field.isInDefenseArea(opponentSide, robot.getPosition().xy())) {
                 if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
                     lastViolations.put(robot.getIdentifier(), game.getTime());
                     return new Violation(robot.getIdentifier(), robot.getPosition().xy(), distance);
