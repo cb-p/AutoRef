@@ -43,7 +43,7 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
             String sideString = opponentSide == Side.LEFT ? "Left" : "Right";
 
             // Get FieldLine for the defending side
-            FieldLine penaltyStretch = opponentSide == Side.LEFT ? field.getLineByName(sideString + "FieldLeftPenaltyStretch") : field.getLineByName(sideString + "FieldRightPenaltyStretch");
+            FieldLine penaltyStretch = field.getLineByName(sideString + "PenaltyStretch");
 
             // Distance from the defender area (returns 0 if robot is inside)
             float distance = 0;
@@ -51,11 +51,7 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
             // Easier to read
             float robotX = robot.getPosition().getX() * opponentSide.getCardinality();
             float robotY = robot.getPosition().getY();
-
-            // Check which X is the lowest, use that point
-            float lineX1 = penaltyStretch.p1().getX() * opponentSide.getCardinality();
-            float lineX2 = penaltyStretch.p2().getX() * opponentSide.getCardinality();
-            float lineX = abs(lineX1) < abs(lineX2) ? lineX1 : lineX2;
+            float lineX = penaltyStretch.p1().getX() * opponentSide.getCardinality();
             float lineY = penaltyStretch.p1().getY();
 
             // Check if robot is within defender area
