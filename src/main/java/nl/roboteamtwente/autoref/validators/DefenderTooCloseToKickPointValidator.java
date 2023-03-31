@@ -43,7 +43,6 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
                     return new Violation(robot.getTeam().getColor(), robot.getId(), robotPos, distanceToBall);
                 }
             }
-
         }
 
         return null;
@@ -57,6 +56,7 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
 
     @Override
     public void reset(Game game) {
+        // FIXME: Reset after state changed, leading to the violation triggering fast after each other
         lastViolation = Double.NEGATIVE_INFINITY;
     }
 
