@@ -52,7 +52,11 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
             // TODO: Is the cardinality on the opponent side 1 or -1? Important for the if-checks for X coordinate, might need to be inverted
             float robotX = robot.getPosition().getX() * opponentSide.getCardinality();
             float robotY = robot.getPosition().getY();
-            float lineX = penaltyStretch.p1().getX() * opponentSide.getCardinality();
+
+            // Check which X is the lowest, use that point
+            float lineX1 = penaltyStretch.p1().getX() * opponentSide.getCardinality();
+            float lineX2 = penaltyStretch.p2().getX() * opponentSide.getCardinality();
+            float lineX = abs(lineX1) < abs(lineX2) ? lineX1 : lineX2;
             float lineY = penaltyStretch.p1().getY();
 
             // Check if robot is within defender area
@@ -121,7 +125,7 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
 
         /**
          * Function that formats the violation into a packet to send to the GameController.
-         * @return a GameEvent packet of type AttackerTouchedBallInDefenseArea to be handled by the GameController.
+         * @return a GameEvent packet of type AttackerTooCloseToDefenseArea to be handled by the GameController.
          */
         @Override
         public SslGcGameEvent.GameEvent toPacket() {
