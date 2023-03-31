@@ -184,7 +184,6 @@ public class BotCrashingValidator implements RuleValidator {
                             .setCrashAngle(crash_angle)
                             .setLocation(SslGcGeometry.Vector2.newBuilder().setX(location.getX()).setY(location.getY())))
                     .build();
-
         }
 
         @Override

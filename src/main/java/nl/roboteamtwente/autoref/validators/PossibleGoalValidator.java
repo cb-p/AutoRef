@@ -2,29 +2,45 @@ package nl.roboteamtwente.autoref.validators;
 
 import nl.roboteamtwente.autoref.RuleValidator;
 import nl.roboteamtwente.autoref.RuleViolation;
-import nl.roboteamtwente.autoref.model.Game;
-import nl.roboteamtwente.autoref.model.GameState;
-import nl.roboteamtwente.autoref.model.TeamColor;
-import nl.roboteamtwente.autoref.model.Vector2;
+import nl.roboteamtwente.autoref.model.*;
 import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
 public class PossibleGoalValidator implements RuleValidator {
 
-    private double lastNonStoppingFoul;
+    private double lastNonStoppingFoulbyYellow;
+    private double lastNonStoppingFoulbyBlue;
 
     // Rule states: The team did not commit any non_stopping foul in the last two seconds before the ball entered the goal.
     private static final double NON_STOPPING_FOUL_TIME_CONSTRAINT = 2;
 
-    public void setLastNonStoppingFoul(double lastNonStoppingFoul) {
-        this.lastNonStoppingFoul = lastNonStoppingFoul;
+    public void setLastNonStoppingFoul(double lastNonStoppingFoul, TeamColor byTeam) {
+        switch (byTeam){
+            case BLUE -> {
+                lastNonStoppingFoulbyBlue = lastNonStoppingFoul;
+            }
+            case YELLOW -> {
+                lastNonStoppingFoulbyYellow = lastNonStoppingFoul;
+            }
+            case BOTH -> {
+                lastNonStoppingFoulbyBlue = lastNonStoppingFoul;
+                lastNonStoppingFoulbyYellow = lastNonStoppingFoul;
+            }
+        }
     }
 
     @Override
     public RuleViolation validate(Game game) {
 //        if (game.getTime() - lastNonStoppingFoul)
-//        Vector2 location =
+        Vector2 location = game.getBall().getPosition().xy();
+
+
+
+        Vector2 kickingLocation = game.getBall().getLastTouchStarted().endLocation().xy();
+        RobotIdentifier kickBot = game.getBall().getLastTouchStarted().by();
+        double lastTouchTimestampByTeam = game.getBall().getLastTouchStarted().endTime();
+        TeamColor byTeam;
         return null;
     }
 

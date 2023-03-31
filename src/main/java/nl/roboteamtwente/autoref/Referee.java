@@ -18,7 +18,6 @@ public class Referee {
     private static final List<RuleValidator> OTHER_RULE_VALIDATORS = List.of(
             new BotInterferedPlacementValidator(),
             new BotTooFastInStopValidator(),
-//            new PossibleGoalValidator(),
             new BallLeftFieldTouchLineValidator(),
             new BallLeftFieldGoalLineValidator(),
             new DefenderInDefenseAreaValidator(),
@@ -75,9 +74,8 @@ public class Referee {
                 RuleViolation violation = nonStoppingValidator.validate(game);
                 if (violation != null) {
                     // Check for non-stopping fouls
-                    POSSIBLE_GOAL_VALIDATOR.setLastNonStoppingFoul(game.getTime());
+                    POSSIBLE_GOAL_VALIDATOR.setLastNonStoppingFoul(game.getTime(), violation.byTeam());
                     violations.add(violation);
-                    System.out.println(violation.byTeam());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -93,7 +91,6 @@ public class Referee {
 
                 RuleViolation violation = POSSIBLE_GOAL_VALIDATOR.validate(game);
                 if (violation != null) {
-                    // Check for non-stopping fouls
                     violations.add(violation);
                 }
             } catch (Exception e) {
@@ -102,6 +99,7 @@ public class Referee {
             }
         }
 
+        // Check other validators
         for (RuleValidator validator : activeValidators) {
             try {
                 RuleViolation violation = validator.validate(game);
