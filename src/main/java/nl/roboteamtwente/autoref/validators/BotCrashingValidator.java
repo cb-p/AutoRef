@@ -114,7 +114,6 @@ public class BotCrashingValidator implements RuleValidator {
                 if (distanceBetweenRobots <= BOT_CRASH_DISTANCE) {
                     // projection length of difference between speed vector
                     float crashSpeed = calculateCollisionVelocity(robotBluePos, robotBlueVel, robotYellowPos, robotYellowVel);
-//                        crashSpeed = roundFloatTo1DecimalPlace(crashSpeed);
 
                     if (crashSpeed > SPEED_VECTOR_THRESHOLD) {
                         //speed difference
