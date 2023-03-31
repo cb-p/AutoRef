@@ -59,7 +59,7 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
             if (field.isInDefenseArea(opponentSide, robot.getPosition().xy())) {
                 if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
                     lastViolations.put(robot.getIdentifier(), game.getTime());
-                    return new Violation(robot.getIdentifier(), robot.getPosition().xy(), distance);
+                    return new Violation(robot.getIdentifier(), robot.getPosition().xy(), distance, game.getBall().getPosition().xy());
                 }
             }
 
@@ -93,7 +93,7 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
                     if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
                         lastViolations.put(robot.getIdentifier(), game.getTime());
                         // If this returns 0 and the robot is not in the defender area, something's wrong
-                        return new Violation(robot.getIdentifier(), robot.getPosition().xy(), distance);
+                        return new Violation(robot.getIdentifier(), robot.getPosition().xy(), distance, game.getBall().getPosition().xy());
                     }
                 }
             }
@@ -112,10 +112,10 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
         lastViolations.clear();
     }
 
-    record Violation(RobotIdentifier robot, Vector2 location, float distance) implements RuleViolation {
+    record Violation(RobotIdentifier robot, Vector2 location, float distance, Vector2 ballLocation) implements RuleViolation {
         @Override
         public String toString() {
-            return "Attacker too close to defense area (by: " + robot.teamColor() + " #" + robot.id() + ", at " + location + ", distance: " + distance + ")";
+            return "Attacker too close to defense area (by: " + robot.teamColor() + " #" + robot.id() + ", at " + location + ", distance: " + distance + ", ball location: " + ballLocation + ")";
         }
 
 
@@ -132,7 +132,7 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
                             .setByBot(robot.id())
                             .setLocation(SslGcGeometry.Vector2.newBuilder().setX(location.getX()).setY(location.getY()))
                             .setDistance(distance)
-//                            .setBallLocation(ball.getPosition().xy())
+                            .setBallLocation(SslGcGeometry.Vector2.newBuilder().setX(ballLocation.getX()).setY(ballLocation.getY()))
                     )
                     .build();
         }
