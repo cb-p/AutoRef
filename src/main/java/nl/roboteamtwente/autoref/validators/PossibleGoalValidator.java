@@ -14,13 +14,16 @@ public class PossibleGoalValidator implements RuleValidator {
 
     private double lastNonStoppingFoul;
 
+    // Rule states: The team did not commit any non_stopping foul in the last two seconds before the ball entered the goal.
+    private static final double NON_STOPPING_FOUL_TIME_CONSTRAINT = 2;
+
     public void setLastNonStoppingFoul(double lastNonStoppingFoul) {
         this.lastNonStoppingFoul = lastNonStoppingFoul;
     }
 
     @Override
     public RuleViolation validate(Game game) {
-
+//        if (game.getTime() - lastNonStoppingFoul)
 //        Vector2 location =
         return null;
     }
@@ -51,7 +54,6 @@ public class PossibleGoalValidator implements RuleValidator {
                             .setNumRobotsByTeam(numRobotsByTeam)
                     )
                     .build();
-
         }
     }
 }
