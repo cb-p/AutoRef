@@ -49,7 +49,6 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
             float distance = 0;
 
             // Easier to read
-            // TODO: Is the cardinality on the opponent side 1 or -1? Important for the if-checks for X coordinate, might need to be inverted
             float robotX = robot.getPosition().getX() * opponentSide.getCardinality();
             float robotY = robot.getPosition().getY();
 
