@@ -77,6 +77,7 @@ public class Referee {
                     // Check for non-stopping fouls
                     POSSIBLE_GOAL_VALIDATOR.setLastNonStoppingFoul(game.getTime());
                     violations.add(violation);
+                    System.out.println(violation.byTeam());
                 }
             } catch (Exception e) {
                 e.printStackTrace();

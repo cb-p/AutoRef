@@ -186,6 +186,11 @@ public class BotCrashingValidator implements RuleValidator {
                     .build();
 
         }
+
+        @Override
+        public TeamColor byTeam() {
+            return TeamColor.BOTH;
+        }
     }
 
     record CrashUniqueViolation(float distance, TeamColor byTeam, int violator, int victim, Vector2 location, float crash_speed, float speed_diff, float crash_angle) implements RuleViolation {

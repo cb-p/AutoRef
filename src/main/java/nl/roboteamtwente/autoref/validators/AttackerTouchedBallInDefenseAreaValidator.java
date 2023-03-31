@@ -41,7 +41,7 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
 
             if (!lastViolations.containsKey(robot.getIdentifier()) || lastViolations.get(robot.getIdentifier()) + GRACE_PERIOD < game.getTime()) {
                 lastViolations.put(robot.getIdentifier(), game.getTime());
-                return new Violation(robot.getIdentifier(), robot.getPosition().xy());
+                return new Violation(robot.getTeam().getColor(),robot.getIdentifier(), robot.getPosition().xy());
             }
         }
 
@@ -64,7 +64,7 @@ public class AttackerTouchedBallInDefenseAreaValidator implements RuleValidator 
      * @param robot    the robot that performed the violation.
      * @param location the location on the field where the violation was made.
      */
-    record Violation(RobotIdentifier robot, Vector2 location) implements RuleViolation {
+    record Violation(TeamColor byTeam, RobotIdentifier robot, Vector2 location) implements RuleViolation {
         @Override
         public String toString() {
             return "Attacker touched ball in defense area (by: " + robot.teamColor() + " #" + robot.id() + ", at " + location + ")";
