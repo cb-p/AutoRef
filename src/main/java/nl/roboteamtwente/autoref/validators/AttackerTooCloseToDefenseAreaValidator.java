@@ -14,8 +14,14 @@ import static java.lang.Math.abs;
 
 public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
 
+    /**
+     * Time in seconds that the violation should not trigger for a robot
+     */
     private static final double GRACE_PERIOD = 2.0;
 
+    /**
+     * Map of the last violation with a grace period
+     */
     private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
 
     /**
@@ -23,7 +29,11 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
      */
     private static final double MAX_DISTANCE = 0.2;
 
-
+    /**
+     * The validate method of this validator checks if there is a robot within 0.2m of the opponent's defender area.
+     * @param game The game object being validated
+     * @return a violation when an attacker got too close to the opponent's defender area, else return null
+     */
     @Override
     public RuleViolation validate(Game game) {
         // Check if team color is not null
@@ -66,7 +76,7 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
             if (robotX > lineX - MAX_DISTANCE) {
 
                 // Check if robot's Y is also within 0.2m of the defender area
-                // TODO: Check if true: Can use the absolute value of the Y position as the Y coordinate is mirrored from the middle line of the field
+                // Can use the absolute value of the Y position as the Y coordinate is mirrored from the middle line of the field
                 if (abs(robotY) < abs(lineY) + MAX_DISTANCE) {
 
                     if (abs(robotY) < abs(lineY)) {
@@ -78,7 +88,7 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
                     }
 
                     // Check if robot is within one of the corners and calculate distance to the corner
-                    // TODO: Check: Can get either p1 or p2, they should have the same coordinates when taken the absolute Y value
+                    // Can get either p1 or p2, they should have the same coordinates when taken the absolute Y value
                     if (robotX < lineX && abs(robotY) > abs(lineY)) {
                         // Robot is in one of the corners, use pythagorean theorem to get distance to that corner
                         distance = (float) Math.sqrt(Math.pow(lineX - robotX, 2) + Math.pow(abs(lineY) - abs(robotY), 2));
