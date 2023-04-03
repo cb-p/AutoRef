@@ -18,8 +18,9 @@ public class GameControllerConnection implements Runnable {
     private String ip;
     private int port;
     private List<SslGcGameEvent.GameEvent> queue = new ArrayList<>();
-    ;
     private boolean active;
+    //time between attempts to reconnect (in ms)
+    private final int reconnectSleep = 1000;
 
 
     /**
@@ -71,7 +72,7 @@ public class GameControllerConnection implements Runnable {
             }
         } catch (IOException e) {
             //prevent spamming of trying to reconnect
-            Thread.sleep(1000);
+            Thread.sleep(reconnectSleep);
             reconnect();
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             e.printStackTrace();
@@ -226,6 +227,10 @@ public class GameControllerConnection implements Runnable {
 
     public void addToQueue(SslGcGameEvent.GameEvent gameEvent) {
         this.queue.add(gameEvent);
+    }
+
+    public int getReconnectSleep() {
+        return reconnectSleep;
     }
 
     @Override
