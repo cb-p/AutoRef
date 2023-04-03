@@ -50,13 +50,11 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
 
     @Override
     public boolean isActive(Game game) {
-        // FIXME: Change later
-        return game.isBallInPlay();
+        return game.getState() == GameState.FREE_KICK || game.getState() == GameState.KICKOFF;
     }
 
     @Override
     public void reset(Game game) {
-        // FIXME: Reset after state changed, leading to the violation triggering fast after each other
         lastViolation = Double.NEGATIVE_INFINITY;
     }
 

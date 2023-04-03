@@ -18,7 +18,7 @@ public class Referee {
             new DefenderInDefenseAreaValidator(),
             new AttackerDoubleTouchedBallValidator(),
             new AttackerTooCloseToDefenseAreaValidator(),
-//            new DefenderTooCloseToKickPointValidator(), TODO: game states incorrect
+            new DefenderTooCloseToKickPointValidator(),
             new AimlessKickValidator(),
             new BotDribbledBallTooFarValidator(),
             new PlacementSucceededValidator(),
