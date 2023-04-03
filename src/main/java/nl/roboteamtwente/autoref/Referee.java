@@ -17,9 +17,12 @@ public class Referee {
             new BotKickedBallTooFastValidator(),
             new DefenderInDefenseAreaValidator(),
             new AttackerDoubleTouchedBallValidator(),
+            new AttackerTooCloseToDefenseAreaValidator(),
+//            new DefenderTooCloseToKickPointValidator(), TODO: game states incorrect
             new AimlessKickValidator(),
             new BotDribbledBallTooFarValidator(),
-            new PlacementSucceededValidator()
+            new PlacementSucceededValidator(),
+            new BoundaryCrossingValidator()
     );
 
     private List<RuleValidator> activeValidators;
