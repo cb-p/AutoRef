@@ -41,6 +41,11 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
             return null;
         }
 
+        if (game.getTimeLastGameStateChange() + GRACE_PERIOD > game.getTime()){
+            // 2 seconds have not been passed since the last game state changed
+            return null;
+        }
+
         Field field = game.getField();
 
         // Loop through all robots and check if they are in the other team's defender area
