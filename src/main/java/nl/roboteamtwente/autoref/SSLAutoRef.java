@@ -6,6 +6,7 @@ import nl.roboteamtwente.proto.WorldOuterClass;
 import nl.roboteamtwente.proto.WorldRobotOuterClass;
 import org.robocup.ssl.proto.SslVisionGeometry;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -336,7 +337,7 @@ public class SSLAutoRef {
             game.setTimeLastGameStateChange(game.getPrevious().getTimeLastGameStateChange());
         }
 
-        if (game.getPrevious().isBallInPlay() && !game.isBallInPlay()) {
+        if (game.getPrevious().getState() != game.getState() && EnumSet.of(GameState.STOP, GameState.HALT).contains(game.getPrevious().getState())) {
             System.out.println("reset");
 
             game.getBall().setLastTouchStarted(null);
