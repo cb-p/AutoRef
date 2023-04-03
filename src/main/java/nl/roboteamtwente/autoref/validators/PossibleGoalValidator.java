@@ -29,18 +29,78 @@ public class PossibleGoalValidator implements RuleValidator {
             }
         }
     }
+    boolean checkPossibleGoalPosition(Game game, Vector2 ballPos) {
+        System.out.println("Here check");
 
+        FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
+
+        System.out.println(game.getField().lines.keySet());
+
+        TeamColor byTeam;
+        FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
+        System.out.println("RightGoalLine");
+        System.out.println("P1x:" + rightGoalLine.p1().getX());
+        System.out.println("P1y:" + rightGoalLine.p1().getY());
+        System.out.println("P2x:" + rightGoalLine.p2().getX());
+        System.out.println("P2y" + rightGoalLine.p2().getY());
+        FieldLine rightPenaltyStretch = game.getField().getLineByName("RightPenaltyStretch");
+        System.out.println("RightPenaltyStretch");
+        System.out.println("P1x:" + rightPenaltyStretch.p1().getX());
+        System.out.println("P1y:" + rightPenaltyStretch.p1().getY());
+        System.out.println("P2x:" + rightPenaltyStretch.p2().getX());
+        System.out.println("P2y:" + rightPenaltyStretch.p2().getY());
+        FieldLine rightFieldRightPenaltyStretch = game.getField().getLineByName("RightFieldRightPenaltyStretch");
+        System.out.println("RightFieldRightPenaltyStretch");
+        System.out.println("P1x:" + rightFieldRightPenaltyStretch.p1().getX());
+        System.out.println("P1y:" + rightFieldRightPenaltyStretch.p1().getY());
+        System.out.println("P2x:" + rightFieldRightPenaltyStretch.p2().getX());
+        System.out.println("P2y:" + rightFieldRightPenaltyStretch.p2().getY());
+        System.out.println("Ball location");
+        System.out.println("Ball x:" + game.getBall().getPosition().getX());
+        System.out.println("Ball y:" + game.getBall().getPosition().getY());
+//        FieldLine rightGoalBottomLine = game.getField().getLineByName("RightGoalBottomLine");
+//        System.out.println(rightGoalBottomLine.p1().getX());
+//        System.out.println(rightGoalBottomLine.p1().getY());
+//        System.out.println(rightGoalBottomLine.p2().getX());
+//        System.out.println(rightGoalBottomLine.p2().getY());
+//        FieldLine rightGoalDepthLine = game.getField().getLineByName("RightGoalDepthLine");
+//        System.out.println(rightGoalDepthLine.p1().getX());
+//        System.out.println(rightGoalDepthLine.p1().getY());
+//        System.out.println(rightGoalDepthLine.p2().getX());
+//        System.out.println(rightGoalDepthLine.p2().getY());
+
+
+
+        if (ballPos.getX() > rightGoalLine.p1().getX()) {
+//            FieldLine rightGoalDepthLine = game.getField().getLineByName("RightGoalDepthLine");
+//            System.out.println(rightGoalDepthLine.p2().getY());
+//            System.out.println(rightGoalDepthLine.p1().getY());
+//            System.out.println(rightGoalDepthLine.p2().getX());
+            if (game.getTeam(TeamColor.BLUE).getSide().equals(Side.RIGHT)) {
+                byTeam = TeamColor.BLUE;
+            } else {
+                byTeam = TeamColor.YELLOW;
+            }
+        } else if (ballPos.getX() < leftGoalLine.p1().getX()) {
+            if (game.getTeam(TeamColor.BLUE).getSide().equals(Side.LEFT)) {
+                byTeam = TeamColor.BLUE;
+            } else {
+                byTeam = TeamColor.YELLOW;
+            }
+        }
+        return false;
+    }
     @Override
     public RuleViolation validate(Game game) {
 //        if (game.getTime() - lastNonStoppingFoul)
         Vector2 location = game.getBall().getPosition().xy();
 
+        checkPossibleGoalPosition(game, game.getBall().getPosition().xy());
 
-
-        Vector2 kickingLocation = game.getBall().getLastTouchStarted().endLocation().xy();
-        RobotIdentifier kickBot = game.getBall().getLastTouchStarted().by();
-        double lastTouchTimestampByTeam = game.getBall().getLastTouchStarted().endTime();
-        TeamColor byTeam;
+//        Vector2 kickingLocation = game.getBall().getLastTouchStarted().endLocation().xy();
+//        RobotIdentifier kickBot = game.getBall().getLastTouchStarted().by();
+//        double lastTouchTimestampByTeam = game.getBall().getLastTouchStarted().endTime();
+//        TeamColor byTeam;
         return null;
     }
 
