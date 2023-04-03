@@ -290,7 +290,8 @@ public class SSLAutoRef {
 
                 if (touch != null) {
                     // we update the touch to include the end position
-                    touch = new Touch(touch.id(), touch.startLocation(), ballPosition, touch.startTime(), game.getTime(), robot.getIdentifier());
+                    touch = new Touch(touch.id(), touch.startLocation(), ballPosition, touch.startTime(), game.getTime(), touch.startVelocity(), ball.getVelocity(), robot.getIdentifier());
+
 
                     // if this touch is the kick into play, we update that too
                     if (Objects.equals(touch, game.getKickIntoPlay())) {
@@ -301,7 +302,7 @@ public class SSLAutoRef {
 
             if (robot.hasJustTouchedBall()) {
                 // we create a new partial touch
-                touch = new Touch(nextTouchId++, ballPosition, null, game.getTime(), null, robot.getIdentifier());
+                touch = new Touch(nextTouchId++, ballPosition, null, game.getTime(), null, ball.getVelocity(), null, robot.getIdentifier());
                 ball.setLastTouchStarted(touch);
                 robot.setTouch(touch);
 
