@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 
 public class SSLAutoRef {
     private static final float BALL_TOUCHING_DISTANCE = 0.025f;
+    private static final float BALL_ANGLE_TOUCHING_DISTANCE = 0.20f;
 
     private final Referee referee;
     private Division division = Division.B;
@@ -28,6 +29,9 @@ public class SSLAutoRef {
 
     private int commands = 0;
     private int nextTouchId = 0;
+
+    private Touch ballAngleTouch = null;
+    private boolean ballAngleTouchInvalidated = false;
 
     public SSLAutoRef() {
         this.referee = new Referee();
@@ -290,7 +294,8 @@ public class SSLAutoRef {
 
                 if (touch != null) {
                     // we update the touch to include the end position
-                    touch = new Touch(touch.id(), touch.startLocation(), ballPosition, touch.startTime(), game.getTime(), robot.getIdentifier());
+                    touch = new Touch(touch.id(), touch.startLocation(), ballPosition, touch.startTime(), game.getTime(), touch.startVelocity(), ball.getVelocity(), robot.getIdentifier());
+
 
                     // if this touch is the kick into play, we update that too
                     if (Objects.equals(touch, game.getKickIntoPlay())) {
@@ -301,7 +306,7 @@ public class SSLAutoRef {
 
             if (robot.hasJustTouchedBall()) {
                 // we create a new partial touch
-                touch = new Touch(nextTouchId++, ballPosition, null, game.getTime(), null, robot.getIdentifier());
+                touch = new Touch(nextTouchId++, ballPosition, null, game.getTime(), null, ball.getVelocity(), null, robot.getIdentifier());
                 ball.setLastTouchStarted(touch);
                 robot.setTouch(touch);
 
@@ -323,6 +328,73 @@ public class SSLAutoRef {
             // to conclude, we add the touch to the game
             if (touch != null) {
                 game.getTouches().add(touch);
+            }
+        }
+
+        double delta = game.getTime() - game.getPrevious().getTime();
+        if (delta != 0.0f) {
+            if (game.getPrevious().getBall().getVelocity().xy().angle(game.getBall().getVelocity().xy()) / delta >= 270.0f) {
+                if (ballAngleTouch == null) {
+                    ballAngleTouch = new Touch(
+                            0,
+                            game.getPrevious().getBall().getPosition(), null,
+                            game.getPrevious().getTime(), null,
+                            game.getPrevious().getBall().getVelocity(), null,
+                            null
+                    );
+                }
+
+                if (ballAngleTouch.by() == null) {
+                    float minDistance = Float.POSITIVE_INFINITY;
+                    Robot minRobot = null;
+                    for (Robot robot : game.getRobots()) {
+                        // FIXME: This could be more accurate by calculating where the positions plus the velocities intersect
+                        //        to see where the bounce happened, and looking from there.
+                        float distance = robot.getPosition().xy().distance(ball.getPosition().xy());
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            minRobot = robot;
+                        }
+                    }
+
+                    if (minDistance <= BALL_ANGLE_TOUCHING_DISTANCE) {
+                        ballAngleTouch = new Touch(
+                                ballAngleTouch.id(),
+                                ballAngleTouch.startLocation(), ballAngleTouch.endLocation(),
+                                ballAngleTouch.startTime(), ballAngleTouch.endTime(),
+                                ballAngleTouch.startVelocity(), ballAngleTouch.endVelocity(),
+                                minRobot.getIdentifier()
+                        );
+                    }
+                }
+
+                if (ballAngleTouch.by() != null && game.getRobot(ballAngleTouch.by()).isTouchingBall()) {
+                    ballAngleTouchInvalidated = true;
+                }
+            } else if (ballAngleTouchInvalidated) {
+                ballAngleTouchInvalidated = false;
+                ballAngleTouch = null;
+            } else if (ballAngleTouch != null) {
+                ballAngleTouch = new Touch(
+                        nextTouchId++,
+                        ballAngleTouch.startLocation(), null,
+                        ballAngleTouch.startTime(), null,
+                        ballAngleTouch.startVelocity(), null,
+                        ballAngleTouch.by()
+                );
+
+                float angle = ballAngleTouch.startVelocity().xy().angle(ball.getVelocity().xy());
+                if (ballAngleTouch.by() != null && angle >= 20.0f) {
+                    System.out.println("angle touch #" + ballAngleTouch.id() + " by " + ballAngleTouch.by() + " [angle: " + angle + "]");
+
+                    // let the normal touch code handle ending the touch next frame.
+                    Robot robot = game.getRobot(ballAngleTouch.by());
+                    game.getTouches().add(ballAngleTouch);
+                    robot.setTouch(ballAngleTouch);
+                    robot.setJustTouchedBall(true);
+                }
+
+                ballAngleTouch = null;
             }
         }
     }
@@ -348,6 +420,9 @@ public class SSLAutoRef {
             game.getBall().setLastTouchStarted(null);
             game.setKickIntoPlay(null);
             game.getTouches().clear();
+
+            ballAngleTouch = null;
+            ballAngleTouchInvalidated = false;
 
             for (Robot robot : game.getRobots()) {
                 robot.setTouch(null);
@@ -403,7 +478,8 @@ public class SSLAutoRef {
         try {
             //make sure sleep is longer than any sleep in GameControllerConnection.java
             Thread.sleep(3 * gcConnection.getReconnectSleep());
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+        }
         gcConnection.disconnect();
         gcThread.interrupt();
         worldConnection.close();

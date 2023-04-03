@@ -119,6 +119,15 @@ public class Vector2 {
     }
 
     /**
+     * Get the angle between two vectors
+     * @param other The other vector.
+     * @return the angle in degrees.
+     */
+    public float angle(Vector2 other) {
+        return (float) Math.toDegrees(Math.acos(dotProduct(other) / (magnitude() * other.magnitude())));
+    }
+
+    /**
      * @return the string value of the Vector2 object.
      */
     @Override

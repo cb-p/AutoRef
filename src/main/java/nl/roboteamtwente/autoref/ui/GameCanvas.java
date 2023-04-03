@@ -94,5 +94,7 @@ public class GameCanvas extends Canvas {
         }
 
         s.drawCircle(sslAutoRef.getReferee().getGame().getBall().getPosition().xy(), 0.15f, Color.RED);
+        s.drawLine(sslAutoRef.getReferee().getGame().getBall().getPosition().xy(),
+                sslAutoRef.getReferee().getGame().getBall().getPosition().xy().add(sslAutoRef.getReferee().getGame().getBall().getVelocity().xy()), 2f, Color.ORANGE);
     }
 }
