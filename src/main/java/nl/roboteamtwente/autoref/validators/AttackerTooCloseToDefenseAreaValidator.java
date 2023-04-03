@@ -118,7 +118,7 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
     // Validator should be active during stop and free kicks, when the ball has not yet entered play
     @Override
     public boolean isActive(Game game) {
-        return game.getState() == GameState.STOP || game.getState() == GameState.DIRECT_FREE || game.getState() == GameState.INDIRECT_FREE;
+        return game.getState() == GameState.STOP || game.getState() == GameState.FREE_KICK;
     }
 
     @Override
