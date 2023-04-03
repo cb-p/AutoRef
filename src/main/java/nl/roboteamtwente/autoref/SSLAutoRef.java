@@ -134,8 +134,6 @@ public class SSLAutoRef {
             game.setState(game.getPrevious().getState());
         }
 
-        // FIXME: Will this be reset if the action succeeds?
-        //        This might get stuck in penalty.
         if (statePacket.getReferee().hasCurrentActionTimeRemaining()) {
             int timeRemaining = statePacket.getReferee().getCurrentActionTimeRemaining();
             if (timeRemaining < 0) {
