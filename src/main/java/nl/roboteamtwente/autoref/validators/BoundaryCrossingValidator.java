@@ -20,9 +20,9 @@ public class BoundaryCrossingValidator implements RuleValidator {
         Vector3 ball = game.getBall().getPosition();
 
         if (ball.getY() > game.getField().getPosition().getY() + game.getField().getSize().getY() + game.getField().getBoundaryWidth()
-        ||ball.getY() < game.getField().getPosition().getY() - game.getField().getBoundaryWidth() || ball.getX() > game.getField().getPosition().getX() +
-                game.getField().getSize().getX() + game.getField().getBoundaryWidth() || ball.getX() < game.getField().getPosition().getX() -
-                game.getField().getBoundaryWidth()) {
+                || ball.getY() < game.getField().getPosition().getY() - game.getField().getBoundaryWidth()
+                || ball.getX() > game.getField().getPosition().getX() + game.getField().getSize().getX() + game.getField().getBoundaryWidth()
+                || ball.getX() < game.getField().getPosition().getX() - game.getField().getBoundaryWidth()) {
 
             Touch touch = game.getLastFinishedTouch();
             location = ball.xy();
@@ -54,7 +54,7 @@ public class BoundaryCrossingValidator implements RuleValidator {
     record Violation(TeamColor byTeam, Vector2 location) implements RuleViolation {
         @Override
         public String toString() {
-            return "Ball left the Boundary Crossing (by: " + byTeam + ", at " + location +")";
+            return "Ball left the Boundary Crossing (by: " + byTeam + ", at " + location + ")";
         }
 
         @Override
