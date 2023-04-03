@@ -10,10 +10,18 @@ import org.robocup.ssl.proto.SslGcGeometry;
 
 public class DefenderTooCloseToKickPointValidator implements RuleValidator {
 
+    // Grace period in seconds for the robot to move away before the violation is raised again
     private static final double GRACE_PERIOD = 2.0;
 
+    // Game time in seconds since the last violation was raised
     private double lastViolation = Double.NEGATIVE_INFINITY;
 
+    /**
+     * The validate method of this class determines if a robot of the defending team
+     * is too close to the ball during the relevant game states
+     * @param game The game object being validated
+     * @return a violation for when a robot is too close to the ball
+     */
     @Override
     public RuleViolation validate(Game game) {
 
@@ -44,10 +52,14 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
                 }
             }
         }
-
         return null;
     }
 
+    /**
+     * This validator should only be active during free kick or the kickoff
+     * @param game The game object being used to determine the state
+     * @return True or false depending on the current active game state
+     */
     @Override
     public boolean isActive(Game game) {
         return game.getState() == GameState.FREE_KICK || game.getState() == GameState.KICKOFF;
