@@ -252,20 +252,20 @@ public class SSLAutoRef {
      * @param game game
      */
     private void deriveTouch(Game game) {
-        //copy variables from previous game
+        // copy variables from previous game
         game.getBall().setLastTouchStarted(game.getPrevious().getBall().getLastTouchStarted());
-        game.getTouches().addAll(game.getPrevious().getFinishedTouches());
 
+        // restore all finished touches, in-progress touches will be evaluated next
+        game.getTouches().addAll(game.getPrevious().getFinishedTouches());
         game.setKickIntoPlay(game.getPrevious().getKickIntoPlay());
 
         Ball ball = game.getBall();
         Vector3 ballPosition = ball.getPosition();
 
         for (Robot robot : game.getRobots()) {
-            //robot in previous state
             Robot oldRobot = game.getPrevious().getRobot(robot.getIdentifier());
 
-            //copy some values to current state
+            // copy over old values
             if (oldRobot != null) {
                 robot.setTouch(oldRobot.getTouch());
                 robot.setJustTouchedBall(oldRobot.hasJustTouchedBall());
@@ -275,37 +275,43 @@ public class SSLAutoRef {
 
             // FIXME: is this a good way to detect if a robot is touching the ball?
             float distance = robot.getPosition().xy().distance(ballPosition.xy());
-            //detect if there is a touch
-            //FIXME remove working with Z
+
+            // detect if there's a touch
             if (distance <= robot.getTeam().getRobotRadius() + BALL_TOUCHING_DISTANCE && ball.getPosition().getZ() <= robot.getTeam().getRobotHeight() + BALL_TOUCHING_DISTANCE) {
                 ball.getRobotsTouching().add(robot);
-                //FIXME comment
+
+                // it just started touching ball, either when its the first frame or when
+                // in the previous frame the robot was not touching the ball.
                 robot.setJustTouchedBall(oldRobot == null || !oldRobot.isTouchingBall());
             } else {
                 // robot is not touching ball
-                //FIXME comments in this section
                 robot.setJustTouchedBall(false);
                 robot.setTouch(null);
 
                 if (touch != null) {
+                    // we update the touch to include the end position
                     touch = new Touch(touch.id(), touch.startLocation(), ballPosition, touch.startTime(), game.getTime(), robot.getIdentifier());
 
+                    // if this touch is the kick into play, we update that too
                     if (Objects.equals(touch, game.getKickIntoPlay())) {
                         game.setKickIntoPlay(touch);
                     }
                 }
             }
 
-            //FIXME comments in this section
             if (robot.hasJustTouchedBall()) {
+                // we create a new partial touch
                 touch = new Touch(nextTouchId++, ballPosition, null, game.getTime(), null, robot.getIdentifier());
                 ball.setLastTouchStarted(touch);
                 robot.setTouch(touch);
 
                 System.out.print("touch #" + touch.id() + " by " + robot.getIdentifier());
 
+                // if this happened during kickoff or a free kick, this is the kick into play
                 if (game.getState() == GameState.KICKOFF || game.getState() == GameState.FREE_KICK) {
                     game.setKickIntoPlay(touch);
+
+                    // we change the state to running
                     game.setState(GameState.RUN);
 
                     System.out.print(" (kick into play)");
@@ -314,6 +320,7 @@ public class SSLAutoRef {
                 System.out.println();
             }
 
+            // to conclude, we add the touch to the game
             if (touch != null) {
                 game.getTouches().add(touch);
             }
