@@ -7,6 +7,7 @@ import org.robocup.ssl.proto.SslGcCommon;
 import org.robocup.ssl.proto.SslGcGameEvent;
 import org.robocup.ssl.proto.SslGcGeometry;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,27 +22,50 @@ public class BotTooFastInStopValidator implements RuleValidator {
     //Set of violators in STOP state
     private final Set<RobotIdentifier> violatorsSet = new HashSet<>();
 
+    //Hashmap of last violation per team
+    private final HashMap<TeamColor, Double> teamLastViolation = new HashMap<>();
+
     @Override
     public RuleViolation validate(Game game) {
         if (game.getTime() - startStop <= GRACE_PERIOD) {
             return null;
         }
 
-        for (Robot robot : game.getRobots()) {
-            float robotSpeed = robot.getVelocity().xy().magnitude();
-            //Rule state: A robot must not move faster than 1.5 meters per second during stop. A violation of this rule is only counted once per robot and stoppage.
-            if (robotSpeed > MAX_SPEED_ALLOWED && !violatorsSet.contains(robot.getIdentifier())) {
-                violatorsSet.add(robot.getIdentifier());
-                return new BotTooFastInStopValidator.BotTooFastInStopViolation(robot.getId(), robot.getTeam().getColor(), robot.getPosition().xy(), robotSpeed);
+        for (TeamColor team : TeamColor.values()) {
+            if (teamLastViolation.containsKey(team) && teamLastViolation.get(team) + GRACE_PERIOD > game.getTime()) {
+                for (Robot robot : game.getTeam(team).getRobots()) {
+                    RuleViolation violation = validateRobot(robot);
+                    if (violation != null) {
+                        teamLastViolation.put(team, game.getTime());
+                        return violation;
+                    }
+                }
             }
         }
 
         return null;
     }
 
+    /**
+     * Check if the robot is too fast
+     *
+     * @param robot robot
+     * @return violation record || null
+     */
+    public RuleViolation validateRobot(Robot robot) {
+        float robotSpeed = robot.getVelocity().xy().magnitude();
+        //Rule state: A robot must not move faster than 1.5 meters per second during stop. A violation of this rule is only counted once per robot and stoppage.
+        if (robotSpeed > MAX_SPEED_ALLOWED && !violatorsSet.contains(robot.getIdentifier())) {
+            violatorsSet.add(robot.getIdentifier());
+            return new BotTooFastInStopValidator.BotTooFastInStopViolation(robot.getId(), robot.getTeam().getColor(), robot.getPosition().xy(), robotSpeed);
+        }
+        return null;
+    }
+
     @Override
     public void reset(Game game) {
         violatorsSet.clear();
+        teamLastViolation.clear();
         startStop = game.getTime();
     }
 
