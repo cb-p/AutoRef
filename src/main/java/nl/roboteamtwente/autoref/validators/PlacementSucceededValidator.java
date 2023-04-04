@@ -17,8 +17,6 @@ public class PlacementSucceededValidator implements RuleValidator {
 
     private static final float MIN_PLACEMENT_TIME = 2;
 
-    private static double startPlacement = Float.POSITIVE_INFINITY;
-
     private static final float STATIONARY_THRESHOLD = 0.005f;
 
     private static Vector3 initialBallPosition;
@@ -35,7 +33,6 @@ public class PlacementSucceededValidator implements RuleValidator {
      */
     public boolean isConsideredPlacedSuccessfully(Game game) {
         // Ball must be stationary during placement
-        //TODO to discuss this
         if (game.getBall().getVelocity().xy().magnitude() > STATIONARY_THRESHOLD) {
             return false;
         }
@@ -80,7 +77,7 @@ public class PlacementSucceededValidator implements RuleValidator {
         Vector3 currentBallPos = game.getBall().getPosition();
         TeamColor forTeam = game.getStateForTeam();
         float precision = game.getDesignatedPosition().distance(currentBallPos.xy());
-        double timeTaken = game.getTime() - startPlacement;
+        double timeTaken = game.getTime() - game.getTimeLastGameStateChange();
 
         //Check the constraint for distance between ball and designated position and the ball placement cannot perform earlier than 2 seconds after the ball placement command has been issued
         if (precision <= MAXIMUM_PLACEMENT_DISTANCE_BETWEEN_BALL_AND_DESIGNATED_POS && timeTaken >= MIN_PLACEMENT_TIME) {
@@ -97,8 +94,6 @@ public class PlacementSucceededValidator implements RuleValidator {
 
     @Override
     public void reset(Game game) {
-        // at the start of the PLACEMENT get the startPlacement to calculate the timeTaken and initialPosition to get the distance
-        startPlacement = game.getTime();
         initialBallPosition = game.getBall().getPosition();
         issueValidator = false;
     }

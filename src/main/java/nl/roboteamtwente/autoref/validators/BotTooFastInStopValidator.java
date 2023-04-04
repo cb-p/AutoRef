@@ -17,8 +17,6 @@ public class BotTooFastInStopValidator implements RuleValidator {
     //GRACE PERIOD is 2 second after STOP start for robot to slow down
     private static final double GRACE_PERIOD = 2.0;
 
-    private static double startStop = Float.POSITIVE_INFINITY;
-
     //Set of violators in STOP state
     private final Set<RobotIdentifier> violatorsSet = new HashSet<>();
 
@@ -26,7 +24,7 @@ public class BotTooFastInStopValidator implements RuleValidator {
 
     @Override
     public RuleViolation validate(Game game) {
-        if (game.getTime() - startStop <= GRACE_PERIOD) {
+        if (game.getTime() - game.getTimeLastGameStateChange() <= GRACE_PERIOD) {
             return null;
         }
 
@@ -64,7 +62,6 @@ public class BotTooFastInStopValidator implements RuleValidator {
     public void reset(Game game) {
         violatorsSet.clear();
         teamLastViolation.clear();
-        startStop = game.getTime();
     }
 
     @Override
