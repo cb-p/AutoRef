@@ -29,7 +29,7 @@ public class BallLeftFieldTouchLineValidator implements RuleValidator {
         FieldLine bottomTouchLine = game.getField().getLineByName("BottomTouchLine");
         FieldLine topTouchLine = game.getField().getLineByName("TopTouchLine");
 
-        // Lines are sometimes not present for some reason
+        // Lines are sometimes not present for some reason with some test cases not related to this rule
         if (bottomTouchLine == null || topTouchLine == null) {
             return null;
         }
