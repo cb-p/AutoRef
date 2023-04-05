@@ -30,7 +30,7 @@ public class BotTooFastInStopValidator implements RuleValidator {
         }
 
         for (TeamColor team : TeamColor.values()) {
-            if (teamLastViolation.containsKey(team) && teamLastViolation.get(team) + GRACE_PERIOD > game.getTime()) {
+            if (!teamLastViolation.containsKey(team) || teamLastViolation.get(team) + GRACE_PERIOD > game.getTime()) {
                 for (Robot robot : game.getTeam(team).getRobots()) {
                     RuleViolation violation = validateRobot(robot);
                     if (violation != null) {
