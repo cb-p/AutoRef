@@ -16,6 +16,8 @@ public class BotCrashingValidator implements RuleValidator {
     private static final float BOT_CRASH_DISTANCE = 0.2f;
     private static final float SPEED_VECTOR_THRESHOLD = 1.5f;
     private static final float MIN_SPEED_DIFFERENCE = 0.3f;
+
+    private static final float STATIONARY_THRESHOLD = 0.005f;
     private static final double GRACE_PERIOD = 2.0;
     //Map from robotId -> last violation time
     private final Map<RobotIdentifier, Double> lastViolations = new HashMap<>();
@@ -97,62 +99,65 @@ public class BotCrashingValidator implements RuleValidator {
 
     @Override
     public RuleViolation validate(Game game) {
-        for (Robot robotYellow : game.getTeam(TeamColor.YELLOW).getRobots()) {
-            if (botStillOnCoolDown(robotYellow.getIdentifier(), game.getTime())) {
-                continue;
-            }
-            for (Robot robotBlue : game.getTeam(TeamColor.BLUE).getRobots()) {
-                if (botStillOnCoolDown(robotBlue.getIdentifier(), game.getTime())) {
-                    continue;
-                }
-                Vector2 robotYellowPos = robotYellow.getPosition().xy();
-                Vector2 robotBluePos = robotBlue.getPosition().xy();
-                Vector2 robotYellowVel = robotYellow.getVelocity().xy();
-                Vector2 robotBlueVel = robotBlue.getVelocity().xy();
-                float distanceBetweenRobots = robotYellowPos.distance(robotBluePos);
-
-                if (distanceBetweenRobots <= BOT_CRASH_DISTANCE) {
-                    // projection length of difference between speed vector
-                    float crashSpeed = calculateCollisionVelocity(robotBluePos, robotBlueVel, robotYellowPos, robotYellowVel);
-
-                    if (crashSpeed > SPEED_VECTOR_THRESHOLD) {
-                        //speed difference
-                        float speedDiff = robotBlueVel.magnitude() - robotYellowVel.magnitude();
-                        speedDiff = roundFloatTo1DecimalPlace(speedDiff);
-                        //center position of 2 robots
-                        Vector2 location = new Vector2(roundFloatTo1DecimalPlace((float) ((robotBluePos.getX() + robotYellowPos.getX()) * 0.5))
-                                , roundFloatTo1DecimalPlace((float) ((robotBluePos.getY() + robotYellowPos.getY()) * 0.5)));
-                        float crashAngle = angleBetweenVectors(robotBlueVel, robotYellowVel);
-                        crashAngle = roundFloatTo1DecimalPlace(crashAngle);
-                        if (Math.abs(speedDiff) < MIN_SPEED_DIFFERENCE) {
-                            //crash drawn case
-                            int botBlue = robotBlue.getId();
-                            int botYellow = robotYellow.getId();
-                            lastViolations.put(robotBlue.getIdentifier(), game.getTime());
-                            lastViolations.put(robotYellow.getIdentifier(), game.getTime());
-                            return new BotCrashingValidator.CrashDrawnViolation(botBlue, botYellow, location, crashSpeed, speedDiff, crashAngle);
-                        } else {
-                            //crash unique case
-                            int violator;
-                            int victim;
-                            TeamColor byTeam;
-                            if (speedDiff > 0) {
-                                byTeam = TeamColor.BLUE;
-                                violator = robotBlue.getId();
-                                victim = robotYellow.getId();
-                            } else {
-                                byTeam = TeamColor.YELLOW;
-                                violator = robotYellow.getId();
-                                victim = robotBlue.getId();
-                            }
-                            lastViolations.put(robotBlue.getIdentifier(), game.getTime());
-                            lastViolations.put(robotYellow.getIdentifier(), game.getTime());
-                            return new CrashUniqueViolation(distanceBetweenRobots, byTeam, violator, victim, location, crashSpeed, speedDiff, crashAngle);
-                        }
-                    }
-                }
-            }
+        if (game.getBall().getVelocity().xy().magnitude() > STATIONARY_THRESHOLD) {
+            return new CrashUniqueViolation(0, TeamColor.BLUE, 1, 1, game.getBall().getPosition().xy(), 0, 0, 0);
         }
+//        for (Robot robotYellow : game.getTeam(TeamColor.YELLOW).getRobots()) {
+//            if (botStillOnCoolDown(robotYellow.getIdentifier(), game.getTime())) {
+//                continue;
+//            }
+//            for (Robot robotBlue : game.getTeam(TeamColor.BLUE).getRobots()) {
+//                if (botStillOnCoolDown(robotBlue.getIdentifier(), game.getTime())) {
+//                    continue;
+//                }
+//                Vector2 robotYellowPos = robotYellow.getPosition().xy();
+//                Vector2 robotBluePos = robotBlue.getPosition().xy();
+//                Vector2 robotYellowVel = robotYellow.getVelocity().xy();
+//                Vector2 robotBlueVel = robotBlue.getVelocity().xy();
+//                float distanceBetweenRobots = robotYellowPos.distance(robotBluePos);
+//
+//                if (distanceBetweenRobots <= BOT_CRASH_DISTANCE) {
+//                    // projection length of difference between speed vector
+//                    float crashSpeed = calculateCollisionVelocity(robotBluePos, robotBlueVel, robotYellowPos, robotYellowVel);
+//
+//                    if (crashSpeed > SPEED_VECTOR_THRESHOLD) {
+//                        //speed difference
+//                        float speedDiff = robotBlueVel.magnitude() - robotYellowVel.magnitude();
+//                        speedDiff = roundFloatTo1DecimalPlace(speedDiff);
+//                        //center position of 2 robots
+//                        Vector2 location = new Vector2(roundFloatTo1DecimalPlace((float) ((robotBluePos.getX() + robotYellowPos.getX()) * 0.5))
+//                                , roundFloatTo1DecimalPlace((float) ((robotBluePos.getY() + robotYellowPos.getY()) * 0.5)));
+//                        float crashAngle = angleBetweenVectors(robotBlueVel, robotYellowVel);
+//                        crashAngle = roundFloatTo1DecimalPlace(crashAngle);
+//                        if (Math.abs(speedDiff) < MIN_SPEED_DIFFERENCE) {
+//                            //crash drawn case
+//                            int botBlue = robotBlue.getId();
+//                            int botYellow = robotYellow.getId();
+//                            lastViolations.put(robotBlue.getIdentifier(), game.getTime());
+//                            lastViolations.put(robotYellow.getIdentifier(), game.getTime());
+//                            return new BotCrashingValidator.CrashDrawnViolation(botBlue, botYellow, location, crashSpeed, speedDiff, crashAngle);
+//                        } else {
+//                            //crash unique case
+//                            int violator;
+//                            int victim;
+//                            TeamColor byTeam;
+//                            if (speedDiff > 0) {
+//                                byTeam = TeamColor.BLUE;
+//                                violator = robotBlue.getId();
+//                                victim = robotYellow.getId();
+//                            } else {
+//                                byTeam = TeamColor.YELLOW;
+//                                violator = robotYellow.getId();
+//                                victim = robotBlue.getId();
+//                            }
+//                            lastViolations.put(robotBlue.getIdentifier(), game.getTime());
+//                            lastViolations.put(robotYellow.getIdentifier(), game.getTime());
+//                            return new CrashUniqueViolation(distanceBetweenRobots, byTeam, violator, victim, location, crashSpeed, speedDiff, crashAngle);
+//                        }
+//                    }
+//                }
+//            }
+//        }
         return null;
     }
 
@@ -191,7 +196,7 @@ public class BotCrashingValidator implements RuleValidator {
     record CrashUniqueViolation(float distance, TeamColor byTeam, int violator, int victim, Vector2 location, float crash_speed, float speed_diff, float crash_angle) implements RuleViolation {
         @Override
         public String toString() {
-            return "Bot crash unique (by: " + byTeam + ", main violator #" + violator + " , victim #" + victim + ", distance: " + distance + ", at " + location + ", crash speed :" + crash_speed + ", speed diff: " + speed_diff + ", angle:" + crash_angle + " )";
+            return "Ball is moving";
         }
 
         @Override
