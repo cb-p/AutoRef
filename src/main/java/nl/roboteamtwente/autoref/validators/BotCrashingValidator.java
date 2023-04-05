@@ -14,7 +14,7 @@ import java.util.Map;
 public class BotCrashingValidator implements RuleValidator {
 
     private static final float BOT_CRASH_DISTANCE = 0.2f;
-    private static final float SPEED_VECTOR_THRESHOLD = 1.5f;
+    private static final float SPEED_VECTOR_THRESHOLD = 0.3f;
     private static final float MIN_SPEED_DIFFERENCE = 0.3f;
     private static final double GRACE_PERIOD = 2.0;
     //Map from robotId -> last violation time
