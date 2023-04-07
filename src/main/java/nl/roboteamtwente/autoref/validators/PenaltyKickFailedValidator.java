@@ -44,10 +44,10 @@ public class PenaltyKickFailedValidator implements RuleValidator {
         valid = false;
     }
 
-    record Violation(TeamColor teamColor, Vector2 location, String reason) implements RuleViolation {
+    record Violation(TeamColor byTeam, Vector2 location, String reason) implements RuleViolation {
         @Override
         public String toString() {
-            return "Penalty kick failed (by: " + teamColor + ", at " + location + ", reason: " + reason + ")";
+            return "Penalty kick failed (by: " + byTeam + ", at " + location + ", reason: " + reason + ")";
         }
 
 
@@ -56,15 +56,10 @@ public class PenaltyKickFailedValidator implements RuleValidator {
             return SslGcGameEvent.GameEvent.newBuilder()
                     .setType(SslGcGameEvent.GameEvent.Type.PENALTY_KICK_FAILED)
                     .setPenaltyKickFailed(SslGcGameEvent.GameEvent.PenaltyKickFailed.newBuilder()
-                            .setByTeam(teamColor == TeamColor.BLUE ? SslGcCommon.Team.BLUE : SslGcCommon.Team.YELLOW)
+                            .setByTeam(byTeam == TeamColor.BLUE ? SslGcCommon.Team.BLUE : SslGcCommon.Team.YELLOW)
                             .setLocation(SslGcGeometry.Vector2.newBuilder().setX(location.getX()).setY(location.getY()))
                             .setReason(reason))
                     .build();
-        }
-
-        @Override
-        public TeamColor byTeam() {
-            return teamColor;
         }
     }
 }
