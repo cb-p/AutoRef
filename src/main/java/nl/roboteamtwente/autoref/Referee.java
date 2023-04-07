@@ -90,6 +90,7 @@ public class Referee {
             try {
 
                 RuleViolation violation = POSSIBLE_GOAL_VALIDATOR.validate(game);
+
                 if (violation != null) {
                     violations.add(violation);
                 }
@@ -104,6 +105,7 @@ public class Referee {
             try {
                 RuleViolation violation = validator.validate(game);
 
+//                TODO: ask if we should throw BALLLEFTFIELDGOALLINE if we detect POSSIBLEGOAL
                 if (violation != null) {
                     violations.add(violation);
                 }
