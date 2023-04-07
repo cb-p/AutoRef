@@ -252,8 +252,7 @@ public class Game {
     }
 
     public boolean isBallInPlay() {
-        // FIXME: Is this accurate?
-        return getState() == GameState.RUN;
+        return getState() == GameState.RUN || (getState() == GameState.PENALTY && getKickIntoPlay() != null);
     }
 
     public Division getDivision() {

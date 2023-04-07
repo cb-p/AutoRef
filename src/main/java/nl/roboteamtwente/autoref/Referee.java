@@ -25,7 +25,8 @@ public class Referee {
             new BoundaryCrossingValidator()
     );
 
-    private List<RuleValidator> activeValidators;
+    private List<RuleValidator> activeValidators = new ArrayList<>();
+    private final List<RuleValidator> disabledValidators = new ArrayList<>();
 
     private Game game;
 
@@ -38,17 +39,21 @@ public class Referee {
     }
 
     public List<RuleViolation> validate() {
-        if (activeValidators == null || game.getState() != game.getPrevious().getState()) {
-            List<RuleValidator> validators = RULE_VALIDATORS.stream().filter((validator) -> validator.isActive(game)).toList();
+        List<RuleValidator> validators = RULE_VALIDATORS.stream().filter((validator) -> validator.isActive(game)).toList();
+        disabledValidators.retainAll(validators);
 
-            List<RuleValidator> toReset = new ArrayList<>(validators);
-            if (activeValidators != null) {
-                toReset.removeAll(activeValidators);
-            }
+        validators = new ArrayList<>(validators);
+        validators.removeAll(disabledValidators);
 
-            toReset.forEach(validator -> validator.reset(game));
-            activeValidators = validators;
+        List<RuleValidator> toReset = new ArrayList<>(validators);
+        toReset.removeAll(activeValidators);
+
+        for (RuleValidator validator : toReset) {
+            System.out.println("reset " + validator.getClass().getSimpleName());
+            validator.reset(game);
         }
+
+        activeValidators = validators;
 
         List<RuleViolation> violations = new ArrayList<>();
         for (RuleValidator validator : activeValidators) {
@@ -62,8 +67,7 @@ public class Referee {
                 e.printStackTrace();
 
                 System.err.println("!! " + validator.getClass().getSimpleName() + " will now be deactivated.");
-                activeValidators = new ArrayList<>(activeValidators);
-                activeValidators.remove(validator);
+                disabledValidators.add(validator);
             }
         }
         return violations;
