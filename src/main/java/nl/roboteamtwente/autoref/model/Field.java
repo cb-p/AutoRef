@@ -14,7 +14,7 @@ public class Field {
 
     private float boundaryWidth;
 
-    public final Map<String, FieldLine> lines;
+    private final Map<String, FieldLine> lines;
 //    private Map<String, FieldArc> arcs;
 
     /**

@@ -61,5 +61,10 @@ public class PenaltyKickFailedValidator implements RuleValidator {
                             .setReason(reason))
                     .build();
         }
+
+        @Override
+        public TeamColor byTeam() {
+            return teamColor;
+        }
     }
 }

@@ -104,7 +104,7 @@ public class PossibleGoalValidator implements RuleValidator {
 
     @Override
     public boolean isActive(Game game) {
-        return game.getState() == GameState.RUNNING;
+        return game.isBallInPlay();
     }
 
     record PossibleGoal(TeamColor byTeam, TeamColor kickingTeam, int kickingBot, Vector2 location, Vector2 kickLocation, Float maxBallHeight, int numRobotsByTeam, int lastTouchTimestampByTeam) implements RuleViolation {

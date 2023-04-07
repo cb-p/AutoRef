@@ -150,5 +150,10 @@ public class AttackerTooCloseToDefenseAreaValidator implements RuleValidator {
                     )
                     .build();
         }
+
+        @Override
+        public TeamColor byTeam() {
+            return robot.teamColor();
+        }
     }
 }
