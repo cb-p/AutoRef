@@ -35,7 +35,7 @@ public class DefenderTooCloseToKickPointValidator implements RuleValidator {
         Vector2 ball = game.getBall().getPosition().xy();
 
         // Get defending teamColor from the game state
-        TeamColor defendingTeamColor = game.getStateForTeam() == TeamColor.YELLOW ? TeamColor.BLUE : TeamColor.YELLOW;
+        TeamColor defendingTeamColor = game.getStateForTeam().getOpponentColor();
 
         // Check if defender robots are too close to the ball (within 0.5m)
         for (Robot robot : game.getTeam(defendingTeamColor).getRobots()) {

@@ -157,7 +157,7 @@ public class SSLAutoRef {
             //noinspection deprecation
             case GOAL_BLUE, PREPARE_KICKOFF_BLUE, PREPARE_PENALTY_BLUE, INDIRECT_FREE_BLUE, TIMEOUT_BLUE, BALL_PLACEMENT_BLUE, DIRECT_FREE_BLUE ->
                     TeamColor.BLUE;
-            default -> null;
+            default -> game.getPrevious().getStateForTeam();
         });
 
         //TODO divide by / 1000.0f if the scale is not correct
