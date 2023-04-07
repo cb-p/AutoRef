@@ -6,7 +6,8 @@ package nl.roboteamtwente.autoref.model;
  */
 public enum TeamColor {
     BLUE,
-    YELLOW;
+    YELLOW,
+    BOTH;
 
     /**
      * @return the opponents color based on the color of the current object.

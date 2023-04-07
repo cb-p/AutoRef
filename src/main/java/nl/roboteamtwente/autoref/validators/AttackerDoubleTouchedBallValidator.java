@@ -33,7 +33,7 @@ public class AttackerDoubleTouchedBallValidator implements RuleValidator {
         //FIXME explain what if statement does here
         if (!triggered && currentTouch != null && game.getBall().getPosition().distance(kickIntoPlay.startLocation()) >= distance) {
             triggered = true;
-            return new Violation(robot.getIdentifier(), game.getKickIntoPlay().startLocation().xy());
+            return new Violation(robot.getTeam().getColor(),robot.getIdentifier(), game.getKickIntoPlay().startLocation().xy());
         }
 
         return null;
@@ -55,7 +55,7 @@ public class AttackerDoubleTouchedBallValidator implements RuleValidator {
      * @param by       the robot that performed the violation.
      * @param location the location on the field where the violation was made.
      */
-    record Violation(RobotIdentifier by, Vector2 location) implements RuleViolation {
+    record Violation(TeamColor byTeam, RobotIdentifier by, Vector2 location) implements RuleViolation {
 
 
         @Override
