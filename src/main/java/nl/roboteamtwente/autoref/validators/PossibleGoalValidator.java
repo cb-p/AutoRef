@@ -9,45 +9,18 @@ import org.robocup.ssl.proto.SslGcGeometry;
 
 public class PossibleGoalValidator implements RuleValidator {
 
-    // Rule states: The team did not commit any non-stopping foul in the last two seconds before the ball entered the goal.
-    private double lastNonStoppingFoulbyYellow = Float.NEGATIVE_INFINITY;
-    private double lastNonStoppingFoulbyBlue = Float.NEGATIVE_INFINITY;
-
     // Check if possible goal is raised
-    private boolean isRaised = false;
-
-    // Rule states: The team did not commit any non_stopping foul in the last two seconds before the ball entered the goal.
-    private static final double NON_STOPPING_FOUL_TIME_CONSTRAINT = 2;
+    private boolean isEventRaised = false;
 
     /**
-     * Rule state: The team did not commit any non-stopping foul in the last two seconds before the ball entered the goal.
-     * Set the last non-stopping foul per team
-     * @param lastNonStoppingFoul - non stopping foul occurs time stamp
-     * @param byTeam - team commits the foul
-     */
-    public void setLastNonStoppingFoul(double lastNonStoppingFoul, TeamColor byTeam) {
-        switch (byTeam){
-            case BLUE -> {
-                lastNonStoppingFoulbyBlue = lastNonStoppingFoul;
-            }
-            case YELLOW -> {
-                lastNonStoppingFoulbyYellow = lastNonStoppingFoul;
-            }
-            case BOTH -> {
-                lastNonStoppingFoulbyBlue = lastNonStoppingFoul;
-                lastNonStoppingFoulbyYellow = lastNonStoppingFoul;
-            }
-        }
-    }
-
-    /**
-     * Check if the ball is inside the goal and behind the goal post
-     * The size of the goal depends on the division
+     * Check if the ball position is inside the goal post
+     * Division A and B have different goal size
      * @param game
-     * @param ballPos the location of the ball
-     * @return
+     * @param side - the side of the ball when enter the goal
+     * @param ballPos - the position of the ball
+     * @return true if ball is inside the goal otherwise false
      */
-    boolean checkPossibleGoalPosition(Game game, Vector2 ballPos) {
+    boolean checkBallInsideGoal(Game game, Side side, Vector2 ballPos) {
         float goalDepthLength = 0.18f;
         float goalWidthLength;
 
@@ -58,68 +31,41 @@ public class PossibleGoalValidator implements RuleValidator {
             goalWidthLength = 1f;
         }
 
-        FieldLine rightFieldLeftPenaltyStretch = game.getField().getLineByName("RightFieldLeftPenaltyStretch");
-
-        if (rightFieldLeftPenaltyStretch != null) {
+        String fieldLineName;
+        if (side.equals(Side.RIGHT)) {
+            fieldLineName = "RightFieldLeftPenaltyStretch";
+        } else {
+            fieldLineName = "LeftFieldLeftPenaltyStretch";
+        }
+        FieldLine fieldLine = game.getField().getLineByName(fieldLineName);
+        if (fieldLine != null) {
             //        LeftToRightCoefficient if leftPenaltyStretch is positive otherwise negative
             float LeftToRightCoefficient = 1;
-            if (rightFieldLeftPenaltyStretch.p1().getY() >= 0) {
+            if (fieldLine.p1().getY() >= 0) {
                 LeftToRightCoefficient = 1;
             } else {
                 LeftToRightCoefficient = -1;
             }
-            float leftPostP1x = rightFieldLeftPenaltyStretch.p1().getX();
+            float leftPostP1x = fieldLine.p1().getX();
             float leftPostP1y = (goalWidthLength/2) * LeftToRightCoefficient;
 
-            float leftPostP2x = leftPostP1x + goalDepthLength;
-
-            float rightPostP1y = (goalWidthLength/2) * LeftToRightCoefficient * -1;
-
-            float rightPostP2y = leftPostP1y;
-
-            // Check if ball inside right goal
-            if ((ballPos.getY() >= Math.min(rightPostP1y, leftPostP1y)) && (ballPos.getY() <= Math.max(rightPostP1y, leftPostP1y))
-                    && (ballPos.getX() >= Math.min(leftPostP1x,leftPostP2x)) && (ballPos.getX() <= Math.max(leftPostP1x,leftPostP2x))) {
-                return true;
-            }
-        }
-
-        FieldLine leftFieldLeftPenaltyStretch = game.getField().getLineByName("LeftFieldLeftPenaltyStretch");
-        if (leftFieldLeftPenaltyStretch != null) {
-            float LeftToRightCoefficient;
-
-            // LeftToRightCoefficient if leftPenaltyStretch is positive otherwise negative
-            if (leftFieldLeftPenaltyStretch.p1().getY() >= 0) {
-                LeftToRightCoefficient = 1;
-            } else {
-                LeftToRightCoefficient = -1;
-            }
-            float leftPostP1x = leftFieldLeftPenaltyStretch.p1().getX();
-            float leftPostP1y = (goalWidthLength/2) * LeftToRightCoefficient;
-
-            float leftPostP2x = leftPostP1x - goalDepthLength;
-            float leftPostP2y = leftPostP1y;
+            float leftPostP2x = leftPostP1x + side.getCardinality()*goalDepthLength;
 
             float rightPostP1y = (goalWidthLength/2) * LeftToRightCoefficient * -1;
 
             // Check if ball inside right goal
             if ((ballPos.getY() >= Math.min(rightPostP1y, leftPostP1y)) && (ballPos.getY() <= Math.max(rightPostP1y, leftPostP1y))
                     && (ballPos.getX() >= Math.min(leftPostP1x,leftPostP2x)) && (ballPos.getX() <= Math.max(leftPostP1x,leftPostP2x))) {
+                System.out.println("Inside goal " + side);
                 return true;
             }
         }
-
         return false;
-    }
-
-    //TODO: used to check if the possible goal is detected
-    public boolean isPossibleGoalRaised() {
-        return this.isRaised;
     }
 
     @Override
     public RuleViolation validate(Game game) {
-        if (isRaised) {
+        if (isEventRaised) {
             return null;
         }
         Vector2 ballPos = game.getBall().getPosition().xy();
@@ -128,14 +74,14 @@ public class PossibleGoalValidator implements RuleValidator {
         if (touch == null) {
             return null;
         }
-
-        if (checkPossibleGoalPosition(game, ballPos)) {
+        Side ballSide = ballPos.getX() < 0 ? Side.LEFT : Side.RIGHT;
+        if (checkBallInsideGoal(game, ballSide, ballPos)) {
             Vector2 kickLocation = touch.endLocation().xy();
             RobotIdentifier kickBot = touch.by();
             TeamColor kickingTeam = kickBot.teamColor();
             double lastTouchTimeStampByTeam = touch.endTime();
             TeamColor byTeam;
-            Side ballSide = ballPos.getX() < 0 ? Side.LEFT : Side.RIGHT;
+
             // Scoring team is the opposite team of the team owns the side
             if (game.getTeam(TeamColor.BLUE).getSide().equals(ballSide)) {
                 byTeam = TeamColor.YELLOW;
@@ -143,26 +89,17 @@ public class PossibleGoalValidator implements RuleValidator {
                 byTeam = TeamColor.BLUE;
             }
 
-            // Rule states: The team did not commit any non_stopping foul in the last two seconds before the ball entered the goal.
-            if ((byTeam == TeamColor.BLUE) && (game.getTime() - lastNonStoppingFoulbyBlue <= NON_STOPPING_FOUL_TIME_CONSTRAINT)) {
-                return null;
-            }
-            if ((byTeam == TeamColor.YELLOW) && (game.getTime()- lastNonStoppingFoulbyYellow <= NON_STOPPING_FOUL_TIME_CONSTRAINT)) {
-                return null;
-            }
-
             int numRobotsByTeam = game.getTeam(byTeam).getRobots().size();
-            isRaised = true;
+            isEventRaised = true;
             return new PossibleGoalValidator.PossibleGoal(byTeam, kickingTeam, kickBot.id(), ballPos, kickLocation, 0f, numRobotsByTeam, (int) lastTouchTimeStampByTeam);
         }
         return null;
     }
 
+
     @Override
     public void reset(Game game) {
-        isRaised = false;
-        lastNonStoppingFoulbyBlue = Float.NEGATIVE_INFINITY;
-        lastNonStoppingFoulbyYellow = Float.NEGATIVE_INFINITY;
+        isEventRaised = false;
     }
 
     @Override
