@@ -55,9 +55,37 @@ public class PossibleGoalValidator implements RuleValidator {
         System.out.println("P1y:" + rightFieldRightPenaltyStretch.p1().getY());
         System.out.println("P2x:" + rightFieldRightPenaltyStretch.p2().getX());
         System.out.println("P2y:" + rightFieldRightPenaltyStretch.p2().getY());
+        FieldLine rightFieldLeftPenaltyStretch = game.getField().getLineByName("RightFieldLeftPenaltyStretch");
+        System.out.println("RightFieldLeftPenaltyStretch");
+        System.out.println("P1x:" + rightFieldLeftPenaltyStretch.p1().getX());
+        System.out.println("P1y:" + rightFieldLeftPenaltyStretch.p1().getY());
+        System.out.println("P2x:" + rightFieldLeftPenaltyStretch.p2().getX());
+        System.out.println("P2y:" + rightFieldLeftPenaltyStretch.p2().getY());
+
+        float goalDepthLength = 0.18f;
+        float goalWidthLength;
+        if (game.getDivision() == Division.A) {
+            goalWidthLength = 1.8f;
+        } else {
+            goalWidthLength = 1f;
+        }
+
+        float leftPostP1x = rightFieldLeftPenaltyStretch.p1().getX();
+        float leftPostP1y;
+        if (leftPostP1y >= 0) {
+            leftPostP1y = 0.9;
+        } else {
+            leftPostP1y = 0.9;
+        }
+        float leftPostP2x = leftPostP1x + 0.2f;
+        float leftPostP2y = leftPostP1y;
+        FieldLine rightFieldLeftPost = new FieldLine("RightFieldLeftPost", new Vector2())
         System.out.println("Ball location");
         System.out.println("Ball x:" + game.getBall().getPosition().getX());
         System.out.println("Ball y:" + game.getBall().getPosition().getY());
+        System.out.println("Division:" + game.getDivision());
+
+
 //        FieldLine rightGoalBottomLine = game.getField().getLineByName("RightGoalBottomLine");
 //        System.out.println(rightGoalBottomLine.p1().getX());
 //        System.out.println(rightGoalBottomLine.p1().getY());
