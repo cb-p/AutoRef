@@ -134,6 +134,7 @@ public class SSLAutoRef {
             game.setState(game.getPrevious().getState());
         }
 
+        //check if game state needs to be set to running
         if (statePacket.getReferee().hasCurrentActionTimeRemaining()) {
             int timeRemaining = statePacket.getReferee().getCurrentActionTimeRemaining();
             if (timeRemaining < 0) {
@@ -150,6 +151,7 @@ public class SSLAutoRef {
         game.setCommand(statePacket.getReferee().getCommand());
         game.setNextCommand(statePacket.getReferee().getNextCommand());
 
+        //set stateForTeam
         game.setStateForTeam(switch (statePacket.getReferee().getCommand()) {
             //noinspection deprecation
             case GOAL_YELLOW, PREPARE_KICKOFF_YELLOW, PREPARE_PENALTY_YELLOW, INDIRECT_FREE_YELLOW, TIMEOUT_YELLOW, BALL_PLACEMENT_YELLOW, DIRECT_FREE_YELLOW ->
@@ -273,7 +275,6 @@ public class SSLAutoRef {
 
             Touch touch = robot.getTouch();
 
-            // FIXME: is this a good way to detect if a robot is touching the ball?
             float distance = robot.getPosition().xy().distance(ballPosition.xy());
 
             // detect if there's a touch
@@ -331,11 +332,12 @@ public class SSLAutoRef {
     /**
      * Check for any GameState changes and take.
      * If there is a change, store the time of the change (current time).
-     * If previous was RUNNING and current is not, reset touches
+     * If state changed and previous was HALT or STOP, reset touches
      *
      * @param game game
      */
     private void gameStateChanges(Game game) {
+        //set TimeLastGameStateChange
         if (game.getState() != game.getPrevious().getState()) {
             System.out.println("game state: " + game.getPrevious().getState() + " -> " + game.getState());
             game.setTimeLastGameStateChange(game.getTime());
@@ -343,6 +345,7 @@ public class SSLAutoRef {
             game.setTimeLastGameStateChange(game.getPrevious().getTimeLastGameStateChange());
         }
 
+        //reset touches if previous game state was HALT or STOP and game state changed
         if (game.getPrevious().getState() != game.getState() && EnumSet.of(GameState.STOP, GameState.HALT).contains(game.getPrevious().getState())) {
             System.out.println("reset");
 
@@ -403,7 +406,7 @@ public class SSLAutoRef {
         gcConnection.setActive(false);
         try {
             //make sure sleep is longer than any sleep in GameControllerConnection.java
-            Thread.sleep(3 * gcConnection.getReconnectSleep());
+            Thread.sleep(gcConnection.getReconnectSleep() + 3000);
         } catch (InterruptedException e) {}
         gcConnection.disconnect();
         gcThread.interrupt();

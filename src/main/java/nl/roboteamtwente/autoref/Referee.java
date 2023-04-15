@@ -8,22 +8,23 @@ import java.util.List;
 
 public class Referee {
     private static final List<RuleValidator> RULE_VALIDATORS = List.of(
-            new BotCrashingValidator(),
-            new BotInterferedPlacementValidator(),
-            new BotTooFastInStopValidator(),
-            new AttackerTouchedBallInDefenseAreaValidator(),
-            new BallLeftFieldTouchLineValidator(),
-            new BallLeftFieldGoalLineValidator(),
-            new BotKickedBallTooFastValidator(),
-            new DefenderInDefenseAreaValidator(),
+            new AimlessKickValidator(),
             new AttackerDoubleTouchedBallValidator(),
             new AttackerTooCloseToDefenseAreaValidator(),
-            new DefenderTooCloseToKickPointValidator(),
-            new PossibleGoalValidator(),
-            new AimlessKickValidator(),
+            new AttackerTouchedBallInDefenseAreaValidator(),
+            new BallLeftFieldGoalLineValidator(),
+            new BallLeftFieldTouchLineValidator(),
+            new BotCrashingValidator(),
             new BotDribbledBallTooFarValidator(),
+            new BotInterferedPlacementValidator(),
+            new BotKickedBallTooFastValidator(),
+            new BotTooFastInStopValidator(),
+            new BoundaryCrossingValidator(),
+            new DefenderInDefenseAreaValidator(),
+            new DefenderTooCloseToKickPointValidator(),
+            new PenaltyKickFailedValidator(),
             new PlacementSucceededValidator(),
-            new BoundaryCrossingValidator()
+            new PossibleGoalValidator()
     );
 
     private List<RuleValidator> activeValidators = new ArrayList<>();

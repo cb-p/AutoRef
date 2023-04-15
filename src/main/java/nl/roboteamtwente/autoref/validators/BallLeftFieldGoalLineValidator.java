@@ -29,7 +29,7 @@ public class BallLeftFieldGoalLineValidator implements RuleValidator {
         FieldLine rightGoalLine = game.getField().getLineByName("RightGoalLine");
         FieldLine leftGoalLine = game.getField().getLineByName("LeftGoalLine");
 
-        // Lines are sometimes not present for some reason with some test cases not related to this rule
+        // Lines are sometimes not present for some reason with some log-file tests not related to this rule
         if (rightGoalLine == null || leftGoalLine == null) {
             return null;
         }

@@ -39,7 +39,7 @@ public class PossibleGoalValidator implements RuleValidator {
         }
         FieldLine fieldLine = game.getField().getLineByName(fieldLineName);
         if (fieldLine != null) {
-            //        LeftToRightCoefficient if leftPenaltyStretch is positive otherwise negative
+            // LeftToRightCoefficient if leftPenaltyStretch is positive otherwise negative
             float LeftToRightCoefficient = 1;
             if (fieldLine.p1().getY() >= 0) {
                 LeftToRightCoefficient = 1;

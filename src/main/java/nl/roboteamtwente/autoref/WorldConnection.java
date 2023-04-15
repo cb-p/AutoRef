@@ -24,6 +24,7 @@ public class WorldConnection implements Runnable {
             worldSocket.connect("tcp://" + ip + ":" + port);
             listener();
         } catch (ZMQException e) {
+            //4 is the error code when we close the connection by hand, which can be ignored
             if (e.getErrorCode() != 4) {
                 e.printStackTrace();
             }
@@ -43,6 +44,7 @@ public class WorldConnection implements Runnable {
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         } catch (ZMQException e) {
+            //4 is the error code when we close the connection by hand, which can be ignored
             if (e.getErrorCode() != 4) {
                 e.printStackTrace();
             }
@@ -56,6 +58,7 @@ public class WorldConnection implements Runnable {
         try {
             worldSocket.close();
         } catch (ZMQException e) {
+            //4 is the error code when we close the connection by hand, which can be ignored
             if (e.getErrorCode() != 4) {
                 e.printStackTrace();
             }
