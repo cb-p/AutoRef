@@ -175,7 +175,12 @@ public class SSLAutoRef {
      * @param world filtered data from World
      */
     private void deriveBall(Game game, WorldOuterClass.World world) {
-        if (world.getBall().getPos().getX() != 0.0f && world.getBall().getPos().getY() != 0.0f) {
+        // Sometimes world reports the ball as being at 0,0
+        if (world.getBall().getPos().getX() == 0.0f || world.getBall().getPos().getY() == 0.0f) {
+            game.getBall().getPosition().setX(game.getPrevious().getBall().getPosition().getX());
+            game.getBall().getPosition().setY(game.getPrevious().getBall().getPosition().getY());
+            game.getBall().getPosition().setZ(game.getPrevious().getBall().getPosition().getZ());
+        } else {
             game.getBall().getPosition().setX(world.getBall().getPos().getX());
             game.getBall().getPosition().setY(world.getBall().getPos().getY());
             game.getBall().getPosition().setZ(world.getBall().getZ());
@@ -410,7 +415,8 @@ public class SSLAutoRef {
         try {
             //make sure sleep is longer than any sleep in GameControllerConnection.java
             Thread.sleep(gcConnection.getReconnectSleep() + 3000);
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+        }
         gcConnection.disconnect();
         gcThread.interrupt();
         worldConnection.close();
