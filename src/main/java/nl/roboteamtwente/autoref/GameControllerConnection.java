@@ -97,8 +97,6 @@ public class GameControllerConnection implements Runnable {
                     try {
                         sendGameEvent(gameEvent);
                     } catch (IOException e) {
-                        //if IOexception in sendGameEvent, add gameEvent back to queue and reconnect
-                        queue.add(0, gameEvent);
                         reconnect();
                     } catch (RuntimeException e) {
                         System.out.println(e.getMessage());
@@ -133,6 +131,7 @@ public class GameControllerConnection implements Runnable {
      */
     private synchronized void reconnect() {
         System.out.println("Reconnecting");
+        queue.clear();
         try {
             if (this.socket != null) {
                 this.socket.close();
