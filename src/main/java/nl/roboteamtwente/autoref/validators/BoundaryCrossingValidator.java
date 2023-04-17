@@ -9,7 +9,7 @@ import org.robocup.ssl.proto.SslGcGeometry;
 
 public class BoundaryCrossingValidator implements RuleValidator {
     // We add a margin to correct for the small position error when the ball bounces off the boundary.
-    private static final float MARGIN = 0.1f;
+    private static final float MARGIN = 0.7f + 0.05f;
 
     private boolean triggered = false;
 
@@ -22,12 +22,10 @@ public class BoundaryCrossingValidator implements RuleValidator {
         Vector2 location;
         Vector3 ball = game.getBall().getPosition();
 
-        float boundaryWidth = game.getField().getBoundaryWidth() + MARGIN;
-
-        if (ball.getY() > game.getField().getPosition().getY() + game.getField().getSize().getY() + boundaryWidth
-                || ball.getY() < game.getField().getPosition().getY() - boundaryWidth
-                || ball.getX() > game.getField().getPosition().getX() + game.getField().getSize().getX() + boundaryWidth
-                || ball.getX() < game.getField().getPosition().getX() - boundaryWidth) {
+        if (ball.getY() > game.getField().getPosition().getY() + game.getField().getSize().getY() + MARGIN
+                || ball.getY() < game.getField().getPosition().getY() - MARGIN
+                || ball.getX() > game.getField().getPosition().getX() + game.getField().getSize().getX() + MARGIN
+                || ball.getX() < game.getField().getPosition().getX() - MARGIN) {
 
             Touch touch = game.getLastFinishedTouch();
             location = ball.xy();
