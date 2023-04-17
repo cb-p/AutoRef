@@ -128,7 +128,7 @@ public class BotInterferedPlacementValidator implements RuleValidator {
         @Override
         public SslGcGameEvent.GameEvent toPacket() {
             return SslGcGameEvent.GameEvent.newBuilder()
-                    .setType(SslGcGameEvent.GameEvent.Type.BOT_TOO_FAST_IN_STOP)
+                    .setType(SslGcGameEvent.GameEvent.Type.BOT_INTERFERED_PLACEMENT)
                     .setBotInterferedPlacement(SslGcGameEvent.GameEvent.BotInterferedPlacement.newBuilder()
                             .setByBot(byBot)
                             .setByTeam(byTeam == TeamColor.BLUE ? SslGcCommon.Team.BLUE : SslGcCommon.Team.YELLOW)
