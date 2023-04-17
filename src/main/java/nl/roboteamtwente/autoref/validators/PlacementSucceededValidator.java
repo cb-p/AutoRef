@@ -9,11 +9,11 @@ import org.robocup.ssl.proto.SslGcRefereeMessage;
 
 public class PlacementSucceededValidator implements RuleValidator {
 
-    private static final float FREE_KICK_PLACEMENT_DISTANCE = 0.05f;
+    private static final float FREE_KICK_PLACEMENT_DISTANCE = 0.5f;
 
     private static final float FORCE_START_PLACEMENT_DISTANCE = 0.05f;
 
-    private static final float MAXIMUM_PLACEMENT_DISTANCE_BETWEEN_BALL_AND_DESIGNATED_POS = 0.05f;
+    private static final float MAXIMUM_PLACEMENT_DISTANCE_BETWEEN_BALL_AND_DESIGNATED_POS = 0.15f;
 
     private static final float MIN_PLACEMENT_TIME = 2;
 
