@@ -48,7 +48,7 @@ public class SSLAutoRef {
 
         game.setDivision(division);
 
-        WorldOuterClass.World world = statePacket.getLastSeenWorld();
+        WorldOuterClass.World world = statePacket.getCommandExtrapolatedWorld();
 
         game.setTime(world.getTime() / 1_000_000_000.0);
         game.setForceStarted(game.getPrevious().isForceStarted());
@@ -175,9 +175,12 @@ public class SSLAutoRef {
      * @param world filtered data from World
      */
     private void deriveBall(Game game, WorldOuterClass.World world) {
-        game.getBall().getPosition().setX(world.getBall().getPos().getX());
-        game.getBall().getPosition().setY(world.getBall().getPos().getY());
-        game.getBall().getPosition().setZ(world.getBall().getZ());
+        if (world.getBall().getPos().getX() != 0.0f && world.getBall().getPos().getY() != 0.0f) {
+            game.getBall().getPosition().setX(world.getBall().getPos().getX());
+            game.getBall().getPosition().setY(world.getBall().getPos().getY());
+            game.getBall().getPosition().setZ(world.getBall().getZ());
+        }
+
         game.getBall().getVelocity().setX(world.getBall().getVel().getX());
         game.getBall().getVelocity().setY(world.getBall().getVel().getY());
         game.getBall().getVelocity().setZ(world.getBall().getZVel());
