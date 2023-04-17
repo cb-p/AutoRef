@@ -41,12 +41,17 @@ public class Referee {
     }
 
     public List<RuleViolation> validate() {
+        // Make a list of validators that should be active.
         List<RuleValidator> validators = RULE_VALIDATORS.stream().filter((validator) -> validator.isActive(game)).toList();
+
+        // While these validators are active, retain the ones that should be disabled.
         disabledValidators.retainAll(validators);
 
+        // Actually disable all disabled validators.
         validators = new ArrayList<>(validators);
         validators.removeAll(disabledValidators);
 
+        // Reset all the validators that have just been activated.
         List<RuleValidator> toReset = new ArrayList<>(validators);
         toReset.removeAll(activeValidators);
 
@@ -68,6 +73,7 @@ public class Referee {
             } catch (Exception e) {
                 e.printStackTrace();
 
+                // Disable the validators that throw exceptions.
                 System.err.println("!! " + validator.getClass().getSimpleName() + " will now be deactivated.");
                 disabledValidators.add(validator);
             }
