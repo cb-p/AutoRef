@@ -108,7 +108,7 @@ public class GameControllerConnection implements Runnable {
                 reconnect();
             }
             //small delay to not always check queue but check in intervals
-            Thread.sleep(10); //1 second / 100Hz = 10ms
+            Thread.sleep(13); //1 second / 80Hz = 13ms (rounded up)
         }
     }
 
