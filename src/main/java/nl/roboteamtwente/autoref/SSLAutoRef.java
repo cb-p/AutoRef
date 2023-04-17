@@ -79,7 +79,6 @@ public class SSLAutoRef {
      * @param statePacket packet AutoRef got from World
      */
     private void deriveRefereeMessage(Game game, StateOuterClass.State statePacket) {
-        //FIXME more closely represent GameState in AutoRef to GameState in World
         if (game.getState() == null || statePacket.getReferee().getCommandCounter() != commands) {
             game.setState(game.getPrevious().getState());
 
@@ -92,7 +91,6 @@ public class SSLAutoRef {
                 }
                 case STOP -> {
                     // Stop command always stops the game
-                    // FIXME: Is this accurate?
                     game.setState(GameState.STOP);
                 }
                 case BALL_PLACEMENT_BLUE, BALL_PLACEMENT_YELLOW -> {
@@ -105,7 +103,6 @@ public class SSLAutoRef {
                 }
                 case NORMAL_START -> {
                     // Normal start starts the current stage of the game.
-                    // FIXME: Is this complete?
                     if (game.getPrevious().getState() == GameState.PREPARE_KICKOFF) {
                         game.setState(GameState.KICKOFF);
                     } else if (game.getPrevious().getState() == GameState.PREPARE_PENALTY) {

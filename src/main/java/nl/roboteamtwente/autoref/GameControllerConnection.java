@@ -164,7 +164,6 @@ public class GameControllerConnection implements Runnable {
                     .writeDelimitedTo(socket.getOutputStream());
             socket.getOutputStream().flush();
 
-            //FIXME make sure we do not get stuck here
             SslGcRcon.ControllerReply reply = receivePacket();
             if (reply != null && reply.getStatusCode() != SslGcRcon.ControllerReply.StatusCode.OK) {
                 throw new RuntimeException("Game event rejected: " + reply.getReason());
