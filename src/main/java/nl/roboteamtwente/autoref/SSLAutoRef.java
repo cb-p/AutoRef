@@ -264,6 +264,7 @@ public class SSLAutoRef {
 
         // restore all finished touches, in-progress touches will be evaluated next
         game.getTouches().addAll(game.getPrevious().getFinishedTouches());
+        game.setKickType(game.getPrevious().getKickType());
         game.setKickIntoPlay(game.getPrevious().getKickIntoPlay());
 
         Ball ball = game.getBall();
@@ -356,6 +357,7 @@ public class SSLAutoRef {
             System.out.println("reset");
 
             game.getBall().setLastTouchStarted(null);
+            game.setKickType(null);
             game.setKickIntoPlay(null);
             game.getTouches().clear();
 
