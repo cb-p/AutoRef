@@ -62,6 +62,7 @@ public class Game {
     private Game previous;
 
     private Touch kickIntoPlay;
+    private KickType kickType;
     private final List<Touch> touches;
 
     private boolean forceStarted;
@@ -233,6 +234,14 @@ public class Game {
 
     public void setKickIntoPlay(Touch kickIntoPlay) {
         this.kickIntoPlay = kickIntoPlay;
+    }
+
+    public KickType getKickType() {
+        return kickType;
+    }
+
+    public void setKickType(KickType kickType) {
+        this.kickType = kickType;
     }
 
     public boolean isForceStarted() {

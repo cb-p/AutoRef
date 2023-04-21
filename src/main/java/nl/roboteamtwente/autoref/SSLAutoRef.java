@@ -316,6 +316,7 @@ public class SSLAutoRef {
 
                 // if this happened during kickoff or a free kick, this is the kick into play
                 if (game.getState() == GameState.KICKOFF || game.getState() == GameState.FREE_KICK) {
+                    game.setKickType(game.getState() == GameState.KICKOFF ? KickType.KICKOFF : KickType.FREE_KICK);
                     game.setKickIntoPlay(touch);
 
                     // we change the state to running

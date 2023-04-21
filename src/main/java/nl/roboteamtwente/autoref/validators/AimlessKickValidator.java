@@ -16,7 +16,7 @@ public class AimlessKickValidator implements RuleValidator {
     public RuleViolation validate(Game game) {
         //Get the last touch made before the ball exited the field.
         Touch touch = game.getLastFinishedTouch();
-        if (touch == null) {
+        if (touch == null || (touch.equals(game.getKickIntoPlay()) && game.getKickType() == KickType.KICKOFF)) {
             return null;
         }
 
@@ -33,7 +33,7 @@ public class AimlessKickValidator implements RuleValidator {
         Robot byBot = game.getRobot(touch.by());
 
         //Check if the bot retrieved was in their own half before the ball went out.
-        if (game.getField().isInOwnHalf(byBot.getTeam().getSide(), byBot.getPosition().xy())
+        if (game.getField().isInOwnHalf(byBot.getTeam().getSide(), touch.endLocation().xy())
                 && game.getTime() - lastViolation > GRACE_PERIOD) {
 
             //If the ball left the right goal line and the side of the bot was left then an aimless kick happened.
