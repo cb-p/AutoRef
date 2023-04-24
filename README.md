@@ -2,6 +2,9 @@
 This repository contains the source code for the automatic referee for RoboCup SSL tournaments built for the RoboTeam Twente.
 
 ## Usage
+Before one can actually run the autoRef, they will have to set-up [RoboTeam World](https://github.com/RoboTeamTwente/roboteam/tree/main/roboteam_world). 
+This software package is responsible for processing the raw data provided by [SSL Vision](https://github.com/RoboCup-SSL/ssl-vision). 
+
 As the project is managed and built using Gradle, any way of using Gradle should work with this project, such as the Gradle integration
 of your IDE. Explained below is the basic usage guidelines that will require no extra installation steps apart from Java itself.
 
