@@ -22,15 +22,6 @@ docker exec roboteam roboteam_world/roboteam_observer
 As the project is managed and built using Gradle, any way of using Gradle should work with this project, such as the Gradle integration
 of your IDE. Explained below is the basic usage guidelines that will require no extra installation steps apart from Java itself.
 
-### Windows
-Make sure you have some distribution of at least Java 17 installed on your machine.
-
-Next, you can run the referee using Gradle from the command prompt:
-```
-gradlew run
-```
-
-### Linux
 Make sure you have some distribution of at least Java 17 installed on your machine. On Ubuntu, you can install OpenJDK 
 JRE 17 using the following command:
 ```bash
