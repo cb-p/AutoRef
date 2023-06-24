@@ -15,21 +15,14 @@ public class PossibleGoalValidator implements RuleValidator {
     /**
      * Check if the ball position is inside the goal post
      * Division A and B have different goal size
-     * @param game
+     * @param game - the game that is currently taking place
      * @param side - the side of the ball when enter the goal
      * @param ballPos - the position of the ball
      * @return true if ball is inside the goal otherwise false
      */
     boolean checkBallInsideGoal(Game game, Side side, Vector2 ballPos) {
-        float goalDepthLength = 0.18f;
-        float goalWidthLength;
-
-        // Division A and B have different goal size
-        if (game.getDivision() == Division.A) {
-            goalWidthLength = 1.8f;
-        } else {
-            goalWidthLength = 1f;
-        }
+        float goalDepthLength = game.getField().getGoal().getDepth();
+        float goalWidthLength = game.getField().getGoal().getWidth();
 
         String fieldLineName;
         if (side.equals(Side.RIGHT)) {
