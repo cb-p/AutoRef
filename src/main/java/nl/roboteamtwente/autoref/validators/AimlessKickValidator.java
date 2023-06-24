@@ -61,7 +61,7 @@ public class AimlessKickValidator implements RuleValidator {
 
     @Override
     public boolean isActive(Game game) {
-        return game.isBallInPlay() && game.getDivision() == Division.B;
+        return game.isBallInPlay();
     }
 
 
