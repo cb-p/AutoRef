@@ -67,8 +67,6 @@ public class Game {
 
     private boolean forceStarted;
 
-    private Division division;
-
     public Game() {
         this.robots = new ArrayList<>();
         this.ball = new Ball();
@@ -87,7 +85,6 @@ public class Game {
         this.touches = new ArrayList<>();
 
         this.forceStarted = false;
-        this.division = Division.B;
     }
 
     /**
@@ -264,11 +261,4 @@ public class Game {
         return getState() == GameState.RUN || (getState() == GameState.PENALTY && getKickIntoPlay() != null);
     }
 
-    public Division getDivision() {
-        return division;
-    }
-
-    public void setDivision(Division division) {
-        this.division = division;
-    }
 }

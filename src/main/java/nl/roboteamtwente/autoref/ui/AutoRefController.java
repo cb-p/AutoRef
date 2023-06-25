@@ -13,7 +13,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import nl.roboteamtwente.autoref.SSLAutoRef;
-import nl.roboteamtwente.autoref.model.Division;
 
 import java.net.URL;
 import java.util.Objects;
@@ -24,9 +23,6 @@ public class AutoRefController implements Initializable {
 
     @FXML
     public ComboBox<String> modeBox;
-
-    @FXML
-    public ComboBox<String> divisionBox;
 
     @FXML
     public ListView<TextFlow> logList;
@@ -63,14 +59,9 @@ public class AutoRefController implements Initializable {
         });
 
         modeBox.getItems().addAll("Passive", "Active");
-        divisionBox.getItems().addAll("A", "B");
 
         modeBox.setOnAction((event) -> {
             sslAutoRef.setActive(Objects.equals(modeBox.getValue(), "Active"));
-        });
-
-        divisionBox.setOnAction((event) -> {
-            sslAutoRef.setDivision(Objects.equals(divisionBox.getValue(), "A") ? Division.A : Division.B);
         });
 
         clearButton.setOnAction((event) -> {
@@ -95,24 +86,10 @@ public class AutoRefController implements Initializable {
             int portGameController = Integer.parseInt(parameters.getNamed().getOrDefault("gc-port", "10007"));
 
             boolean active = parameters.getUnnamed().contains("--active");
-            String divisionString = parameters.getNamed().getOrDefault("division", "B").toLowerCase();
-
-            Division division;
-            if (divisionString.equals("a")) {
-                division = Division.A;
-            } else if (divisionString.equals("b")) {
-                division = Division.B;
-            } else {
-                System.err.println("Unknown division " + divisionString);
-                System.exit(1);
-                return;
-            }
 
             modeBox.setValue(active ? "Active" : "Passive");
-            divisionBox.setValue(division.toString());
 
             sslAutoRef.setActive(active);
-            sslAutoRef.setDivision(division);
             sslAutoRef.start(ipWorld, ipGameController, portWorld, portGameController);
         } catch (NumberFormatException e) {
             System.err.println("Failed to parse port program argument.");
