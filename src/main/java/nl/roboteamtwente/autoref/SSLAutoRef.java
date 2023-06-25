@@ -243,6 +243,8 @@ public class SSLAutoRef {
         game.getField().getSize().setY(statePacket.getField().getField().getFieldWidth() / 1000.0f);
         game.getField().getPosition().setX(-statePacket.getField().getField().getFieldLength() / 2.0f / 1000.0f);
         game.getField().getPosition().setY(-statePacket.getField().getField().getFieldWidth() / 2.0f / 1000.0f);
+        game.getField().getGoal().setWidth(statePacket.getField().getField().getGoalWidth() / 1000.0f);
+        game.getField().getGoal().setDepth(statePacket.getField().getField().getGoalDepth() / 1000.0f);
 
         for (SslVisionGeometry.SSL_FieldLineSegment lineSegment : statePacket.getField().getField().getFieldLinesList()) {
             Vector2 p1 = new Vector2(lineSegment.getP1().getX() / 1000.0f, lineSegment.getP1().getY() / 1000.0f);

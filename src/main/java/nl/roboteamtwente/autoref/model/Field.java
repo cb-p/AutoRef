@@ -11,6 +11,7 @@ import java.util.Map;
 public class Field {
     private final Vector2 position;
     private final Vector2 size;
+    private final Goal goal;
 
     private float boundaryWidth;
 
@@ -24,6 +25,7 @@ public class Field {
         this.position = new Vector2(0, 0);
         this.size = new Vector2(0, 0);
         this.boundaryWidth = 0.0f;
+        this.goal = new Goal();
 
         this.lines = new HashMap<>();
     }
@@ -42,6 +44,10 @@ public class Field {
 
     public void setBoundaryWidth(float boundaryWidth) {
         this.boundaryWidth = boundaryWidth;
+    }
+
+    public Goal getGoal() {
+        return goal;
     }
 
     public Collection<FieldLine> getLines() {
