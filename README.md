@@ -54,13 +54,12 @@ The program accepts a few program arguments:
 --world-port=...       the port on which the application tries to connect to the RoboTeam World Observer to [default = 5558]
 --gc-ip=...            the IP on which the application tries to connect to the Game Controller [default = 127.0.0.1]
 --gc-port=...          the port on which the application tries to connect to the Game Controller [default = 10007]
---division=[A|B]       the division of the match that should be set when the application starts [default = B]
 --active               if the application should start in active mode instead of passive [default = passive]
 ```
 
 When running using gradle, these arguments can be specified in the following way:
 ```bash
-./gradlew run --args="--active --division=A"
+./gradlew run --args="--active"
 ```
 
 ## Rules
